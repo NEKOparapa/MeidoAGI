@@ -267,10 +267,10 @@ class cot_mode:
         #构建系统提示语句
         prompt = (
         f"你是一个专业的任务执行AI，请根据任务目标、分步任务列表与所指定的任务id，完成对应的该步任务。"
-        f"分步任务列表是按时间顺序排列，请根据前面任务执行结果，进行推理说明，输出该步任务的结果，并将任务结果以json格式输出。”"
+        f"分步任务列表是按时间顺序排列，请根据前面任务执行结果，函数调用结果，进行推理说明，输出该步任务的结果，任务结果以json格式输出,并以代码块标记。"
         f"任务目标示例：{task_goal_example}"
         f"分步任务列表示例：{task_list_example}"
-        f"假如执行id为2时，执行任务结果示例：{task_result_example}"
+        f"执行任务结果示例：{task_result_example}"
         f"当前任务目标是：{task_objectives}，当前分步任务列表是：{task_list}，如果需要使用到函数，仅使用为您提供的函数：“{functions_list}”。"
         )
 
@@ -425,10 +425,10 @@ class cot_mode:
         #构建系统提示语句
         prompt = (
         f"你是一个专业的任务执行结果审查AI，请根据任务目标、分步任务列表与所指定的任务id，审查该步任务是否被正确执行。"
-        f"分步任务列表是按时间顺序排列，请根据前面任务执行结果，进行推理说明，审查该步任务的执行结果，并将审查结果以json格式输出。”"
+        f"分步任务列表是按时间顺序排列，请根据前面任务执行结果，进行推理说明，审查该步任务的执行结果，将审查结果以json格式输出,并以代码块标记。”"
         f"任务目标示例：{task_goal_example}"
         f"分步任务列表示例：{task_list_example}"
-        f"假如审查任务id为2时，审查结果示例：{task_result_example}"
+        f"审查结果示例：{task_result_example}"
         f"当前任务目标是：{task_objectives}，当前分步任务列表是：{task_list}，如果需要使用到函数，仅使用为您提供的函数：“{functions_list}”。"
         )
 
@@ -507,7 +507,7 @@ class cot_mode:
         function_response = 'null' #以免没有函数调用时，无法返回函数调用结果
 
         while message.get("function_call"):
-            print("[DEBUG] 次级AI正在调用函数~",'\n')
+            print("[DEBUG] 次级AI正在申请调用函数~",'\n')
 
             #获取函数调用名称
             function_name = message["function_call"]["name"]
@@ -522,7 +522,7 @@ class cot_mode:
             #调用函数
             function_response = function_library.call_function(function_name,function_arguments)
 
-            print("[DEBUG] 函数调用附加回复为：",function_content,'\n')
+            print("[DEBUG] 函数调用附加说明：",function_content,'\n')
             print("[DEBUG] 调用函数名字为：",function_name,'传入参数为：',function_arguments,'函数调用结果为：',function_response,'\n')
 
             #把ai申请调用函数动作与函数调用结果拼接到对话历史中
@@ -534,6 +534,8 @@ class cot_mode:
                             })
             messages.append({"role": "function","name": function_name ,"content": function_response})
 
+            print("[DEBUG] 次级AI正在重新发送请求~",'\n')
+            print("[DEBUG] 次级AI请求发送内容为：",messages,'\n')
 
             #如果函数列表为空
             if functions_list == "none functions":
@@ -552,6 +554,14 @@ class cot_mode:
                     functions=functions_list,  #关于调用函数说明内容可以放在这里，也可以放在上面的content中，AI都会识别并使用
                     function_call="auto"
                 ) 
+
+            # 将字典转换为JSON字符串，并保留非ASCII字符
+            json_str = json.dumps(Ai_response, ensure_ascii=False)
+            # 将JSON字符串中的Unicode编码内容转换为UTF-8编码
+            utf8_str = json_str.encode('utf-8')
+            # 将字节串转换为字符串
+            str_content = utf8_str.decode('utf-8')
+            print("[DEBUG] 次级AI接口回复内容为：",str_content,'\n')
 
 
             #再次提取AI回复内容中message部分
@@ -745,6 +755,13 @@ class Ai_memory:
 
                 #将content_copy转化成字符串变量，避免请求时格式错误
                 content_copy = json.dumps(content)
+            #如果是字典，表明需要记录的是功能函数的结果
+            elif isinstance(content,dict):
+                #使用新字典变量，来保存，避免原字典被修改
+                content_copy = {}
+
+                #将content_copy转化成字符串变量，避免请求时格式错误
+                content_copy = json.dumps(content)
 
             else:
                 content_copy = content
@@ -844,7 +861,7 @@ class Ai_Request:
 
         #获取对话历史
         conversation_history = conversationLogger.read_log()
-        print('[DEBUG] 请求发送的内容是：',conversation_history,'\n')
+        print('[DEBUG] 主AI请求发送的内容是：',conversation_history,'\n')
 
 
         #主AI挂载的所有函数功能列表
@@ -857,7 +874,7 @@ class Ai_Request:
 
         else:
             self.all_functions_list = self.default_functions_list.copy()
-        print('[DEBUG] 挂载的函数是：',self.all_functions_list, '\n')
+        print('[DEBUG] 主AI挂载的函数是：',self.all_functions_list, '\n')
 
 
         #向AI发送请求
@@ -877,7 +894,7 @@ class Ai_Request:
         # 将字节串转换为字符串
         str_content = utf8_str.decode('utf-8')
 
-        print('[DEBUG] AI回复内容：',str_content,'\n')
+        print('[DEBUG] 主AI回复内容：',str_content,'\n')
 
         return response
 
@@ -894,7 +911,7 @@ class Ai_Parser:
         message = response["choices"][0]["message"]
 
         while message.get("function_call"):
-            print("[DEBUG] AI正在申请调用函数~",'\n')
+            print("[DEBUG] 主AI正在申请调用函数~",'\n')
 
             #获取函数调用名称
             function_name = message["function_call"]["name"]
@@ -902,7 +919,7 @@ class Ai_Parser:
             function_arguments = message["function_call"]["arguments"]
             #获取函数调用附加回复
             function_content = message['content']
-            print("[DEBUG] AI已调用函数附加说明：",function_content,'\n')
+            print("[DEBUG] 主AI已调用函数附加说明：",function_content,'\n')
 
             #记录一下AI的函数申请调用回复
             history.log_message("function_call",function_name,function_arguments,function_content)
@@ -964,7 +981,7 @@ class Ai_Parser:
             else:
                 function_response = function_library.call_function(function_name,function_arguments)
 
-            print("[DEBUG] AI已调用的函数为：",function_name,'输入参数为：',function_arguments,'调用结果为：',function_response,'\n')
+            print("[DEBUG] 主AI已调用的函数为：",function_name,'输入参数为：',function_arguments,'调用结果为：',function_response,'\n')
 
             #记录函数调用结果
             history.log_message("function_return",function_name,None,function_response)
@@ -1019,7 +1036,7 @@ if __name__ == '__main__':
     print("[INFO] 当前工作目录是:",script_dir,'\n') 
 
     #注册api
-    Api_key = "sk-xxxxxxxxxxxxxxxxxx"
+    Api_key = "sk-xxxxxxxxxxxxxxxxx"
     openai.api_key = Api_key
 
     #创建向量存储库,并使用openai的embedding函数
