@@ -20,13 +20,13 @@ class Task_library():
         #任务已完成进度 "task_progress":0, 
         # }
 
-        #任务列表结构示例
+        #任务分步式列表结构示例
         self.task_list_example =[
         {
             "task_id": 1,
             "task_description": "获取苹果的单价",
             "function_used": True,
-            "function_id": 2,
+            "function_name": "get_the_price_of_the_item",
             "function_parameters": {"item": "苹果",
                                     "unit": "人民币"},
             "function_response": "五块人民币",
@@ -43,6 +43,9 @@ class Task_library():
     def get_task_num(self):
         return len(self.task_list_library)
 
+    #返回全部任务
+    def read_all_task_list(self):
+        return self.task_list_library
 
     #写入任务
     def write_task_list(self,task):
@@ -60,27 +63,23 @@ class Task_library():
         task = self.task_list_library[task_cache_id]
         return task
 
-    #返回全部任务
-    def read_all_task_list(self):
-        return self.task_list_library
-    
 
     #根据任务缓存id，录入函数调用结果，任务执行结果与更新任务进度
-    def update_task_progress(self,task_cache_id,function_response,task_result,task_progress):
+    def update_task_progress(self,task_cache_id,task_id,function_response,task_result):
         #根据任务缓存id作为key，找到相应任务
         task = self.task_list_library[task_cache_id]
         #根据任务进度，把函数调用结果与任务执行结果写入任务列表
-        for task_list in task["task_list"]:
-            if task_list["task_id"] == task_progress:
+        for task_unit in task["task_list"]:
+            if task_unit["task_id"] == task_id:
 
                 #把函数调用结果与任务执行结果添加到任务列表中,如果列表中已经有了，就更新，没有就添加新键值对
                 if function_response:
-                    task_list["function_response"] = function_response
+                    task_unit["function_response"] = function_response
                 if task_result:
-                    task_list["task_result"] = task_result
+                    task_unit["task_result"] = task_result
 
                 #更新任务进度
-                task["task_progress"] = task_progress 
+                task["task_progress"] = task_id 
 
         #自动写入到本地文件中
         self.auto_write_task_list()
@@ -90,11 +89,11 @@ class Task_library():
         #根据任务缓存id作为key，找到相应任务
         task = self.task_list_library[task_cache_id]
         #根据任务进度，把函数调用结果与任务执行结果写入任务列表
-        for task_list in task["task_list"]:
-            if task_list["task_id"] == task_progress:
+        for task_unit in task["task_list"]:
+            if task_unit["task_id"] == task_progress:
                 #删除函数调用结果与任务执行结果
-                del task_list["function_response"]
-                del task_list["task_result"]
+                del task_unit["function_response"]
+                del task_unit["task_result"]
                 #回退任务进度
                 task["task_progress"] = task_progress - 1
 

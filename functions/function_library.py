@@ -171,8 +171,18 @@ class Function_library():
         return function_list
 
 
+    #输入函数名字，获取对应的功能函数说明（AI调用）的内容
+    def get_function_by_name(self, function_name):
+        #遍历功能函数库，注意是字典结构，所以需要用到items()方法
+        for function_id, function in self.function_library.items():
+            if function["function_name"] == function_name:
+                #只获取功能函数说明（AI调用）的内容
+                function_ai_call = function["function_ai_call"].copy()
+                return function_ai_call
 
-    #输入单个函数id，获取id对应的功能函数说明（AI调用）的内容，并以列表返回
+
+
+    #输入单个函数id，获取id对应的功能函数说明（AI调用）的内容
     def get_function_by_id(self, function_id):
         #转换成int类型
         function_id = int(function_id)

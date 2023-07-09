@@ -48,7 +48,7 @@ class cot_mode:
             "task_id": 1,
             "task_description": "获取苹果的单价",
             "function_used": True,
-            "function_id": 2,
+            "function_name": "get_the_price_of_the_item",
             "function_parameters": {
             "item": "苹果",
             "unit": "人民币"
@@ -76,7 +76,7 @@ class cot_mode:
         #构建prompt
         prompt = (
         f"你是一个专业的任务创建AI，请根据用户提出的任务目标，创建一个实现该目标的JSON数组的任务列表。"
-        f"根据最终目标创建每一步任务，每步任务应该详细说明，每步任务应该尽量使用库中的功能函数完成，当前功能函数库为 {functions_list}。"
+        f"根据最终目标创建每一步任务，每步任务应该详细说明，每步任务应该尽量使用库中的功能函数完成，当前功能函数库为###{functions_list}###。"
         f"确保所有任务ID按时间顺序排列。第一步始终是关于任务目标的理解，以及拆分任务的推理说明，尽可能详细。"
         f"任务目标示例：###{task_objectives_example}###"
         f"任务列表示例：###{task_list_example}###"
@@ -133,16 +133,16 @@ class cot_mode:
         #     print(e)
         #     return "执行失败"
 
-             #获取任务状态
-             task_status = task_library.get_task_status(task_cache_id)
+        #获取任务状态
+        task_status = task_library.get_task_status(task_cache_id)
 
-             while task_status == "进行中" :
-                    self.execute_unit_task_AI_agent(task_cache_id)
+        while task_status == "进行中" :
+            self.execute_unit_task_AI_agent(task_cache_id)
 
-                    self.review_unit_task_AI_agent(task_cache_id)
+            self.review_unit_task_AI_agent(task_cache_id)
 
-                    #重新获取任务状态
-                    task_status = task_library.get_task_status(task_cache_id)
+            #重新获取任务状态
+            task_status = task_library.get_task_status(task_cache_id)
 
     #配套的供AI申请调用的函数说明
     function_start_distributed_task_AI_agent = {
@@ -203,7 +203,7 @@ class cot_mode:
             "task_id": 1,
             "task_description": "获取苹果的单价",
             "function_used": True,
-            "function_id": 2,
+            "function_name": "get_the_price_of_the_item",
             "function_parameters": {"item": "苹果",
                                     "unit": "人民币"},
             "function_response": "五块人民币",
@@ -253,10 +253,10 @@ class cot_mode:
             if unit_task["task_id"] == task_id:
                 #如果任务需要使用函数
                 if unit_task["function_used"] == True:
-                    #获取函数id
-                    function_id = unit_task["function_id"]
+                    #获取函数名字
+                    function_name = unit_task["function_name"]
                     #获取函数调用说明
-                    function_ai_call = function_library.get_function_by_id(function_id)
+                    function_ai_call = function_library.get_function_by_name(function_name)
                     #将函数调用说明添加到函数列表中
                     functions_list.append(function_ai_call)
                 else :
@@ -267,11 +267,11 @@ class cot_mode:
         #构建系统提示语句
         prompt = (
         f"你是一个专业的任务执行AI，请根据任务目标、分步任务列表与所指定的任务id，完成对应的该步任务。"
-        f"分步任务列表是按时间顺序排列，请根据前面任务执行结果，函数调用结果，进行推理说明，输出该步任务的结果，任务结果以json格式输出,并以代码块标记。"
-        f"任务目标示例：{task_goal_example}"
-        f"分步任务列表示例：{task_list_example}"
-        f"执行任务结果示例：{task_result_example}"
-        f"当前任务目标是：{task_objectives}，当前分步任务列表是：{task_list}，如果需要使用到函数，仅使用为您提供的函数：“{functions_list}”。"
+        f"分步任务列表是按时间顺序排列，请根据前面任务执行结果，函数调用结果，进行推理说明，输出该步任务的结果，任务结果以json格式输出,并以json代码块标记。"
+        f"任务目标示例###{task_goal_example}###"
+        f"分步任务列表示例###{task_list_example}###"
+        f"执行任务结果示例###{task_result_example}###"
+        f"当前任务目标是：###{task_objectives}###，当前分步任务列表是：###{task_list}###，如果需要使用到函数，仅使用为您提供的函数###{functions_list}###。"
         )
 
         #构建分步任务
@@ -322,7 +322,7 @@ class cot_mode:
         task_result_new = task_result_dict["task_result"]
 
         #更新任务进度 
-        task_library.update_task_progress(task_cache_id,function_response,task_result_new,task_id)
+        task_library.update_task_progress(task_cache_id,task_id,function_response,task_result_new)
 
         print("[DEBUG] 次级AI单元任务执行结果为：",task_result,'\n')
         print("[DEBUG]该单元任务执行结束！！！！！！！！！！！！！！！！！！",'\n')
@@ -347,7 +347,7 @@ class cot_mode:
             "task_id": 1,
             "task_description": "获取苹果的单价",
             "function_used": True,
-            "function_id": 2,
+            "function_name": "get_the_price_of_the_item",
             "function_parameters": {
             "item": "苹果",
             "unit": "人民币"
@@ -359,7 +359,7 @@ class cot_mode:
             "task_id": 2,
             "task_description": "获取香蕉的单价",
             "function_used": True,
-            "function_id": 2,
+            "function_name": "get_the_price_of_the_item",
             "function_parameters": {
             "item": "香蕉",
             "unit": "人民币"
@@ -374,7 +374,7 @@ class cot_mode:
         task_result_example = '''
         根据您提供的任务列表，我将审查任务ID为2的任务。任务目标是计算买一个苹果、一个香蕉、一个橘子后剩余的钱数。
 
-        任务2的描述是 "获取香蕉的单价"，功能函数已被正确使用（function_id为2，对应于“get_the_price_of_the_item”函数），参数也正确（item为"香蕉"，unit为"人民币"）。函数的响应是"10块人民币"。
+        任务2的描述是 "获取香蕉的单价"，功能函数已被正确使用（“get_the_price_of_the_item”函数），参数也正确（item为"香蕉"，unit为"人民币"）。函数的响应是"10块人民币"。
 
         但是，在当前任务结果中，任务2的结果出现错误。任务结果为：“一个香蕉的价格是五块人民币”，实际的任务结果应该是：“一个香蕉的价格是十块人民币”。
 
@@ -400,21 +400,21 @@ class cot_mode:
         task_list = task["task_list"]
         #获取任务进度
         task_progress = task["task_progress"]
-        #获取任务执行id
+        #获取任务审查id
         task_id = task_progress
 
-        #执行AI挂载的函数功能列表
+        #审查AI挂载的函数功能列表
         functions_list = []
-        #根据任务执行id与任务列表，获取当前任务需要到的函数id
+        #根据任务审查id与任务列表，获取当前任务需要到的函数id
         for unit_task in task_list:
-            #如果任务id与当前任务执行id相同
+            #如果任务id与当前任务审查id相同
             if unit_task["task_id"] == task_id:
                 #如果任务需要使用函数
                 if unit_task["function_used"] == True:
-                    #获取函数id
-                    function_id = unit_task["function_id"]
+                    #获取函数名字
+                    function_name = unit_task["function_name"]
                     #获取函数调用说明
-                    function_ai_call = function_library.get_function_by_id(function_id)
+                    function_ai_call = function_library.get_function_by_name(function_name)
                     #将函数调用说明添加到函数列表中
                     functions_list.append(function_ai_call)
                 else :
@@ -425,11 +425,11 @@ class cot_mode:
         #构建系统提示语句
         prompt = (
         f"你是一个专业的任务执行结果审查AI，请根据任务目标、分步任务列表与所指定的任务id，审查该步任务是否被正确执行。"
-        f"分步任务列表是按时间顺序排列，请根据前面任务执行结果，进行推理说明，审查该步任务的执行结果，将审查结果以json格式输出,并以代码块标记。”"
-        f"任务目标示例：{task_goal_example}"
-        f"分步任务列表示例：{task_list_example}"
-        f"审查结果示例：{task_result_example}"
-        f"当前任务目标是：{task_objectives}，当前分步任务列表是：{task_list}，如果需要使用到函数，仅使用为您提供的函数：“{functions_list}”。"
+        f"分步任务列表是按时间顺序排列，请根据前面任务执行结果，进行推理说明，审查该步任务的执行结果，将审查结果以json格式输出,并以json代码块标记。”"
+        f"任务目标示例：###{task_goal_example}###"
+        f"分步任务列表示例：###{task_list_example}###"
+        f"审查结果示例：###{task_result_example}###"
+        f"当前任务目标是：###{task_objectives}###，当前分步任务列表是：###{task_list}###，如果需要使用到函数，仅使用为您提供的函数：###{functions_list}###。"
         )
 
 
@@ -489,8 +489,8 @@ class cot_mode:
         elif review_result_new == "incorrect":
             #提取正确结果
             correct_task_result = review_result_dict["correct_task_result"]
-            #将正确结果替换到任务结果中
-            task_library.update_task_progress(task_cache_id,function_response,correct_task_result,task_progress+1)
+            #直接回退进度
+            task_library.delete_task_progress(task_cache_id,task_progress)
 
             print("[DEBUG] 任务执行结果错误~",'\n')
 
@@ -1036,7 +1036,7 @@ if __name__ == '__main__':
     print("[INFO] 当前工作目录是:",script_dir,'\n') 
 
     #注册api
-    Api_key = "sk-xxxxxxxxxxxxxxxxx"
+    Api_key = "sk-xxxxxxxxxxxx"
     openai.api_key = Api_key
 
     #创建向量存储库,并使用openai的embedding函数
