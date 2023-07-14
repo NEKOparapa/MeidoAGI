@@ -13,7 +13,11 @@ class User_information_database:
 
 
         #用户讨厌信息
-        self.user_hate = ''  
+        self.user_hate = '' 
+
+
+        #用户行为信息
+        self.user_action = '' 
 
 
         #用户其他信息
