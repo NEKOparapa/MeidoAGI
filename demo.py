@@ -9,9 +9,9 @@ import tiktoken #需要安装库pip install tiktoken
 import chromadb #需要安装库pip install chromadb 
 from chromadb.utils import embedding_functions
 
-
-from toolkits.function_library import Function_library
-from calendar.task_library import Task_library
+#可以导入脚本全部内容，也可以选择导入部分内容
+from ai_toolkits import function_library
+from ai_tasks import task_library
 #from agents.cot_agent import  cot_mode
 
 
@@ -1036,7 +1036,7 @@ if __name__ == '__main__':
     print("[INFO] 当前工作目录是:",script_dir,'\n') 
 
     #注册api
-    Api_key = "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"
+    Api_key = "sk-xxxxx"
     openai.api_key = Api_key
 
     #创建向量存储库,并使用openai的embedding函数
@@ -1058,13 +1058,13 @@ if __name__ == '__main__':
     Ai_agent = cot_mode()
 
     #创建功能函数库
-    function_library = Function_library()
+    function_library = function_library.Function_library()
 
     #创建主AI功能函数库
     main_function_library = Main_AI_function_library()
 
     #创建任务库
-    task_library = Task_library()
+    task_library = task_library.Task_library()
 
     #创建AI请求器
     request = Ai_Request()
