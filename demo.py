@@ -9,7 +9,7 @@ import tiktoken #需要安装库pip install tiktoken
 import chromadb #需要安装库pip install chromadb 
 from chromadb.utils import embedding_functions
 
-#导入格式：from 文件夹.文件名 import 类名
+
 from toolkits.function_library import Function_library
 from calendar.task_library import Task_library
 #from agents.cot_agent import  cot_mode
