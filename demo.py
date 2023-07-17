@@ -24,6 +24,7 @@ class cot_mode:
 
 
     #根据任务目标创建分步式任务的AI代理（使用大容量模型，把所有的工具描述带上，以思维链方式来创建,交给用户判断，是否合适，不合适则重新生成）
+    #考虑增加同时创建多个任务的功能
     def create_a_task_list(self,task_objectives):
 
         #任务目标示例 
@@ -1036,7 +1037,7 @@ if __name__ == '__main__':
     print("[INFO] 当前工作目录是:",script_dir,'\n') 
 
     #注册api
-    Api_key = "sk-xxxxx"
+    Api_key = "sk-xxxxxxx"
     openai.api_key = Api_key
 
     #创建向量存储库,并使用openai的embedding函数
