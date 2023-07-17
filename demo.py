@@ -12,6 +12,7 @@ from chromadb.utils import embedding_functions
 #可以导入脚本全部内容，也可以选择导入部分内容
 from ai_toolkits import function_library
 from ai_tasks import task_library
+from user.calendar import calendar
 #from agents.cot_agent import  cot_mode
 
 
@@ -591,11 +592,10 @@ class Main_AI_function_library():
         # }
         #添加功能函数
         self.add_function("1", "create_a_task_list", "输入任务目标，次级AI会创建分步式任务列表，并返回", Ai_agent.function_create_a_task_list, "0")
-        self.add_function("2", "start_distributed_task_AI_agent", "输入任务目标，任务列表，次级AI代理会开始自动执行任务", Ai_agent.function_start_distributed_task_AI_agent,"0")
-        self.add_function("3", "search_related_functions", "根据用户需要到的函数功能的详细描述，进行语义搜索，将最可能有关的的3个功能函数返回", self.function_search_related_functions,"0")
-        self.add_function("4", "read_tasks_running_status", "读取任务库中全部任务执行情况", Ai_agent.function_read_tasks_running_status, "0")
+        self.add_function("2", "search_related_functions", "根据用户需要到的函数功能的详细描述，进行语义搜索，将最可能有关的的3个功能函数返回", self.function_search_related_functions,"0")
+        self.add_function("3", "query_function_class", "日程表拥有添加日程事件类，删除日程事件类，更改日程事件类，查询日程事件类的大类功能，输入需要调用的功能类，返回相应的调用说明", self.function_query_function_class, "0")
 
-    #查询拓展工具库中的工具函数------------------------------------------------
+    #搜索拓展工具库中的工具函数------------------------------------------------
     def  search_related_functions(self, function_description):
         #查询向量库，获取相似度最高前N个文本描述
         results = collection.query(
@@ -614,7 +614,7 @@ class Main_AI_function_library():
 
         return function_ai_call_list
         
-    #查询拓展工具库中的工具函数说明（AI调用）
+    #搜索拓展工具库中的工具函数说明（AI调用）
     function_search_related_functions =   {
             "name": "search_related_functions",
             "description": "根据用户需要到的函数功能的详细描述，进行语义搜索，将最可能有关的的3个功能函数返回",
@@ -630,7 +630,43 @@ class Main_AI_function_library():
             },
         }
 
+    #查询日程表的工具函数------------------------------------------------
+    def  query_function_class(self, function_class):
+        #创建存储函数说明的列表
+        function_ai_call_list = []
 
+        if function_class == "添加类":
+            #将添加类的功能函数说明添加到函数列表中
+            function_ai_call_list.append(my_calendar.function_add_calendar_event)
+        elif function_class == "删除类":
+            #将删除类的功能函数说明添加到函数列表中
+            function_ai_call_list.append(my_calendar.function_delete_calendar_event)
+        elif function_class == "更改类":
+            #将更改类的功能函数说明添加到函数列表中
+            function_ai_call_list.append(my_calendar.function_modify_calendar_event)
+        elif function_class == "查询类":
+            #将查询类的功能函数说明添加到函数列表中
+            function_ai_call_list.append(my_calendar.function_query_calendar_event)
+
+
+        return function_ai_call_list
+        
+    #查询日程表的工具函数说明（AI调用）
+    function_query_function_class =   {
+            "name": "query_function_class",
+            "description": "日程表拥有添加日程事件类，删除日程事件类，更改日程事件类，查询日程事件类的大类功能，输入需要调用的功能类，返回相应的调用说明",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "function_class": {
+                        "type": "string",
+                        "description": "需要调用的日程表功能类",
+                        "enum": ["添加类", "删除类", "更改类", "查询类"], 
+                    }
+                },
+                "required": ["function_class"]
+            },
+        }
 
     #添加功能函数
     def add_function(self, function_id, function_name, function_description, function_ai_call, function_permission):
@@ -646,7 +682,7 @@ class Main_AI_function_library():
         self.function_library[int(function_id)] = functions
 
 
-    #根据函数权限，获取相应的全部功能函数
+    #根据函数权限，获取相应的全部功能函数说明
     def get_function_by_permission(self, permission):
         function_list = []
         #遍历功能函数库，注意是字典结构，所以需要用到items()方法
@@ -852,10 +888,6 @@ class Ai_Request:
         #从数据库获取权限为1的函数功能列表，根据id，再从ai函数数据库读取数据，作为主AI默认挂载函数功能列表
         self.default_functions_list = main_function_library.get_function_by_permission("0")
 
-        #主AI挂载的临时函数功能列表
-        self.temp_functions_list = []
-
-
     #输入用户消息，向AI发送请求,并取得回复
     def make_request(self,conversationLogger):
 
@@ -865,24 +897,12 @@ class Ai_Request:
         print('[DEBUG] 主AI请求发送的内容是：',conversation_history,'\n')
 
 
-        #主AI挂载的所有函数功能列表
-        self.all_functions_list = []
-
-        #如果临时函数功能列表不为空，将临时函数功能列表与默认函数功能列表合并为新的列表，并且中间要复制一份，否则会改变默认函数功能列表
-        if self.temp_functions_list != []:
-            self.all_functions_list = self.default_functions_list.copy()
-            self.all_functions_list.extend(self.temp_functions_list) #extend()方法只接受一个列表作为参数，并将该参数的每个元素都添加到原有的列表中
-
-        else:
-            self.all_functions_list = self.default_functions_list.copy()
-        print('[DEBUG] 主AI挂载的函数是：',self.all_functions_list, '\n')
-
 
         #向AI发送请求
         response = openai.ChatCompletion.create(
             model="gpt-3.5-turbo-0613",
             messages=conversation_history,
-            functions=self.all_functions_list,  #关于调用函数说明内容可以放在这里，也可以放在上面的content中，AI都会识别并使用
+            functions=self.default_functions_list,  #关于调用函数说明内容可以放在这里，也可以放在上面的content中，AI都会识别并使用
             function_call="auto"
             )
 
@@ -933,11 +953,11 @@ class Ai_Parser:
             if function_name == "search_related_functions":
                 function_response = main_function_library.search_related_functions(function_description=function_arguments.get("function_description"))
 
+            elif function_name == "query_function_class":
+                function_response = main_function_library.query_function_class(function_class=function_arguments.get("function_class"),)
+
             elif function_name == "create_a_task_list":
                 function_response = Ai_agent.create_a_task_list(task_objectives=function_arguments.get("task_objectives"),)
-
-            elif function_name == "read_tasks_running_status":
-                function_response = Ai_agent.read_tasks_running_status()
 
             elif function_name == "start_distributed_task_AI_agent":
                 
@@ -977,6 +997,10 @@ class Ai_Parser:
                 Ai_agent.start_distributed_task_AI_agent(task_num)
 
                 function_response = '任务已在后台由代理AI开始执行~请耐心等待结果~'
+            
+            #调用日程表的功能函数
+            elif function_name.get("calendar"):
+                function_response = my_calendar.call_calendar_function(function_name=function_name,function_arguments=function_arguments)
 
             #调用功能函数库里的函数
             else:
@@ -1063,6 +1087,9 @@ if __name__ == '__main__':
 
     #创建主AI功能函数库
     main_function_library = Main_AI_function_library()
+
+    #创建日程表
+    my_calendar = calendar.Calendar()
 
     #创建任务库
     task_library = task_library.Task_library()

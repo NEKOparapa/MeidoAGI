@@ -2,7 +2,7 @@ import datetime
 import json
 
 #创建日程表类
-class calendar :
+class Calendar :
       #初始化日程表
     def __init__(self):
         self.my_calendar = {}
@@ -20,24 +20,26 @@ class calendar :
 
 
     #调用功能函数的函数
-    def call_function(self, function_name, function_arguments):
+    def call_calendar_function(self, function_name, function_arguments):
 
-        #根据函数调用名称，调用相应的函数
-        if function_name == "get_the_price_of_the_item":
-            function_response = shopping_toolkit.get_the_price_of_the_item(item=function_arguments.get("item"),unit=function_arguments.get("unit"),)
+      #根据函数调用名称，调用相应的函数
+      if function_name == "add_calendar_event":
+          function_response = self.add_calendar_event(calendar_name=function_arguments.get("calendar_name"),calendar_content=function_arguments.get("calendar_content"),calendar_datetime = function_arguments.get("calendar_datetime"))
+      elif function_name == "delete_calendar_event":
+          function_response = self.delete_calendar_event(calendar_datetime=function_arguments.get("calendar_datetime"))
+      elif function_name == "modify_calendar_event":
+          function_response = self.modify_calendar_event(calendar_datetime=function_arguments.get("calendar_datetime"),calendar_name=function_arguments.get("calendar_name"),calendar_content=function_arguments.get("calendar_content"))
+      elif function_name == "query_calendar_event":
+          function_response = self.query_calendar_event(calendar_datetime=function_arguments.get("calendar_datetime"))
+      elif function_name == "query_calendar_event_by_name":
+          function_response = self.query_calendar_event_by_name(calendar_name=function_arguments.get("calendar_name"))
 
-        elif function_name == "get_current_weather":
-            function_response = weather_toolkit.get_current_weather(location=function_arguments.get("location"),unit=function_arguments.get("unit"),)
-
-        elif function_name == "get_n_day_weather_forecast":
-            function_response = weather_toolkit.get_n_day_weather_forecast(location=function_arguments.get("location"),unit=function_arguments.get("unit"),num_days=function_arguments.get("num_days"),)
-        
-        return function_response
+      return function_response
 
 
 
     #添加日程事件
-    def add_calendar(self,calendar_name,calendar_content,calendar_datetime):
+    def add_calendar_event(self,calendar_name,calendar_content,calendar_datetime):
         #将输入的日期时间转换为datetime类型
         calendar_datetime = datetime.datetime.strptime(calendar_datetime, "%Y-%m-%d %H:%M:%S")
         #判断日程表中是否已经存在该日程事件
@@ -50,9 +52,37 @@ class calendar :
             print("[DEBUG] 日程表中已成创建该日程事件")
             self.auto_write_my_calendar()
             return "日程表中已成创建该日程事件"
-    
+        
+    #添加日程事件的函数说明    
+    function_add_calendar_event =   {
+            "name": "add_calendar_event",
+            "description": "输入事件描述，事件内容，日期时间，添加日程事件到日程表中",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "calendar_name": {
+                        "type": "string",
+                        "description": "关于日程事件的描述",
+                    },
+                    "calendar_content": {
+                        "type": "string",
+                        "description": "日程事件的详细内容",
+                    },
+                    "calendar_datetime": {
+                        "type": "string",
+                        "description": "日程事件的日期时间",
+                    },
+                },
+                "required": ["calendar_name","calendar_content","calendar_datetime"]
+            },
+        }
+
+
+
+
+
     #删除日程事件，输入事件日期与事件时间
-    def delete_calendar(self,calendar_datetime):
+    def delete_calendar_event(self,calendar_datetime):
         #将输入的日期时间转换为datetime类型
         calendar_datetime = datetime.datetime.strptime(calendar_datetime, "%Y-%m-%d %H:%M:%S")
         #判断日程表中是否已经存在该日程事件
@@ -65,9 +95,26 @@ class calendar :
         else:
             print("[DEBUG] 日程表中不存在该日程事件")
             return "日程表中不存在该日程事件"
-    
+
+    #删除日程事件的函数说明
+    function_delete_calendar_event =   {
+            "name": "delete_calendar_event",
+            "description": "输入事件日期与事件时间，删除日程事件",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "calendar_datetime": {
+                        "type": "string",
+                        "description": "日程事件的日期时间",
+                    },
+                },
+                "required": ["calendar_datetime"]
+            },
+        }
+
+
     #修改日程事件，输入事件日期与事件时间，事件名称，事件内容
-    def modify_calendar(self,calendar_datetime,calendar_name,calendar_content):
+    def modify_calendar_event(self,calendar_datetime,calendar_name,calendar_content):
         #将输入的日期时间转换为datetime类型
         calendar_datetime = datetime.datetime.strptime(calendar_datetime, "%Y-%m-%d %H:%M:%S")
         #判断日程表中是否已经存在该日程事件
@@ -82,10 +129,34 @@ class calendar :
         else:
             print("[DEBUG] 日程表中不存在该日程事件")
             return "日程表中不存在该日程事件"
-        
+
+    #修改日程事件的函数说明
+    function_modify_calendar_event =   {
+            "name": "modify_calendar_event",
+            "description": "输入事件日期与事件时间，事件名称，事件内容，修改日程事件",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "calendar_datetime": {
+                        "type": "string",
+                        "description": "日程事件的日期时间",
+                    },
+                    "calendar_name": {
+                        "type": "string",
+                        "description": "关于日程事件的描述",
+                    },
+                    "calendar_content": {
+                        "type": "string",
+                        "description": "日程事件的详细内容",
+                    },
+                },
+                "required": ["calendar_datetime","calendar_name","calendar_content"]
+            },
+        }
+
     
     #查询日程事件，输入事件日期与事件时间
-    def query_calendar(self,calendar_datetime):
+    def query_calendar_event(self,calendar_datetime):
         #将输入的日期时间转换为datetime类型
         calendar_datetime = datetime.datetime.strptime(calendar_datetime, "%Y-%m-%d %H:%M:%S")
         #判断日程表中是否已经存在该日程事件
@@ -96,9 +167,25 @@ class calendar :
         else:
             print("[DEBUG] 日程表中不存在该日程事件")
             return "日程表中不存在该日程事件"
+      
+    #查询日程事件的函数说明
+    function_query_calendar_event =   {
+            "name": "query_calendar_event",
+            "description": "输入事件日期与事件时间，查询日程事件",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "calendar_datetime": {
+                        "type": "string",
+                        "description": "日程事件的日期时间",
+                    },
+                },
+                "required": ["calendar_datetime"]
+            },
+        }
     
-    #查询日程事件，输入事件名称
-    def query_calendar_by_name(self,calendar_name):
+    #查询日程事件，输入事件名称(应该使用模糊查询，待改进)
+    def query_calendar_event_by_name(self,calendar_name):
         #判断日程表中是否已经存在该日程事件
         for key in self.my_calendar.keys():
             if self.my_calendar[key]["calendar_name"] == calendar_name:
@@ -106,7 +193,22 @@ class calendar :
                 return self.my_calendar[key]
         print("[DEBUG] 日程表中不存在该日程事件")
         return "日程表中不存在该日程事件"
-
+    
+    #查询日程事件的函数说明
+    function_query_calendar_event_by_name =   {
+            "name": "query_calendar_event_by_name",
+            "description": "输入事件名称，查询日程事件", 
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "calendar_name": {
+                        "type": "string",
+                        "description": "关于日程事件的描述",
+                    },
+                },
+                "required": ["calendar_name"]
+            },
+        }
 
     #自动写入到本地文件中,方便debug
     def auto_write_my_calendar(self):
