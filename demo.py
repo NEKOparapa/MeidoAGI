@@ -595,7 +595,7 @@ class Main_AI_function_library():
         self.add_function("3", "search_related_functions", "根据用户需要到的函数功能的详细描述，进行语义搜索，将最可能有关的的3个功能函数返回", self.function_search_related_functions,"0")
         self.add_function("4", "read_tasks_running_status", "读取任务库中全部任务执行情况", Ai_agent.function_read_tasks_running_status, "0")
 
-    #搜索功能函数------------------------------------------------
+    #查询拓展工具库中的工具函数------------------------------------------------
     def  search_related_functions(self, function_description):
         #查询向量库，获取相似度最高前N个文本描述
         results = collection.query(
@@ -614,7 +614,7 @@ class Main_AI_function_library():
 
         return function_ai_call_list
         
-    #功能搜索函数说明（AI调用）
+    #查询拓展工具库中的工具函数说明（AI调用）
     function_search_related_functions =   {
             "name": "search_related_functions",
             "description": "根据用户需要到的函数功能的详细描述，进行语义搜索，将最可能有关的的3个功能函数返回",

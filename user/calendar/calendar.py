@@ -18,6 +18,24 @@ class calendar :
         #事件执行结果 "calendar_result":""
         # }
 
+
+    #调用功能函数的函数
+    def call_function(self, function_name, function_arguments):
+
+        #根据函数调用名称，调用相应的函数
+        if function_name == "get_the_price_of_the_item":
+            function_response = shopping_toolkit.get_the_price_of_the_item(item=function_arguments.get("item"),unit=function_arguments.get("unit"),)
+
+        elif function_name == "get_current_weather":
+            function_response = weather_toolkit.get_current_weather(location=function_arguments.get("location"),unit=function_arguments.get("unit"),)
+
+        elif function_name == "get_n_day_weather_forecast":
+            function_response = weather_toolkit.get_n_day_weather_forecast(location=function_arguments.get("location"),unit=function_arguments.get("unit"),num_days=function_arguments.get("num_days"),)
+        
+        return function_response
+
+
+
     #添加日程事件
     def add_calendar(self,calendar_name,calendar_content,calendar_datetime):
         #将输入的日期时间转换为datetime类型
