@@ -1037,7 +1037,7 @@ if __name__ == '__main__':
     print("[INFO] 当前工作目录是:",script_dir,'\n') 
 
     #注册api
-    Api_key = "sk-xxxxxxx"
+    Api_key = "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"
     openai.api_key = Api_key
 
     #创建向量存储库,并使用openai的embedding函数
