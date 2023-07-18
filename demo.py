@@ -268,7 +268,7 @@ class cot_mode:
 
         #构建系统提示语句
         prompt = (
-        f"你是一个专业的任务执行AI，请根据任务目标、分步任务列表与所指定的任务id，完成对应的该步任务。"
+        f"你是一个专业的任务执行AI，请根据任务目标、 分步任务列表与所指定的任务id，完成对应的该步任务。"
         f"分步任务列表是按时间顺序排列，请根据前面任务执行结果，函数调用结果，进行推理说明，输出该步任务的结果，任务结果以json格式输出,并以json代码块标记。"
         f"任务目标示例###{task_goal_example}###"
         f"分步任务列表示例###{task_list_example}###"
@@ -701,8 +701,10 @@ class Ai_memory:
     def __init__(self,file_path):
         #文件路径
         self.file_path = file_path
-        #存储对话历史的列表
+        #存储可发送的对话历史的列表
         self.conversation_history = []
+        #存储完整的对话历史的列表
+        self.conversation_history_all = []
 
         #在文件夹下寻找conversation_history.json文件，如果存在则读取json文件，如果不存在则跳过
         if os.path.exists(os.path.join(self.file_path, "conversation_history.json")):
@@ -772,10 +774,11 @@ class Ai_memory:
         self.AI_content_structure = {"role": "assistant", "content": "The current weather in Boston is sunny and windy with a temperature of 72 degrees Fahrenheit."}
 
 
-        #根据输入用户，生成格式化消息
+        #如果是用户消息
         if role == "user":
             The_message = {"role": "user", "content": content}
 
+        #如果是函数调用
         elif role == "function_call":
             The_message = {"role": "assistant",
                            "content": content ,
@@ -783,7 +786,7 @@ class Ai_memory:
                                              "arguments": function_arguments}
 
                         }
-            
+        #如果是函数调用结果
         elif role == "function_return":
             #如果content是列表，表明需要记录的是搜索功能函数的结果
             if isinstance(content,list):
@@ -805,12 +808,14 @@ class Ai_memory:
 
             The_message = {"role": "function","name": function_name ,"content": content_copy}
 
+        #如果是AI回复
         elif role == "assistant":
             The_message = {"role": "assistant", "content": content}
 
-        #将对话记录到列表中
+        #将对话记录到可发送的对话历史的列表
         self.conversation_history.append(The_message)
-
+        #将对话记录到完整的对话历史的列表
+        self.conversation_history_all.append(The_message)
 
 
         #计算对话历史的总tokens数
@@ -840,24 +845,17 @@ class Ai_memory:
             print("Warning: model not found. Using cl100k_base encoding.")
             encoding = tiktoken.get_encoding("cl100k_base")
         if model in {
+            "gpt-3.5-turbo",
             "gpt-3.5-turbo-0613",
+            "gpt-3.5-turbo-16k",
             "gpt-3.5-turbo-16k-0613",
-            "gpt-4-0314",
-            "gpt-4-32k-0314",
+            "gpt-4",
             "gpt-4-0613",
+            "gpt-4-32k",
             "gpt-4-32k-0613",
             }:
             tokens_per_message = 3
             tokens_per_name = 1
-        elif model == "gpt-3.5-turbo-0301":
-            tokens_per_message = 4  # every message follows <|start|>{role/name}\n{content}<|end|>\n
-            tokens_per_name = -1  # if there's a name, the role is omitted
-        elif "gpt-3.5-turbo" in model:
-            print("Warning: gpt-3.5-turbo may update over time. Returning num tokens assuming gpt-3.5-turbo-0613.")
-            return 0
-        elif "gpt-4" in model:
-            print("Warning: gpt-4 may update over time. Returning num tokens assuming gpt-4-0613.")
-            return 0
         else:
             raise NotImplementedError(
                 f"""num_tokens_from_messages() is not implemented for model {model}. See https://github.com/openai/openai-python/blob/main/chatml.md for information on how messages are converted to tokens."""
