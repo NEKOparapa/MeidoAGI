@@ -1,4 +1,5 @@
 # coding:utf-8
+import datetime
 import re
 import threading
 import sys
@@ -575,6 +576,34 @@ class cot_mode:
         return function_response,content
 
 
+
+
+#日程表执行器（循环自动查询日程表并提交到任务库执行，自动查询任务结果）
+#原理大概是检测现在时间大于计划时间，就执行任务。
+#执行结果以特定格式插入对话中，角色试一下用户和助手和函数看看。如：【系统消息】2020-01-01日程xxxxx时间任务执行结果，请告诉用户：今天是元旦节。
+class calendar_executor:
+    while 1 :
+        #获取当前时间
+        now_time = datetime.datetime.now()
+        #输入当天的年月日，获取日程表当天的全部事件
+        event_list = my_calendar.query_calendar_event_by_date(now_time)
+        #遍历日程表当天的全部事件,如果事件的执行时间小于当前时间和状态是未完成，就执行事件
+        for event in event_list:
+            if event['calendar_datetime'] < now_time and event['calendar_status'] == '未完成':
+                #执行事件
+                event_result = event['event_function']()
+                #更新事件状态
+                my_calendar.update_event_status(event['event_id'],'已完成')
+                #将执行结果插入对话历史中
+                messages.append({"role": "assistant",
+                           "content": "【系统消息】"+event['calendar_datetime']+"日程"+event['event_name']+"时间任务执行结果，请告诉用户："+event_result ,
+                            })
+
+
+
+
+
+
 #————————————————————————————————————————主AI功能函数库————————————————————————————————————————
 class Main_AI_function_library(): 
     #初始化功能函数库
@@ -593,7 +622,7 @@ class Main_AI_function_library():
         #添加功能函数
         self.add_function("1", "create_a_task_list", "输入任务目标，次级AI会创建分步式任务列表，并返回", Ai_agent.function_create_a_task_list, "0")
         self.add_function("2", "search_related_functions", "根据用户需要到的函数功能的详细描述，进行语义搜索，将最可能有关的的3个功能函数返回", self.function_search_related_functions,"0")
-        self.add_function("3", "query_function_class", "日程表拥有添加日程事件类，删除日程事件类，更改日程事件类，查询日程事件类的大类功能，输入需要调用的功能类，返回相应的调用说明", self.function_query_function_class, "0")
+        self.add_function("3", "query_function_class", "日程表拥有对日程表事件进行添加，删除，更改，查询的四大类功能，输入需要调用的功能类，返回该类下所有功能函数的调用说明", self.function_query_function_class, "0")
 
     #搜索拓展工具库中的工具函数------------------------------------------------
     def  search_related_functions(self, function_description):
@@ -654,7 +683,7 @@ class Main_AI_function_library():
     #查询日程表的工具函数说明（AI调用）
     function_query_function_class =   {
             "name": "query_function_class",
-            "description": "日程表拥有添加日程事件类，删除日程事件类，更改日程事件类，查询日程事件类的大类功能，输入需要调用的功能类，返回相应的调用说明",
+            "description": "日程表拥有对日程表事件进行添加，删除，更改，查询的四大类功能，输入需要调用的功能类，返回该类下所有功能函数的调用说明",
             "parameters": {
                 "type": "object",
                 "properties": {

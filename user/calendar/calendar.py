@@ -70,7 +70,7 @@ class Calendar :
                     },
                     "calendar_datetime": {
                         "type": "string",
-                        "description": "日程事件的日期时间",
+                        "description": "日程事件的日期时间，如2023-07-19 14:30:45",
                     },
                 },
                 "required": ["calendar_name","calendar_content","calendar_datetime"]
@@ -105,7 +105,7 @@ class Calendar :
                 "properties": {
                     "calendar_datetime": {
                         "type": "string",
-                        "description": "日程事件的日期时间",
+                        "description": "日程事件的日期时间，如2023-07-19 14:30:45",
                     },
                 },
                 "required": ["calendar_datetime"]
@@ -139,7 +139,7 @@ class Calendar :
                 "properties": {
                     "calendar_datetime": {
                         "type": "string",
-                        "description": "日程事件的日期时间",
+                        "description": "日程事件的日期时间，如2023-07-19 14:30:45",
                     },
                     "calendar_name": {
                         "type": "string",
@@ -177,12 +177,46 @@ class Calendar :
                 "properties": {
                     "calendar_datetime": {
                         "type": "string",
-                        "description": "日程事件的日期时间",
+                        "description": "日程事件的日期时间，如2023-07-19 14:30:45",
                     },
                 },
                 "required": ["calendar_datetime"]
             },
         }
+    
+    #查询日程事件，输入日期，返回该日期下的所有日程事件，按照时间顺序排列，转换成字符串，合成列表返回
+    def query_calendar_event_by_date(self,calendar_date):
+        #将输入的日期转换为datetime类型
+        calendar_date = datetime.datetime.strptime(calendar_date, "%Y-%m-%d")
+        #判断日程表中是否已经存在该日程事件
+        calendar_event_list = []
+        for key in self.my_calendar.keys():
+            if key.date() == calendar_date.date():
+                calendar_event_list.append(self.my_calendar[key])
+        if len(calendar_event_list) == 0:
+            print("[DEBUG] 日程表中不存在该日程事件")
+            return "日程表中不存在该日程事件"
+        else:
+            print("[DEBUG] 日程表中已成查询该日程事件")
+            return calendar_event_list
+    
+    #查询日程事件的函数说明
+    function_query_calendar_event_by_date =   {
+            "name": "query_calendar_event_by_date",
+            "description": "输入日期，返回该日期下的所有日程事件",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "calendar_date": {
+                        "type": "string",
+                        "description": "日程事件的日期，如2023-01-01",
+                    },
+                },
+                "required": ["calendar_date"]
+            },
+        }
+
+
     
     #查询日程事件，输入事件名称(应该使用模糊查询，待改进)
     def query_calendar_event_by_name(self,calendar_name):
@@ -216,8 +250,3 @@ class Calendar :
         with open("my_calendar.json", "w", encoding="utf-8") as f:
             json.dump(self.my_calendar, f, ensure_ascii=False, indent=4)
 
-#日程表执行器（循环自动查询日程表并提交到任务库执行，自动查询任务结果）
-#原理大概是检测现在时间大于计划时间，就执行任务。
-#执行结果以特定格式插入对话中，角色试一下用户和助手和函数看看。如：【系统消息】2020-01-01日程xxxxx时间任务执行结果，请告诉用户：今天是元旦节。
-class calendar_executor:
-    pass
