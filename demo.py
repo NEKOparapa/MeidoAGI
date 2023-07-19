@@ -23,100 +23,6 @@ class cot_mode:
     def __init__(self):
         pass
 
-
-
-    #根据任务目标创建分步式任务的AI代理（使用大容量模型，把所有的工具描述带上，以思维链方式来创建,交给用户判断，是否合适，不合适则重新生成）
-    #考虑增加同时创建多个任务的功能
-    def create_a_task_list(self,task_objectives):
-
-        #任务目标示例 
-        task_objectives_example = '''我现在有100块，请帮我计算一下五个苹果的价格,买完五个苹果后，我还剩多少钱？'''
-        #任务列表格式示例
-        task_list_example = ''' 据用户的任务目标，我们需要创建一个包含以下步骤的任务列表：
-
-        1. 理解任务目标：
-        - 用户在当前有100块钱。
-        - 用户想知道五个苹果的价格。
-        - 用户想知道购买五个苹果后剩余多少钱。
-
-        2. 创建任务列表：
-        1. 使用函数`get_the_price_of_the_item`，输入物品名称为"苹果"，金额单位为"人民币"，获取苹果的单价。
-        2. 将获取到的苹果单价乘以5，得到五个苹果的总价。
-        3. 将用户当前的钱数减去五个苹果的总价，得到购买五个苹果后剩余的钱数。    
-
-        以下是符合要求的任务列表JSON数组：
-        ```json
-        [
-        {
-            "task_id": 1,
-            "task_description": "获取苹果的单价",
-            "function_used": True,
-            "function_name": "get_the_price_of_the_item",
-            "function_parameters": {
-            "item": "苹果",
-            "unit": "人民币"
-            }
-        },
-        {
-            "task_id": 2,
-            "task_description": "计算五个苹果的总价",
-            "function_used": False
-        },
-        {
-            "task_id": 3,
-            "task_description": "计算购买五个苹果后剩余的钱数",
-            "function_used": False
-            }
-        }
-        ]
-        ```
-        '''
-        #次级AI挂载的函数功能列表
-        functions_list = []
-        #从数据库获取权限为1的函数功能列表，根据id，再从ai函数数据库读取数据，作为次级ai挂载函数功能列表
-        functions_list = function_library.get_function_by_permission("1")
-
-        #构建prompt
-        prompt = (
-        f"你是一个专业的任务创建AI，请根据用户提出的任务目标，创建一个实现该目标的JSON数组的任务列表。"
-        f"根据最终目标创建每一步任务，每步任务应该详细说明，每步任务应该尽量使用库中的功能函数完成，当前功能函数库为###{functions_list}###。"
-        f"确保所有任务ID按时间顺序排列。第一步始终是关于任务目标的理解，以及拆分任务的推理说明，尽可能详细。"
-        f"任务目标示例：###{task_objectives_example}###"
-        f"任务列表示例：###{task_list_example}###"
-        )
-
-        #构建messages
-        messages = [{"role": "system", "content": prompt },
-                {"role": "user", "content":  task_objectives}]
-
-
-        #向模型发送用户查询以及它可以访问的函数
-        response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo-0613",
-            messages=messages ,
-        )
-
-        #返回任务列表
-        task_list = response["choices"][0]["message"]['content']
-        return task_list
-
-    #配套的供AI申请调用的函数说明
-    function_create_a_task_list = {
-            "name": "create_a_task_list",
-            "description": "输入任务目标，次级AI会创建分步式任务列表，并返回",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "task_objectives": {
-                        "type": "string",
-                        "description": "关于任务目标的详细描述",
-                    }
-                },
-                "required": ["task_objectives"]
-            },
-        }
-
-
     #开始循环执行分步式任务的AI代理
     def start_distributed_task_AI_agent(self,task_cache_id):
         # try:
@@ -582,22 +488,48 @@ class cot_mode:
 #原理大概是检测现在时间大于计划时间，就执行任务。
 #执行结果以特定格式插入对话中，角色试一下用户和助手和函数看看。如：【系统消息】2020-01-01日程xxxxx时间任务执行结果，请告诉用户：今天是元旦节。
 class calendar_executor:
-    while 1 :
-        #获取当前时间
-        now_time = datetime.datetime.now()
-        #输入当天的年月日，获取日程表当天的全部事件
-        event_list = my_calendar.query_calendar_event_by_date(now_time)
-        #遍历日程表当天的全部事件,如果事件的执行时间小于当前时间和状态是未完成，就执行事件
-        for event in event_list:
-            if event['calendar_datetime'] < now_time and event['calendar_status'] == '未完成':
-                #执行事件
-                event_result = event['event_function']()
-                #更新事件状态
-                my_calendar.update_event_status(event['event_id'],'已完成')
-                #将执行结果插入对话历史中
-                messages.append({"role": "assistant",
-                           "content": "【系统消息】"+event['calendar_datetime']+"日程"+event['event_name']+"时间任务执行结果，请告诉用户："+event_result ,
-                            })
+    def __init__(self):
+        self.run()
+
+    def run (self): 
+        while 1 :
+            #获取当前时间
+            now_time = datetime.datetime.now()
+            #输入当天的年月日，获取日程表当天的全部事件
+            event_list = my_calendar.query_calendar_event_by_date(now_time) 
+            #遍历日程表当天的全部事件,如果事件的执行时间小于当前时间和状态是未完成，就执行事件
+            for event in event_list:
+                if event['calendar_datetime'] < now_time and event['calendar_status'] == '未完成':
+                    #提取输入参数的任务目标与任务列表
+                    task_objectives = event['calendar_name']
+                    task_list = event['calendar_content']
+
+                    #查询任务数据库的任务数
+                    task_id = event['calendar_content']
+
+                    #将还是字符串格式的任务列表里的true和false转换为布尔值
+                    task_list = task_list.replace("true","True")
+                    task_list = task_list.replace("false","False")
+
+                    #处理任务列表，把任务列表转换为列表变量
+                    task_list = eval(task_list)
+                    #计算任务列表的长度
+                    task_list_length = len(task_list)
+                    
+                    #创建任务并添加任务到任务数据库中
+                    task = {
+                        "task_cache_id":task_num,
+                        "task_status":"进行中",
+                        "task_objectives":task_objectives,
+                        "task_list":task_list,
+                        "task_distribution" : task_list_length,
+                        "task_progress":0, 
+                    }
+                    task_library.write_task_list(task)
+
+
+
+
 
 
 
@@ -620,7 +552,7 @@ class Main_AI_function_library():
         #功能函数权限 "function_permission":"0",
         # }
         #添加功能函数
-        self.add_function("1", "create_a_task_list", "输入任务目标，次级AI会创建分步式任务列表，并返回", Ai_agent.function_create_a_task_list, "0")
+        self.add_function("1", "create_a_task_list", "输入任务目标，次级AI会创建分步式任务列表，并返回", self.function_create_a_task_list, "0")
         self.add_function("2", "search_related_functions", "根据用户需要到的函数功能的详细描述，进行语义搜索，将最可能有关的的3个功能函数返回", self.function_search_related_functions,"0")
         self.add_function("3", "query_function_class", "日程表拥有对日程表事件进行添加，删除，更改，查询的四大类功能，输入需要调用的功能类，返回该类下所有功能函数的调用说明", self.function_query_function_class, "0")
 
@@ -696,6 +628,99 @@ class Main_AI_function_library():
                 "required": ["function_class"]
             },
         }
+
+    #根据任务目标创建分步式任务的AI代理
+    def create_a_task_list(self,task_objectives):
+
+        #任务目标示例 
+        task_objectives_example = '''我现在有100块，请帮我计算一下五个苹果的价格,买完五个苹果后，我还剩多少钱？'''
+        #任务列表格式示例
+        task_list_example = ''' 据用户的任务目标，我们需要创建一个包含以下步骤的任务列表：
+
+        1. 理解任务目标：
+        - 用户在当前有100块钱。
+        - 用户想知道五个苹果的价格。
+        - 用户想知道购买五个苹果后剩余多少钱。
+
+        2. 创建任务列表：
+        1. 使用函数`get_the_price_of_the_item`，输入物品名称为"苹果"，金额单位为"人民币"，获取苹果的单价。
+        2. 将获取到的苹果单价乘以5，得到五个苹果的总价。
+        3. 将用户当前的钱数减去五个苹果的总价，得到购买五个苹果后剩余的钱数。    
+
+        以下是符合要求的任务列表JSON数组：
+        ```json
+        [
+        {
+            "task_id": 1,
+            "task_description": "获取苹果的单价",
+            "function_used": True,
+            "function_name": "get_the_price_of_the_item",
+            "function_parameters": {
+            "item": "苹果",
+            "unit": "人民币"
+            }
+        },
+        {
+            "task_id": 2,
+            "task_description": "计算五个苹果的总价",
+            "function_used": False
+        },
+        {
+            "task_id": 3,
+            "task_description": "计算购买五个苹果后剩余的钱数",
+            "function_used": False
+            }
+        }
+        ]
+        ```
+        '''
+        #次级AI挂载的函数功能列表
+        functions_list = []
+        #从数据库获取权限为1的函数功能列表，根据id，再从ai函数数据库读取数据，作为次级ai挂载函数功能列表
+        functions_list = function_library.get_function_by_permission("1")
+
+        #构建prompt
+        prompt = (
+        f"你是一个专业的任务创建AI，请根据用户提出的任务目标，创建一个实现该目标的JSON数组的任务列表。"
+        f"根据最终目标创建每一步任务，每步任务应该详细说明，每步任务应该尽量使用库中的功能函数完成，当前功能函数库为###{functions_list}###。"
+        f"确保所有任务ID按时间顺序排列。第一步始终是关于任务目标的理解，以及拆分任务的推理说明，尽可能详细。"
+        f"任务目标示例：###{task_objectives_example}###"
+        f"任务列表示例：###{task_list_example}###"
+        )
+
+        #构建messages
+        messages = [{"role": "system", "content": prompt },
+                {"role": "user", "content":  task_objectives}]
+
+
+        #向模型发送用户查询以及它可以访问的函数
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo-0613",
+            messages=messages ,
+        )
+
+        #返回任务列表
+        task_list = response["choices"][0]["message"]['content']
+        return task_list
+
+    #配套的供AI申请调用的函数说明
+    function_create_a_task_list = {
+            "name": "create_a_task_list",
+            "description": "输入任务目标，次级AI会创建分步式任务列表，并返回",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "task_objectives": {
+                        "type": "string",
+                        "description": "关于任务目标的详细描述",
+                    }
+                },
+                "required": ["task_objectives"]
+            },
+        }
+
+
+
 
     #添加功能函数
     def add_function(self, function_id, function_name, function_description, function_ai_call, function_permission):

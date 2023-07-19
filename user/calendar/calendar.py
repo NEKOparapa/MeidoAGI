@@ -11,11 +11,11 @@ class Calendar :
         #value:{}
         #下面是value的示例
         # {
-        #事件名称 "calendar_name":"元旦节",
-        #事件内容 "calendar_content":"今天是元旦节",
-        #事件时间 "calendar_datetime":"2023-07-17 09:30:00"(datatime类型),
-        #事件状态 "calendar_status":"未完成",
-        #事件执行结果 "calendar_result":""
+        #事件时间 "calendar_event_datetime":"2023-07-17 09:30:00"(datatime类型),
+        #事件名称 "calendar_event_objectives":"元旦节",
+        #事件内容 "calendar_event_content":"今天是元旦节",
+        #事件状态 "calendar_event_status":"未完成",
+        #事件执行结果 "calendar_event_result":""
         # }
 
 
@@ -31,6 +31,8 @@ class Calendar :
           function_response = self.modify_calendar_event(calendar_datetime=function_arguments.get("calendar_datetime"),calendar_name=function_arguments.get("calendar_name"),calendar_content=function_arguments.get("calendar_content"))
       elif function_name == "query_calendar_event":
           function_response = self.query_calendar_event(calendar_datetime=function_arguments.get("calendar_datetime"))
+      elif function_name == "query_calendar_event_by_date":
+            function_response = self.query_calendar_event_by_date(calendar_date=function_arguments.get("calendar_date"))
       elif function_name == "query_calendar_event_by_name":
           function_response = self.query_calendar_event_by_name(calendar_name=function_arguments.get("calendar_name"))
 
@@ -184,7 +186,7 @@ class Calendar :
             },
         }
     
-    #查询日程事件，输入日期，返回该日期下的所有日程事件，按照时间顺序排列，转换成字符串，合成列表返回
+    #查询日程事件，输入日期，返回该日期下的所有日程事件，按照时间顺序排列，合成列表返回
     def query_calendar_event_by_date(self,calendar_date):
         #将输入的日期转换为datetime类型
         calendar_date = datetime.datetime.strptime(calendar_date, "%Y-%m-%d")
