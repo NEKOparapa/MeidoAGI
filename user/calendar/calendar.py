@@ -15,8 +15,28 @@ class Calendar :
         #事件名称 "calendar_event_objectives":"元旦节",
         #事件内容 "calendar_event_content":"今天是元旦节",
         #事件状态 "calendar_event_status":"未完成",
+        #任务分步数 "event_distribution":5,
+        #任务已完成进度 "event_progress":0, 
         #事件执行结果 "calendar_event_result":""
         # }
+        #任务分步式列表结构示例
+        self.calendar_event_content =[
+        {
+            "task_id": 1,
+            "task_description": "获取苹果的单价",
+            "function_used": True,
+            "function_name": "get_the_price_of_the_item",
+            "function_parameters": {"item": "苹果",
+                                    "unit": "人民币"},
+            "function_response": "五块人民币",
+            "task_result": "一个苹果的价格是五块人民币"
+        },
+        {
+            "task_id": 2,
+            "task_description": "计算五个苹果的总价",
+            "function_used": False
+        }
+        ]
 
 
     #调用功能函数的函数
