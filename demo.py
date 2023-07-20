@@ -12,7 +12,6 @@ from chromadb.utils import embedding_functions
 
 #可以导入脚本全部内容，也可以选择导入部分内容
 from ai_toolkits import function_library
-from ai_tasks import task_library
 from user.calendar import calendar
 #from agents.cot_agent import  cot_mode
 
@@ -20,7 +19,7 @@ from user.calendar import calendar
 #————————————————————————————————————————日程表执行器————————————————————————————————————————
 class Calendar_executor:
     def __init__(self):
-        self.run()
+        pass
 
     def run (self): 
         while 1 :
@@ -174,7 +173,7 @@ class Calendar_executor:
         task_result_new = task_result_dict["task_result"]
 
         #更新任务进度 
-        calendar_executor.update_event_progress(event['calendar_event_datetime'],task_id,function_response,task_result_new)
+        my_calendar.update_event_progress(event['calendar_event_datetime'],task_id,function_response,task_result_new)
 
         print("[DEBUG] 次级AI单元任务执行结果为：",task_result,'\n')
         print("[DEBUG] 该单元任务执行结束！！！！！！！！！！！！！！！！！！",'\n')
@@ -903,46 +902,7 @@ class Ai_Parser:
                 function_response = main_function_library.query_function_class(function_class=function_arguments.get("function_class"),)
 
             elif function_name == "create_a_task_list":
-                function_response = Ai_agent.create_a_task_list(task_objectives=function_arguments.get("task_objectives"),)
-
-            elif function_name == "start_distributed_task_AI_agent":
-                
-                #提取输入参数的任务目标与任务列表
-                task_objectives = function_arguments.get("task_objectives")
-                task_list = function_arguments.get("task_list")
-
-                #查询任务数据库的任务数
-                task_num = task_library.get_task_num()
-
-                #将还是字符串格式的任务列表里的true和false转换为布尔值
-                task_list = task_list.replace("true","True")
-                task_list = task_list.replace("false","False")
-
-                #处理任务列表，把任务列表转换为列表变量
-                task_list = eval(task_list)
-                #计算任务列表的长度
-                task_list_length = len(task_list)
-                
-                #创建任务并添加任务到任务数据库中
-                task = {
-                    "task_cache_id":task_num,
-                    "task_status":"进行中",
-                    "task_objectives":task_objectives,
-                    "task_list":task_list,
-                    "task_distribution" : task_list_length,
-                    "task_progress":0, 
-                }
-                task_library.write_task_list(task)
-
-                # # 创建一个新的子线程对象,并传入任务缓存id(必须是可迭代对象)
-                # my_thread = threading.Thread(target=Ai_agent.start_distributed_task_AI_agent, args=(task_num,))
-
-                # # 启动子线程任务
-                # my_thread.start()
-
-                Ai_agent.start_distributed_task_AI_agent(task_num)
-
-                function_response = '任务已在后台由代理AI开始执行~请耐心等待结果~'
+                function_response = main_function_library.create_a_task_list(task_objectives=function_arguments.get("task_objectives"),)
             
             #调用日程表的功能函数
             elif function_name.get("calendar"):
@@ -1034,9 +994,6 @@ if __name__ == '__main__':
 
     #创建日程表
     my_calendar = calendar.Calendar()
-
-    #创建任务库
-    task_library = task_library.Task_library()
 
     #创建日程表执行器
     calendar_executor = Calendar_executor()
