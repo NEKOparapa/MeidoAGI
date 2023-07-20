@@ -15,8 +15,8 @@ class Calendar :
         #事件名称 "calendar_event_objectives":"元旦节",
         #事件内容 "calendar_event_content":"今天是元旦节",
         #事件状态 "calendar_event_status":"未完成",
-        #任务分步数 "event_distribution":5,
-        #任务已完成进度 "event_progress":0, 
+        #事件分步数 "event_distribution":5,
+        #事件已完成进度 "event_progress":0, 
         #事件执行结果 "calendar_event_result":""
         # }
         #任务分步式列表结构示例
@@ -44,7 +44,7 @@ class Calendar :
 
       #根据函数调用名称，调用相应的函数
       if function_name == "add_calendar_event":
-          function_response = self.add_calendar_event(calendar_name=function_arguments.get("calendar_name"),calendar_content=function_arguments.get("calendar_content"),calendar_datetime = function_arguments.get("calendar_datetime"))
+          function_response = self.add_calendar_event(calendar_name=function_arguments.get("calendar_name"),calendar_content=function_arguments.get("calendar_content"),calendar_event_datetime = function_arguments.get("calendar_datetime"))
       elif function_name == "delete_calendar_event":
           function_response = self.delete_calendar_event(calendar_datetime=function_arguments.get("calendar_datetime"))
       elif function_name == "modify_calendar_event":
@@ -61,16 +61,40 @@ class Calendar :
 
 
     #添加日程事件
-    def add_calendar_event(self,calendar_name,calendar_content,calendar_datetime):
+    def add_calendar_event(self,calendar_event_objectives,calendar_event_content,calendar_event_datetime):
         #将输入的日期时间转换为datetime类型
-        calendar_datetime = datetime.datetime.strptime(calendar_datetime, "%Y-%m-%d %H:%M:%S")
+        calendar_event_datetime = datetime.datetime.strptime(calendar_event_datetime, "%Y-%m-%d %H:%M:%S")
         #判断日程表中是否已经存在该日程事件
-        if calendar_datetime in self.my_calendar.keys():
+        if calendar_event_datetime in self.my_calendar.keys():
             print("[DEBUG] 日程表中已经存在该日程事件")
             return "日程表中已经存在该日程事件"
         else:
-            #添加日程事件
-            self.my_calendar[calendar_datetime] = {"calendar_name":calendar_name,"calendar_content":calendar_content,"calendar_datetime":calendar_datetime,"calendar_status":"未完成","calendar_result":""}
+
+            #将还是字符串格式的任务列表里的true和false转换为布尔值
+            calendar_event_content = calendar_event_content.replace("true","True")
+            calendar_event_content = calendar_event_content.replace("false","False")
+
+            #处理任务列表，把任务列表转换为列表变量
+            calendar_event_content = eval(calendar_event_content)
+            #计算任务列表的长度
+            calendar_event_content_length = len(calendar_event_content)
+            
+            #构建key-value结构的日程事件
+            event_key = calendar_event_datetime
+
+            event_value =   {
+            "calendar_event_datetime":calendar_event_datetime,
+            "calendar_event_objectives":calendar_event_objectives,
+            "calendar_event_content":calendar_event_content,
+            "calendar_event_status":"未完成",
+            "event_distribution":calendar_event_content_length,
+            "event_progress":0, 
+            "calendar_event_result":""
+            }
+
+            #将日程事件添加到日程表中
+            self.my_calendar[event_key] = event_value
+
             print("[DEBUG] 日程表中已成创建该日程事件")
             self.auto_write_my_calendar()
             return "日程表中已成创建该日程事件"

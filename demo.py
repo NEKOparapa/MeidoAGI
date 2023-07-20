@@ -17,84 +17,50 @@ from user.calendar import calendar
 #from agents.cot_agent import  cot_mode
 
 
-#————————————————————————————————————————次级AI代理————————————————————————————————————————
-#思维链模式（根据任务目标，思考一步做一步看一步，再根据这步和目标，再进行下一步。直到结果）
-class cot_mode:
+#————————————————————————————————————————日程表执行器————————————————————————————————————————
+#日程表执行器（循环自动查询日程表并提交到任务库执行，自动查询任务结果）
+#原理大概是检测现在时间大于计划时间，就执行任务。
+#执行结果以特定格式插入对话中，角色试一下用户和助手和函数看看。如：【系统消息】2020-01-01日程xxxxx时间任务执行结果，请告诉用户：今天是元旦节。
+class calendar_executor:
     def __init__(self):
-        pass
+        self.run()
 
-    #开始循环执行分步式任务的AI代理
-    def start_distributed_task_AI_agent(self,task_cache_id):
-        # try:
-        #     #获取任务状态
-        #     task_status = task_library.get_task_status(task_cache_id)
+    def run (self): 
+        while 1 :
+            #获取当前时间
+            now_time = datetime.datetime.now()
+            #输入当天的年月日，获取日程表当天的全部事件
+            event_list = my_calendar.query_calendar_event_by_date(now_time) 
+            #遍历日程表当天的全部事件,如果事件的执行时间小于当前时间和状态是未完成，就执行事件
+            for event in event_list:
+                if event['calendar_datetime'] < now_time and event['calendar_status'] == '未完成':
+                    # try:
+                    #     #获取任务状态
+                    #     task_status = task_library.get_task_status(task_cache_id)
 
-        #     while task_status == "进行中" :
-        #         self.execute_unit_task_AI_agent(task_cache_id)
+                    #     while task_status == "进行中" :
+                    #         self.execute_unit_task_AI_agent(task_cache_id)
 
-        #         self.review_unit_task_AI_agent(task_cache_id)
+                    #         self.review_unit_task_AI_agent(task_cache_id)
 
-        #         #重新获取任务状态
-        #         task_status = task_library.get_task_status(task_cache_id)
-        # #抛出异常
-        # except Exception as e:
-        #     print("线程执行出错，错误信息如下：")
-        #     print(e)
-        #     return "执行失败"
+                    #         #重新获取任务状态
+                    #         task_status = task_library.get_task_status(task_cache_id)
+                    # #抛出异常
+                    # except Exception as e:
+                    #     print("线程执行出错，错误信息如下：")
+                    #     print(e)
+                    #     return "执行失败"
+                    
+                    #获取任务状态
+                    task_status = task_library.get_task_status(calendar_event_datetime)
 
-        #获取任务状态
-        task_status = task_library.get_task_status(task_cache_id)
+                    while task_status == "进行中" :
+                        self.execute_unit_task_AI_agent(calendar_event_datetime)
 
-        while task_status == "进行中" :
-            self.execute_unit_task_AI_agent(task_cache_id)
+                        self.review_unit_task_AI_agent(calendar_event_datetime)
 
-            self.review_unit_task_AI_agent(task_cache_id)
-
-            #重新获取任务状态
-            task_status = task_library.get_task_status(task_cache_id)
-
-    #配套的供AI申请调用的函数说明
-    function_start_distributed_task_AI_agent = {
-            "name": "start_distributed_task_AI_agent",
-            "description": "传入任务目标，JSON数组格式的任务列表，次级AI代理会开始自动执行任务",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "task_objectives": {
-                        "type": "string",
-                        "description": "关于任务目标的详细描述",
-                    },
-                    "task_list": {
-                        "type": "string",
-                        "description": "json数组格式的任务列表",
-                    }
-                },
-                "required": ["task_objectives","task_list"]
-            },
-        }
-
-
-
-    #读取任务库中全部任务执行情况的函数
-    def read_tasks_running_status(self):
-        return task_library.read_all_task_list()
-
-    #配套的供AI申请调用的函数说明
-    function_read_tasks_running_status = {
-            "name": "read_tasks_running_status",
-            "description": "读取任务库中全部任务执行情况",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "read_request": {
-                        "type": "string",
-                        "description": "是否读取全部任务执行情况？如果是，传入yes，如果否，传入no",
-                    }
-                },
-                "required": ["read_request"]
-            },
-        }
-
+                        #重新获取任务状态
+                        task_status = task_library.get_task_status(calendar_event_datetime)
 
 
 
@@ -480,55 +446,6 @@ class cot_mode:
         #获取AI回复内容
         content = message['content']
         return function_response,content
-
-
-
-
-#日程表执行器（循环自动查询日程表并提交到任务库执行，自动查询任务结果）
-#原理大概是检测现在时间大于计划时间，就执行任务。
-#执行结果以特定格式插入对话中，角色试一下用户和助手和函数看看。如：【系统消息】2020-01-01日程xxxxx时间任务执行结果，请告诉用户：今天是元旦节。
-class calendar_executor:
-    def __init__(self):
-        self.run()
-
-    def run (self): 
-        while 1 :
-            #获取当前时间
-            now_time = datetime.datetime.now()
-            #输入当天的年月日，获取日程表当天的全部事件
-            event_list = my_calendar.query_calendar_event_by_date(now_time) 
-            #遍历日程表当天的全部事件,如果事件的执行时间小于当前时间和状态是未完成，就执行事件
-            for event in event_list:
-                if event['calendar_datetime'] < now_time and event['calendar_status'] == '未完成':
-                    #提取输入参数的任务目标与任务列表
-                    task_objectives = event['calendar_name']
-                    task_list = event['calendar_content']
-
-                    #查询任务数据库的任务数
-                    task_id = event['calendar_content']
-
-                    #将还是字符串格式的任务列表里的true和false转换为布尔值
-                    task_list = task_list.replace("true","True")
-                    task_list = task_list.replace("false","False")
-
-                    #处理任务列表，把任务列表转换为列表变量
-                    task_list = eval(task_list)
-                    #计算任务列表的长度
-                    task_list_length = len(task_list)
-                    
-                    #创建任务并添加任务到任务数据库中
-                    task = {
-                        "task_cache_id":task_num,
-                        "task_status":"进行中",
-                        "task_objectives":task_objectives,
-                        "task_list":task_list,
-                        "task_distribution" : task_list_length,
-                        "task_progress":0, 
-                    }
-                    task_library.write_task_list(task)
-
-
-
 
 
 
@@ -1131,8 +1048,6 @@ if __name__ == '__main__':
     #创建主AI记忆库
     history = Ai_memory(script_dir)
 
-    #创建AI代理
-    Ai_agent = cot_mode()
 
     #创建功能函数库
     function_library = function_library.Function_library()
