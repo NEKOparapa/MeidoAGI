@@ -18,10 +18,7 @@ from user.calendar import calendar
 
 
 #————————————————————————————————————————日程表执行器————————————————————————————————————————
-#日程表执行器（循环自动查询日程表并提交到任务库执行，自动查询任务结果）
-#原理大概是检测现在时间大于计划时间，就执行任务。
-#执行结果以特定格式插入对话中，角色试一下用户和助手和函数看看。如：【系统消息】2020-01-01日程xxxxx时间任务执行结果，请告诉用户：今天是元旦节。
-class calendar_executor:
+class Calendar_executor:
     def __init__(self):
         self.run()
 
@@ -33,39 +30,23 @@ class calendar_executor:
             event_list = my_calendar.query_calendar_event_by_date(now_time) 
             #遍历日程表当天的全部事件,如果事件的执行时间小于当前时间和状态是未完成，就执行事件
             for event in event_list:
-                if event['calendar_datetime'] < now_time and event['calendar_status'] == '未完成':
-                    # try:
-                    #     #获取任务状态
-                    #     task_status = task_library.get_task_status(task_cache_id)
-
-                    #     while task_status == "进行中" :
-                    #         self.execute_unit_task_AI_agent(task_cache_id)
-
-                    #         self.review_unit_task_AI_agent(task_cache_id)
-
-                    #         #重新获取任务状态
-                    #         task_status = task_library.get_task_status(task_cache_id)
-                    # #抛出异常
-                    # except Exception as e:
-                    #     print("线程执行出错，错误信息如下：")
-                    #     print(e)
-                    #     return "执行失败"
+                if event['calendar_event_datetime'] < now_time and event['calendar_event_status'] == '未完成':
                     
-                    #获取任务状态
-                    task_status = task_library.get_task_status(calendar_event_datetime)
+                    #获取事件状态
+                    calendar_event_status = event['calendar_event_status']
 
-                    while task_status == "进行中" :
-                        self.execute_unit_task_AI_agent(calendar_event_datetime)
+                    while calendar_event_status == "未完成" :
+                        self.execute_unit_task_AI_agent(event)
 
-                        self.review_unit_task_AI_agent(calendar_event_datetime)
+                        self.review_unit_task_AI_agent(event)
 
-                        #重新获取任务状态
-                        task_status = task_library.get_task_status(calendar_event_datetime)
+                        #重新获取事件状态
+                        calendar_event_status = event['calendar_event_status']
 
 
 
     #执行单元任务的AI代理
-    def execute_unit_task_AI_agent(self,task_cache_id):
+    def execute_unit_task_AI_agent(self,event):
 
         print("[DEBUG]开始执行单元任务！！！！！！！！！！！！！！！！！！")
 
@@ -107,22 +88,18 @@ class calendar_executor:
         ```
         '''
 
-
-        #获取任务
-        task = task_library.read_task_list(task_cache_id)
         #获取任务目标
-        task_objectives = task["task_objectives"]
+        task_objectives = event["calendar_event_objectives"]
         #获取任务列表
-        task_list = task["task_list"]
+        task_list = event["calendar_event_content"]
         #获取任务进度
-        task_progress = task["task_progress"]
+        task_progress = event["event_progress"]
         #获取任务执行id
         task_id = task_progress + 1
 
 
-        #执行AI挂载的函数功能列表
-        functions_list = []
         #根据任务执行id与任务列表，获取当前任务需要到的函数id
+        functions_list = []
         for unit_task in task_list:
             #如果任务id与当前任务执行id相同
             if unit_task["task_id"] == task_id:
@@ -197,10 +174,10 @@ class calendar_executor:
         task_result_new = task_result_dict["task_result"]
 
         #更新任务进度 
-        task_library.update_task_progress(task_cache_id,task_id,function_response,task_result_new)
+        calendar_executor.update_event_progress(event['calendar_event_datetime'],task_id,function_response,task_result_new)
 
         print("[DEBUG] 次级AI单元任务执行结果为：",task_result,'\n')
-        print("[DEBUG]该单元任务执行结束！！！！！！！！！！！！！！！！！！",'\n')
+        print("[DEBUG] 该单元任务执行结束！！！！！！！！！！！！！！！！！！",'\n')
 
 
 
@@ -1060,6 +1037,9 @@ if __name__ == '__main__':
 
     #创建任务库
     task_library = task_library.Task_library()
+
+    #创建日程表执行器
+    calendar_executor = Calendar_executor()
 
     #创建AI请求器
     request = Ai_Request()

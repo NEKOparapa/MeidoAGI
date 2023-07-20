@@ -290,9 +290,39 @@ class Calendar :
             },
         }
 
+
     #自动写入到本地文件中,方便debug
     def auto_write_my_calendar(self):
         #把任务库写入到本地文件中，指定编码格式为utf-8
         with open("my_calendar.json", "w", encoding="utf-8") as f:
             json.dump(self.my_calendar, f, ensure_ascii=False, indent=4)
 
+
+    #根据时间key与任务id，录入函数调用结果，任务执行结果与更新任务进度
+    def update_event_progress(self,calendar_event_datetime,task_id,function_response,task_result):
+        #将输入的日期时间转换为datetime类型
+        calendar_event_datetime = datetime.datetime.strptime(calendar_event_datetime, "%Y-%m-%d %H:%M:%S")
+        #根据任务缓存id，找到相应任务
+        calendar_event = self.my_calendar[calendar_event_datetime]
+        #根据任务id，找到相应任务
+        for task_unit in calendar_event["calendar_event_content"]:
+            if task_unit["task_id"] == task_id:
+                #把函数调用结果与任务执行结果添加到任务列表中,如果列表中已经有了，就更新，没有就添加新键值对
+                if function_response:
+                    task_unit["function_response"] = function_response
+                if task_result:
+                    task_unit["task_result"] = task_result
+
+
+        #更新任务进度
+        calendar_event["calendar_event_progress"] = task_id
+
+        #检查是否已经全部完成，如果完成更新事件状态
+        if task_id == calendar_event["calendar_event_distribution"]:
+            calendar_event["calendar_event_status"] = "已完成"
+
+        #更新日程事件
+        self.my_calendar[calendar_event_datetime] = calendar_event
+
+        #自动写入到本地文件中
+        self.auto_write_my_calendar()
