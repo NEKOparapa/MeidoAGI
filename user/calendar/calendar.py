@@ -46,11 +46,11 @@ class Calendar :
       if function_name == "add_calendar_event":
           function_response = self.add_calendar_event(calendar_name=function_arguments.get("calendar_name"),calendar_content=function_arguments.get("calendar_content"),calendar_event_datetime = function_arguments.get("calendar_datetime"))
       elif function_name == "delete_calendar_event":
-          function_response = self.delete_calendar_event(calendar_datetime=function_arguments.get("calendar_datetime"))
+          function_response = self.delete_calendar_event(calendar_event_datetime=function_arguments.get("calendar_datetime"))
       elif function_name == "modify_calendar_event":
-          function_response = self.modify_calendar_event(calendar_datetime=function_arguments.get("calendar_datetime"),calendar_name=function_arguments.get("calendar_name"),calendar_content=function_arguments.get("calendar_content"))
+          function_response = self.modify_calendar_event(calendar_event_datetime=function_arguments.get("calendar_datetime"),calendar_name=function_arguments.get("calendar_name"),calendar_content=function_arguments.get("calendar_content"))
       elif function_name == "query_calendar_event":
-          function_response = self.query_calendar_event(calendar_datetime=function_arguments.get("calendar_datetime"))
+          function_response = self.query_calendar_event(calendar_event_datetime=function_arguments.get("calendar_datetime"))
       elif function_name == "query_calendar_event_by_date":
             function_response = self.query_calendar_event_by_date(calendar_date=function_arguments.get("calendar_date"))
       elif function_name == "query_calendar_event_by_name":
@@ -128,13 +128,13 @@ class Calendar :
 
 
     #删除日程事件，输入事件日期与事件时间
-    def delete_calendar_event(self,calendar_datetime):
+    def delete_calendar_event(self,calendar_event_datetime):
         #将输入的日期时间转换为datetime类型
-        calendar_datetime = datetime.datetime.strptime(calendar_datetime, "%Y-%m-%d %H:%M:%S")
+        calendar_event_datetime = datetime.datetime.strptime(calendar_event_datetime, "%Y-%m-%d %H:%M:%S")
         #判断日程表中是否已经存在该日程事件
-        if calendar_datetime in self.my_calendar.keys():
+        if calendar_event_datetime in self.my_calendar.keys():
             #删除日程事件
-            del self.my_calendar[calendar_datetime]
+            del self.my_calendar[calendar_event_datetime]
             print("[DEBUG] 日程表中已成删除该日程事件")
             self.auto_write_my_calendar()
             return "日程表中已成删除该日程事件"
@@ -160,15 +160,15 @@ class Calendar :
 
 
     #修改日程事件，输入事件日期与事件时间，事件名称，事件内容
-    def modify_calendar_event(self,calendar_datetime,calendar_name,calendar_content):
+    def modify_calendar_event(self,calendar_event_datetime,calendar_name,calendar_content):
         #将输入的日期时间转换为datetime类型
-        calendar_datetime = datetime.datetime.strptime(calendar_datetime, "%Y-%m-%d %H:%M:%S")
+        calendar_event_datetime = datetime.datetime.strptime(calendar_event_datetime, "%Y-%m-%d %H:%M:%S")
         #判断日程表中是否已经存在该日程事件
-        if calendar_datetime in self.my_calendar.keys():
+        if calendar_event_datetime in self.my_calendar.keys():
             #修改日程事件
-            self.my_calendar[calendar_datetime]["calendar_name"] = calendar_name
-            self.my_calendar[calendar_datetime]["calendar_content"] = calendar_content
-            self.my_calendar[calendar_datetime]["calendar_status"] = "未完成"
+            self.my_calendar[calendar_event_datetime]["calendar_name"] = calendar_name
+            self.my_calendar[calendar_event_datetime]["calendar_content"] = calendar_content
+            self.my_calendar[calendar_event_datetime]["calendar_status"] = "未完成"
             print("[DEBUG] 日程表中已成修改该日程事件")
             self.auto_write_my_calendar()
             return "日程表中已成修改该日程事件"
@@ -202,14 +202,14 @@ class Calendar :
 
     
     #查询日程事件，输入事件日期与事件时间
-    def query_calendar_event(self,calendar_datetime):
+    def query_calendar_event(self,calendar_event_datetime):
         #将输入的日期时间转换为datetime类型
-        calendar_datetime = datetime.datetime.strptime(calendar_datetime, "%Y-%m-%d %H:%M:%S")
+        calendar_event_datetime = datetime.datetime.strptime(calendar_event_datetime, "%Y-%m-%d %H:%M:%S")
         #判断日程表中是否已经存在该日程事件
-        if calendar_datetime in self.my_calendar.keys():
+        if calendar_event_datetime in self.my_calendar.keys():
             #查询日程事件
             print("[DEBUG] 日程表中已成查询该日程事件")
-            return self.my_calendar[calendar_datetime]
+            return self.my_calendar[calendar_event_datetime]
         else:
             print("[DEBUG] 日程表中不存在该日程事件")
             return "日程表中不存在该日程事件"
@@ -301,7 +301,8 @@ class Calendar :
     #根据时间key与任务id，录入函数调用结果，任务执行结果与更新任务进度
     def update_event_progress(self,calendar_event_datetime,task_id,function_response,task_result):
         #将输入的日期时间转换为datetime类型
-        calendar_event_datetime = datetime.datetime.strptime(calendar_event_datetime, "%Y-%m-%d %H:%M:%S")
+        if type(calendar_event_datetime) != datetime.datetime:
+            calendar_event_datetime = datetime.datetime.strptime(calendar_event_datetime, "%Y-%m-%d %H:%M:%S")
         #根据任务缓存id，找到相应任务
         calendar_event = self.my_calendar[calendar_event_datetime]
         #根据任务id，找到相应任务
@@ -323,6 +324,40 @@ class Calendar :
 
         #更新日程事件
         self.my_calendar[calendar_event_datetime] = calendar_event
+
+        #自动写入到本地文件中
+        self.auto_write_my_calendar()
+
+
+    #根据时间key，改变事件状态
+    def update_event_status(self,calendar_event_datetime,calendar_event_status):
+
+        ##如果key不是datetime类型，将输入的日期时间转换为datetime类型
+        if type(calendar_event_datetime) != datetime.datetime:
+            calendar_event_datetime = datetime.datetime.strptime(calendar_event_datetime, "%Y-%m-%d %H:%M:%S")
+        #根据任务缓存id，找到相应任务
+        calendar_event = self.my_calendar[calendar_event_datetime]
+        #更新任务状态
+        calendar_event["calendar_event_status"] = calendar_event_status
+
+        #自动写入到本地文件中
+        self.auto_write_my_calendar()
+    
+    #根据时间key，回退一步任务进度
+    def delete_event_progress(self,calendar_event_datetime,calendar_event_progress):
+        #将输入的日期时间转换为datetime类型
+        if type(calendar_event_datetime) != datetime.datetime:
+            calendar_event_datetime = datetime.datetime.strptime(calendar_event_datetime, "%Y-%m-%d %H:%M:%S")
+        #根据任务缓存id，找到相应任务
+        calendar_event = self.my_calendar[calendar_event_datetime]
+        #根据任务进度，把函数调用结果与任务执行结果写入任务列表
+        for task_unit in calendar_event["calendar_event_content"]:
+            if task_unit["task_id"] == calendar_event_progress:
+                #删除函数调用结果与任务执行结果
+                del task_unit["function_response"]
+                del task_unit["task_result"]
+                #回退任务进度
+                calendar_event["calendar_event_progress"] = calendar_event_progress - 1
 
         #自动写入到本地文件中
         self.auto_write_my_calendar()

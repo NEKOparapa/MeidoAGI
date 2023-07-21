@@ -184,7 +184,7 @@ class Calendar_executor:
 
 
     #审查单元任务的AI代理（审查单元任务的输入输出是否正确，正确就录入任务数据库，错误就返回信息到任务数据库）
-    def review_unit_task_AI_agent(self,task_cache_id):
+    def review_unit_task_AI_agent(self,event):
 
         print("[DEBUG]开始审查单元任务！！！！！！！！！！！！！！！！！！")
 
@@ -242,17 +242,14 @@ class Calendar_executor:
         任务2的结果不正确，请更正后继续。
         '''
 
-
-        #获取任务
-        task = task_library.read_task_list(task_cache_id)
         #获取任务目标
-        task_objectives = task["task_objectives"]
+        task_objectives = event["calendar_event_objectives"]
         #获取任务列表
-        task_list = task["task_list"]
+        task_list = event["calendar_event_content"]
         #获取任务进度
-        task_progress = task["task_progress"]
+        task_progress = event["event_progress"]
         #获取任务审查id
-        task_id = task_progress
+        task_id = task_progress 
 
         #审查AI挂载的函数功能列表
         functions_list = []
@@ -334,14 +331,14 @@ class Calendar_executor:
             print("[DEBUG] 任务执行结果正确~",'\n')
 
             #如果任务进度等于任务分步列表长度，说明任务已经完成
-            if task_progress == task["task_distribution"]:
-                task_library.update_task_status(task_cache_id,"完成")
+            if task_progress == event["event_distribution"]:
+                my_calendar.update_event_status(event['calendar_event_datetime'],"完成")
         
         elif review_result_new == "incorrect":
             #提取正确结果
             correct_task_result = review_result_dict["correct_task_result"]
             #直接回退进度
-            task_library.delete_task_progress(task_cache_id,task_progress)
+            my_calendar.delete_event_progress(event['calendar_event_datetime'],task_progress)
 
             print("[DEBUG] 任务执行结果错误~",'\n')
 
