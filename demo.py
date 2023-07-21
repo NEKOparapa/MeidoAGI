@@ -29,18 +29,18 @@ class Calendar_executor:
             event_list = my_calendar.query_calendar_event_by_date(now_time) 
             #遍历日程表当天的全部事件,如果事件的执行时间小于当前时间和状态是未完成，就执行事件
             for event in event_list:
-                if event['calendar_event_datetime'] < now_time and event['calendar_event_status'] == '未完成':
+                if event['event_datetime'] < now_time and event['event_status'] == '未完成':
                     
                     #获取事件状态
-                    calendar_event_status = event['calendar_event_status']
+                    event_status = event['event_status']
 
-                    while calendar_event_status == "未完成" :
+                    while event_status == "未完成" :
                         self.execute_unit_task_AI_agent(event)
 
                         self.review_unit_task_AI_agent(event)
 
                         #重新获取事件状态
-                        calendar_event_status = event['calendar_event_status']
+                        event_status = event['event_status']
 
 
 
@@ -88,9 +88,9 @@ class Calendar_executor:
         '''
 
         #获取任务目标
-        task_objectives = event["calendar_event_objectives"]
+        task_objectives = event["event_objectives"]
         #获取任务列表
-        task_list = event["calendar_event_content"]
+        task_list = event["event_content"]
         #获取任务进度
         task_progress = event["event_progress"]
         #获取任务执行id
@@ -173,7 +173,7 @@ class Calendar_executor:
         task_result_new = task_result_dict["task_result"]
 
         #更新任务进度 
-        my_calendar.update_event_progress(event['calendar_event_datetime'],task_id,function_response,task_result_new)
+        my_calendar.update_event_progress(event['event_datetime'],task_id,function_response,task_result_new)
 
         print("[DEBUG] 次级AI单元任务执行结果为：",task_result,'\n')
         print("[DEBUG] 该单元任务执行结束！！！！！！！！！！！！！！！！！！",'\n')
@@ -243,9 +243,9 @@ class Calendar_executor:
         '''
 
         #获取任务目标
-        task_objectives = event["calendar_event_objectives"]
+        task_objectives = event["event_objectives"]
         #获取任务列表
-        task_list = event["calendar_event_content"]
+        task_list = event["event_content"]
         #获取任务进度
         task_progress = event["event_progress"]
         #获取任务审查id
@@ -332,13 +332,13 @@ class Calendar_executor:
 
             #如果任务进度等于任务分步列表长度，说明任务已经完成
             if task_progress == event["event_distribution"]:
-                my_calendar.update_event_status(event['calendar_event_datetime'],"完成")
+                my_calendar.update_event_status(event['event_datetime'],"完成")
         
         elif review_result_new == "incorrect":
             #提取正确结果
             correct_task_result = review_result_dict["correct_task_result"]
             #直接回退进度
-            my_calendar.delete_event_progress(event['calendar_event_datetime'],task_progress)
+            my_calendar.delete_event_progress(event['event_datetime'],task_progress)
 
             print("[DEBUG] 任务执行结果错误~",'\n')
 
@@ -367,7 +367,7 @@ class Calendar_executor:
             #将函数输入参数转换为字典格式
             function_arguments = json.loads(function_arguments)
 
-            #调用函数
+            #调用函数,获得函数调用结果
             function_response = function_library.call_function(function_name,function_arguments)
 
             print("[DEBUG] 函数调用附加说明：",function_content,'\n')
@@ -442,9 +442,38 @@ class Main_AI_function_library():
         #功能函数权限 "function_permission":"0",
         # }
         #添加功能函数
-        self.add_function("1", "create_a_task_list", "输入任务目标，次级AI会创建分步式任务列表，并返回", self.function_create_a_task_list, "0")
+        self.add_function("0", "test_function", "测试用函数", self.function_test_function, "0")
+        self.add_function("1", "create_a_task_list", "输入事件任务目标，次级AI会创建分步式任务列表，并返回", self.function_create_a_task_list, "0")
         self.add_function("2", "search_related_functions", "根据用户需要到的函数功能的详细描述，进行语义搜索，将最可能有关的的3个功能函数返回", self.function_search_related_functions,"0")
         self.add_function("3", "query_function_class", "日程表拥有对日程表事件进行添加，删除，更改，查询的四大类功能，输入需要调用的功能类，返回该类下所有功能函数的调用说明", self.function_query_function_class, "0")
+
+
+
+
+    #测试函数------------------------------------------------
+    def test_function(self):
+        print("测试函数中")
+        calendar_executor.run()
+
+        return "测试函数执行完成"
+    
+    #测试函数说明（AI调用）
+    function_test_function =   {
+            "name": "test_function",
+            "description": "测试用函数",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "switch": {
+                        "type": "string",
+                        "description": "调用该测试函数，则输入on",
+                    }
+                },
+                "required": ["switch"]
+            },
+        }
+
+
 
     #搜索拓展工具库中的工具函数------------------------------------------------
     def  search_related_functions(self, function_description):
@@ -596,13 +625,13 @@ class Main_AI_function_library():
     #配套的供AI申请调用的函数说明
     function_create_a_task_list = {
             "name": "create_a_task_list",
-            "description": "输入任务目标，次级AI会创建分步式任务列表，并返回",
+            "description": "输入事件任务目标，次级AI会创建分步式任务列表，并返回",
             "parameters": {
                 "type": "object",
                 "properties": {
                     "task_objectives": {
                         "type": "string",
-                        "description": "关于任务目标的详细描述",
+                        "description": "关于事件任务目标的详细描述",
                     }
                 },
                 "required": ["task_objectives"]
@@ -891,17 +920,24 @@ class Ai_Parser:
             #将函数输入参数转换为字典格式
             function_arguments = json.loads(function_arguments)
 
-            #根据函数调用名称，调用相应的管理函数
-            if function_name == "search_related_functions":
+
+            #调用测试用函数
+            if function_name == "test_function":
+                function_response = main_function_library.test_function()
+
+            #调用搜索相关函数的功能函数
+            elif function_name == "search_related_functions":
                 function_response = main_function_library.search_related_functions(function_description=function_arguments.get("function_description"))
 
-            elif function_name == "query_function_class":
-                function_response = main_function_library.query_function_class(function_class=function_arguments.get("function_class"),)
-
+            #调用创建任务列表的功能函数
             elif function_name == "create_a_task_list":
                 function_response = main_function_library.create_a_task_list(task_objectives=function_arguments.get("task_objectives"),)
             
-            #调用日程表的功能函数
+            #调用获取日程表的功能类说明
+            elif function_name == "query_function_class":
+                function_response = main_function_library.query_function_class(function_class=function_arguments.get("function_class"),)
+
+            #调用日程表的具体的功能函数
             elif function_name.get("calendar"):
                 function_response = my_calendar.call_calendar_function(function_name=function_name,function_arguments=function_arguments)
 
