@@ -26,26 +26,26 @@ class Calendar_executor:
             #获取当前时间
             now_time = datetime.datetime.now()
             #输入当天的年月日，获取日程表当天的全部事件
-            event_list = my_calendar.query_calendar_event_by_date(now_time) 
+            task_list = my_calendar.query_scheduled_task_by_date(now_time) 
             #遍历日程表当天的全部事件,如果事件的执行时间小于当前时间和状态是未完成，就执行事件
-            for event in event_list:
-                if event['event_datetime'] < now_time and event['event_status'] == '未完成':
+            for task in task_list:
+                if task['task_datetime'] < now_time and task['task_status'] == '未完成':
                     
                     #获取事件状态
-                    event_status = event['event_status']
+                    task_status = task['task_status']
 
-                    while event_status == "未完成" :
-                        self.execute_unit_task_AI_agent(event)
+                    while task_status == "未完成" :
+                        self.execute_unit_task_AI_agent(task)
 
-                        self.review_unit_task_AI_agent(event)
+                        self.review_unit_task_AI_agent(task)
 
                         #重新获取事件状态
-                        event_status = event['event_status']
+                        task_status = task['task_status']
 
 
 
     #执行单元任务的AI代理
-    def execute_unit_task_AI_agent(self,event):
+    def execute_unit_task_AI_agent(self,task):
 
         print("[DEBUG]开始执行单元任务！！！！！！！！！！！！！！！！！！")
 
@@ -88,11 +88,11 @@ class Calendar_executor:
         '''
 
         #获取任务目标
-        task_objectives = event["event_objectives"]
+        task_objectives = task["task_objectives"]
         #获取任务列表
-        task_list = event["event_content"]
+        task_list = task["task_content"]
         #获取任务进度
-        task_progress = event["event_progress"]
+        task_progress = task["task_progress"]
         #获取任务执行id
         task_id = task_progress + 1
 
@@ -173,7 +173,7 @@ class Calendar_executor:
         task_result_new = task_result_dict["task_result"]
 
         #更新任务进度 
-        my_calendar.update_event_progress(event['event_datetime'],task_id,function_response,task_result_new)
+        my_calendar.update_task_progress(task['task_datetime'],task_id,function_response,task_result_new)
 
         print("[DEBUG] 次级AI单元任务执行结果为：",task_result,'\n')
         print("[DEBUG] 该单元任务执行结束！！！！！！！！！！！！！！！！！！",'\n')
@@ -184,7 +184,7 @@ class Calendar_executor:
 
 
     #审查单元任务的AI代理（审查单元任务的输入输出是否正确，正确就录入任务数据库，错误就返回信息到任务数据库）
-    def review_unit_task_AI_agent(self,event):
+    def review_unit_task_AI_agent(self,task):
 
         print("[DEBUG]开始审查单元任务！！！！！！！！！！！！！！！！！！")
 
@@ -243,11 +243,11 @@ class Calendar_executor:
         '''
 
         #获取任务目标
-        task_objectives = event["event_objectives"]
+        task_objectives = task["task_objectives"]
         #获取任务列表
-        task_list = event["event_content"]
+        task_list = task["task_content"]
         #获取任务进度
-        task_progress = event["event_progress"]
+        task_progress = task["task_progress"]
         #获取任务审查id
         task_id = task_progress 
 
@@ -331,14 +331,14 @@ class Calendar_executor:
             print("[DEBUG] 任务执行结果正确~",'\n')
 
             #如果任务进度等于任务分步列表长度，说明任务已经完成
-            if task_progress == event["event_distribution"]:
-                my_calendar.update_event_status(event['event_datetime'],"完成")
+            if task_progress == task["task_distribution"]:
+                my_calendar.update_task_status(task['task_datetime'],"完成")
         
         elif review_result_new == "incorrect":
             #提取正确结果
             correct_task_result = review_result_dict["correct_task_result"]
             #直接回退进度
-            my_calendar.delete_event_progress(event['event_datetime'],task_progress)
+            my_calendar.delete_task_progress(task['task_datetime'],task_progress)
 
             print("[DEBUG] 任务执行结果错误~",'\n')
 
@@ -435,17 +435,17 @@ class Main_AI_function_library():
         #功能函数库的结构为字典结构
         #key为整数变量与功能函数id相同，但为数字id： 0
         #value为字典结构，存储功能函数的信息：{
-        #功能函数id "function_id":"0",
-        #功能函数名字 "function_name":"",
-        #功能函数描述 "function_description":"",
+        #功能函数id "function_id":str,
+        #功能函数名字 "function_name":str,
+        #功能函数描述 "function_description":str,
         #功能函数说明（AI调用） "function_ai_call":{},
-        #功能函数权限 "function_permission":"0",
+        #功能函数权限 "function_permission":str",
         # }
         #添加功能函数
-        self.add_function("0", "test_function", "测试用函数", self.function_test_function, "0")
-        self.add_function("1", "create_a_task_list", "输入事件任务目标，次级AI会创建分步式任务列表，并返回", self.function_create_a_task_list, "0")
-        self.add_function("2", "search_related_functions", "根据用户需要到的函数功能的详细描述，进行语义搜索，将最可能有关的的3个功能函数返回", self.function_search_related_functions,"0")
-        self.add_function("3", "query_function_class", "日程表拥有对日程表事件进行添加，删除，更改，查询的四大类功能，输入需要调用的功能类，返回该类下所有功能函数的调用说明", self.function_query_function_class, "0")
+        #self.add_function("0", self.function_test_function["name"], self.function_test_function["description"], self.function_test_function, "0")
+        self.add_function("1", self.function_create_a_task_list["name"], self.function_create_a_task_list["description"], self.function_create_a_task_list, "0")
+        self.add_function("2", self.function_search_related_functions["name"], self.function_search_related_functions["description"], self.function_search_related_functions,"0")
+        self.add_function("3", self.function_query_function_class["name"], self.function_query_function_class["description"], self.function_query_function_class, "0")
 
 
 
@@ -460,7 +460,7 @@ class Main_AI_function_library():
     #测试函数说明（AI调用）
     function_test_function =   {
             "name": "test_function",
-            "description": "测试用函数",
+            "description": "测试用函数,主人需要调用时，才能执行",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -517,16 +517,17 @@ class Main_AI_function_library():
 
         if function_class == "添加类":
             #将添加类的功能函数说明添加到函数列表中
-            function_ai_call_list.append(my_calendar.function_add_calendar_event)
+            function_ai_call_list.append(my_calendar.function_add_scheduled_task)
         elif function_class == "删除类":
             #将删除类的功能函数说明添加到函数列表中
-            function_ai_call_list.append(my_calendar.function_delete_calendar_event)
+            function_ai_call_list.append(my_calendar.function_delete_scheduled_task)
         elif function_class == "更改类":
             #将更改类的功能函数说明添加到函数列表中
-            function_ai_call_list.append(my_calendar.function_modify_calendar_event)
+            function_ai_call_list.append(my_calendar.function_modify_scheduled_task)
         elif function_class == "查询类":
             #将查询类的功能函数说明添加到函数列表中
-            function_ai_call_list.append(my_calendar.function_query_calendar_event)
+            function_ai_call_list.append(my_calendar.function_query_scheduled_task_by_datetime)
+            function_ai_call_list.append(my_calendar.function_query_scheduled_task_by_date)
 
 
         return function_ai_call_list
@@ -534,14 +535,14 @@ class Main_AI_function_library():
     #查询日程表的工具函数说明（AI调用）
     function_query_function_class =   {
             "name": "query_function_class",
-            "description": "日程表拥有对日程表事件进行添加，删除，更改，查询的四大类功能，输入需要调用的功能类，返回该类下所有功能函数的调用说明",
+            "description": "日程表拥有对日程表任务进行添加，删除，查询的三大类功能，输入需要调用的功能类，返回该类下所有功能函数的调用说明",
             "parameters": {
                 "type": "object",
                 "properties": {
                     "function_class": {
                         "type": "string",
                         "description": "需要调用的日程表功能类",
-                        "enum": ["添加类", "删除类", "更改类", "查询类"], 
+                        "enum": ["添加类","删除类","查询类"], 
                     }
                 },
                 "required": ["function_class"]
@@ -687,28 +688,15 @@ class Ai_memory:
         #如果没有找到对话历史文件，则重新构建系统提示语句
         else:
             #构建系统提示语句
-            self.prompt = '''你是用户的AI助理，你的任务是利用功能函数库来帮助用户解答疑惑和完成他们交代的任务。当用户向你交代任务时，请判断任务的复杂程度。
-            如果任务较为简单，但用户提供的信息不足，请通过提问补充相关信息，然后自主解答或调用函数来解决，必须仅使用为您提供的函数。如果任务较为复杂，请遵循以下步骤：
-
-            1. 如果用户提供的信息较少或模糊，请确保通过提问来获取尽可能详细的信息。
-            2. 在确定用户任务的细节后，请务必再次询问用户是否愿意将任务委托给下级AI生成分步式任务列表。在得到用户的肯定回答后，调用相应的函数，将任务详细描述发给下级AI。
-            3. 获得分步式任务列表后，交由用户审查，询问用户是否满意。如果用户不满意，你可以再次调用相应的函数，继续生成分步式任务列表。
-            4. 如果用户满意，并确认愿意将任务列表交给给下级AI执行，你可以直接调用相应的函数，将分步式任务列表交给给下级AI执行。
-
-            示例1 - 简单任务：
-            用户描述：今天天气怎么样？
-            处理方法：
-            1. 向用户询问他们想要查询哪个地区的天气。
-            2. 获取用户的回答后，调用查询天气的函数，传入相应参数，然后将查询结果返回给用户。
-
-            示例2 - 复杂任务：
-            用户描述：我想设计一款手机应用，但不知道从哪里开始。
-            处理方法：
-            1. 向用户询问应用的具体类型、功能和目标用户等相关信息。
-            2. 在获取详细信息后，询问用户是否愿意将任务委托给下级AI生成分步式任务列表。
-            3. 获得用户的肯定回答后，调用相应的函数，将任务详细描述发给下级AI。
-            4. 获取分步式任务列表后，交由用户审查，询问用户是否满意。如有需要，可根据用户反馈再次调用函数生成新的任务列表。
-            5. 用户满意并确认愿意将任务列表交给下级AI执行时，调用相应的函数，将分步式任务列表交给给下级AI执行。'''
+            self.prompt = '''你现在是主人的AI女仆，你的任务是利用功能函数库来帮助主人解答疑惑和完成他们交代的任务。你要自主解答或调用函数来解决，且仅使用为您提供的函数。
+            如果主人要创建一个日程事件，请遵循以下步骤：
+            1. 如果主人提供的信息较少或模糊，请确保通过提问来获取尽可能详细的信息。
+            2. 在确定主人事件的细节后，请务必再次询问主人是否愿意将事件委托给下级AI生成分步式任务列表。在得到主人的肯定回答后，调用相应的函数，将事件详细描述发给下级AI。
+            3. 获得分步式任务列表后，交由主人审查，询问主人是否满意。如果主人不满意，你可以再次调用相应的函数，继续生成分步式任务列表。
+            4. 如果主人满意，并确认愿意后，询问主人设定事件的日期与时间。
+            4. 最后获取并调用日程表的添加类函数，根据日期时间，事件目的，分布式任务列表，将该事件添加到日程表中。
+            
+            '''
 
             #添加系统提示语句到对话历史最前面
             self.conversation_history.insert(0,{"role": "system", "content": self.prompt}) #在列表最前面插入元素
@@ -938,7 +926,7 @@ class Ai_Parser:
                 function_response = main_function_library.query_function_class(function_class=function_arguments.get("function_class"),)
 
             #调用日程表的具体的功能函数
-            elif function_name.get("calendar"):
+            elif "scheduled" in function_name:
                 function_response = my_calendar.call_calendar_function(function_name=function_name,function_arguments=function_arguments)
 
             #调用功能函数库里的函数
