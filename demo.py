@@ -3,6 +3,7 @@ import datetime
 import re
 import threading
 import sys
+import time
 import openai #需要安装库pip install openai
 import json
 import os
@@ -26,26 +27,33 @@ class Calendar_executor:
             #获取当前时间
             now_time = datetime.datetime.now()
             #输入当天的年月日，获取日程表当天的全部事件
-            task_list = my_calendar.query_scheduled_task_by_date(now_time) 
-            #遍历日程表当天的全部事件,如果事件的执行时间小于当前时间和状态是未完成，就执行事件
-            for task in task_list:
-                if task['task_datetime'] < now_time and task['task_status'] == '未完成':
-                    
-                    #获取事件状态
-                    task_status = task['task_status']
-
-                    while task_status == "未完成" :
-                        self.execute_unit_task_AI_agent(task)
-
-                        self.review_unit_task_AI_agent(task)
-
-                        #重新获取事件状态
+            schedule_list = my_calendar.query_scheduled_task_by_date(now_time)
+            #如果日程表是列表类型，说明当天有事件
+            if type(schedule_list) == list:
+                #遍历日程表当天的全部事件,如果事件的执行时间小于当前时间和状态是未完成，就执行事件
+                for task in schedule_list:
+                    if datetime.datetime.strptime(task['task_datetime'], "%Y-%m-%d %H:%M:%S")< now_time and task['task_status'] == '未完成':
+                        
+                        #获取事件状态
                         task_status = task['task_status']
+
+                        while task_status == "未完成" :
+                            print("[DEBUG]日程表执行器正在执行日程表任务:",task['task_datetime'],'\n')
+                            self.execute_unit_task_AI_agent(task['task_datetime'])
+
+                            self.review_unit_task_AI_agent(task['task_datetime'])
+
+                            #重新获取事件状态
+                            task_status = my_calendar.get_task_status(task['task_datetime'])
+
+            #每隔10s检查一次日程表
+            print("[DEBUG]日程表执行器正在检查日程表~",'\n')
+            time.sleep(10)
 
 
 
     #执行单元任务的AI代理
-    def execute_unit_task_AI_agent(self,task):
+    def execute_unit_task_AI_agent(self,task_datetime):
 
         print("[DEBUG]开始执行单元任务！！！！！！！！！！！！！！！！！！")
 
@@ -86,11 +94,13 @@ class Calendar_executor:
         }
         ```
         '''
+        #根据日期时间，获取具体任务，需要重新获取任务，因为任务进度已经更新
+        task = my_calendar.query_scheduled_task_by_datetime(task_datetime)
 
         #获取任务目标
         task_objectives = task["task_objectives"]
         #获取任务列表
-        task_list = task["task_content"]
+        task_list = task["task_list"]
         #获取任务进度
         task_progress = task["task_progress"]
         #获取任务执行id
@@ -181,10 +191,8 @@ class Calendar_executor:
 
 
 
-
-
     #审查单元任务的AI代理（审查单元任务的输入输出是否正确，正确就录入任务数据库，错误就返回信息到任务数据库）
-    def review_unit_task_AI_agent(self,task):
+    def review_unit_task_AI_agent(self,task_datetime):
 
         print("[DEBUG]开始审查单元任务！！！！！！！！！！！！！！！！！！")
 
@@ -242,10 +250,13 @@ class Calendar_executor:
         任务2的结果不正确，请更正后继续。
         '''
 
+        #根据日期时间，获取具体任务，需要重新获取任务，因为任务进度已经更新
+        task = my_calendar.query_scheduled_task_by_datetime(task_datetime)
+
         #获取任务目标
         task_objectives = task["task_objectives"]
         #获取任务列表
-        task_list = task["task_content"]
+        task_list = task["task_list"]
         #获取任务进度
         task_progress = task["task_progress"]
         #获取任务审查id
@@ -332,7 +343,8 @@ class Calendar_executor:
 
             #如果任务进度等于任务分步列表长度，说明任务已经完成
             if task_progress == task["task_distribution"]:
-                my_calendar.update_task_status(task['task_datetime'],"完成")
+                print("[DEBUG] 该任务列表已经全部完成~",'\n')
+                my_calendar.update_task_status(task['task_datetime'],"已完成")
         
         elif review_result_new == "incorrect":
             #提取正确结果
@@ -422,10 +434,6 @@ class Calendar_executor:
 
 
 
-
-
-
-
 #————————————————————————————————————————主AI功能函数库————————————————————————————————————————
 class Main_AI_function_library(): 
     #初始化功能函数库
@@ -442,7 +450,7 @@ class Main_AI_function_library():
         #功能函数权限 "function_permission":str",
         # }
         #添加功能函数
-        #self.add_function("0", self.function_test_function["name"], self.function_test_function["description"], self.function_test_function, "0")
+        self.add_function("0", self.function_test_function["name"], self.function_test_function["description"], self.function_test_function, "0")
         self.add_function("1", self.function_create_a_task_list["name"], self.function_create_a_task_list["description"], self.function_create_a_task_list, "0")
         self.add_function("2", self.function_search_related_functions["name"], self.function_search_related_functions["description"], self.function_search_related_functions,"0")
         self.add_function("3", self.function_query_function_class["name"], self.function_query_function_class["description"], self.function_query_function_class, "0")
@@ -697,9 +705,16 @@ class Ai_memory:
             4. 最后获取并调用日程表的添加类函数，根据日期时间，事件目的，分布式任务列表，将该事件添加到日程表中。
             
             '''
-
             #添加系统提示语句到对话历史最前面
             self.conversation_history.insert(0,{"role": "system", "content": self.prompt}) #在列表最前面插入元素
+
+
+        #在文件夹下寻找conversation_history_all.json文件，如果存在则读取json文件，如果不存在则跳过
+        if os.path.exists(os.path.join(self.file_path, "conversation_history_all.json")):
+            with open(os.path.join(self.file_path, "conversation_history_all.json"), "r", encoding="utf-8") as f:
+                self.conversation_history_all = json.load(f)
+        else:
+            self.conversation_history_all.insert(0,{"role": "system", "content": self.prompt})
 
     #获取对话历史
     def read_log(self):
@@ -797,6 +812,10 @@ class Ai_memory:
         with open(os.path.join(self.file_path, "conversation_history.json"), "w", encoding="utf-8") as f:
             json.dump(self.conversation_history, f, ensure_ascii=False, indent=4)
 
+        #将完整的对话记录变量以utf-8格式写入json文件到指定文件夹中
+        with open(os.path.join(self.file_path, "conversation_history_all.json"), "w", encoding="utf-8") as f:
+            json.dump(self.conversation_history_all, f, ensure_ascii=False, indent=4)
+
     #计算对话历史的tokens的函数
     def num_tokens_from_messages(self,messages, model="gpt-3.5-turbo-0613"):
         """Return the number of tokens used by a list of messages."""
@@ -837,7 +856,109 @@ class Ai_memory:
     def num_tokens_from_functions(self,functions_list, model="gpt-3.5-turbo-0613"):
         pass
 
-        
+    #总结记忆，压缩对话历史函数
+    def compress_memory(self,k):
+
+        print("[DEBUG]开始执行单元任务！！！！！！！！！！！！！！！！！！")
+
+        #任务目标示例
+        task_goal_example = '''我现在有70块，想买5个苹果，想知道买完后还剩多少钱'''
+        #任务列表示例
+        task_list_example = ''' 
+        [
+        {
+            "task_id": 1,
+            "task_description": "获取苹果的单价",
+            "function_used": True,
+            "function_name": "get_the_price_of_the_item",
+            "function_parameters": {"item": "苹果",
+                                    "unit": "人民币"},
+            "function_response": "五块人民币",
+            "task_result": "一个苹果的价格是五块人民币"
+        },
+        {
+            "task_id": 2,
+            "task_description": "计算五个苹果的总价",
+            "function_used": False
+        }
+        ]
+        '''
+        #执行任务结果示例
+        task_result_example = '''
+        根据任务列表，任务id为2的任务描述是"计算五个苹果的总价"。已知一个苹果的价格是五块人民币（来自任务id为1的执行结果），那么我们可以计算五个苹果的总价。
+
+        五个苹果的总价为：5（苹果单价）* 5（苹果数量）= 25。
+
+        任务结果输出为json格式：
+
+        ```json
+        {
+        "task_id": 2,
+        "task_result": "五个苹果的总价是25块人民币"
+        }
+        ```
+        '''
+
+
+        #构建系统提示语句
+        prompt = (
+        f"你将接收到一系列对话历史，每个对话历史包含一个或多个对话。对话由两个人进行，他们被标记为"
+        f"你的任务是提取每个对话的主要信息并总结它。你必须将总结的信息呈现为json格式输出,并以json代码块标记。"
+        f"请注意，你必须尽可能准确地提取信息，并确保你的总结简洁而全面。你还必须确保你的总结符合上述格式规定，以便于后续处理和分析。"
+        f"分步任务列表示例###{task_list_example}###"
+        f"执行任务结果示例###{task_result_example}###"
+        )
+
+        #构建分步任务
+        ai_task = f"你需要执行的任务id是{task_id}。"
+
+        #构建对话
+        messages = [{"role": "system", "content": prompt },
+                {"role": "user", "content":  ai_task}]
+
+        print("[DEBUG] 次级执行AI请求发送内容为：",messages,'\n')
+
+        #如果函数列表为空
+        if functions_list == "none functions":
+            response = openai.ChatCompletion.create(
+                model="gpt-3.5-turbo-0613",
+                messages=messages ,
+                temperature=0
+            )
+        #如果函数列表不为空
+        else :
+            #向模型发送用户查询以及它可以访问的函数
+            response = openai.ChatCompletion.create(
+                model="gpt-3.5-turbo-0613",
+                messages=messages ,
+                temperature=0,
+                functions=functions_list,  #关于调用函数说明内容可以放在这里，也可以放在上面的content中，AI都会识别并使用
+                function_call="auto" 
+            )           
+
+        # 将字典转换为JSON字符串，并保留非ASCII字符
+        json_str = json.dumps(response, ensure_ascii=False)
+        # 将JSON字符串中的Unicode编码内容转换为UTF-8编码
+        utf8_str = json_str.encode('utf-8')
+        # 将字节串转换为字符串
+        str_content = utf8_str.decode('utf-8')
+        print("[DEBUG] 次级执行AI全部回复内容为：",str_content,'\n')
+
+
+        #解析回复,并自动调用函数，重新发送请求，直到回复中不再有函数调用
+        function_response,task_result = self.parse_response(response,messages,functions_list)
+
+
+        # 从任务结果示例中提取JSON部分
+        json_str = re.search(r'```json(.*?)```', task_result, re.S).group(1)
+        # 将JSON字符串转换为字典变量
+        task_result_dict = json.loads(json_str)
+        # 从字典变量中提取任务执行结果
+        task_result_new = task_result_dict["task_result"]
+
+
+
+
 #————————————————————————————————————————主AI对话请求器————————————————————————————————————————
 class Ai_Request:
     def __init__(self):

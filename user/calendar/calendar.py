@@ -17,7 +17,6 @@ class Calendar :
         #事件分步数 "task_distribution":5,
         #事件已完成进度 "task_progress":0,
         #事件状态 "task_status":"未完成", 
-        #事件执行结果 "task_result":""
         # }
         #任务分步式列表结构示例
         self.task_list =[
@@ -38,16 +37,15 @@ class Calendar :
         }
         ]
         #key示例
-        example_key =datetime.datetime.strptime("2023-07-17 09:30:00", "%Y-%m-%d %H:%M:%S")
+        example_key =datetime.datetime.strptime("2023-07-23 01:30:00", "%Y-%m-%d %H:%M:%S")
         #value示例
         example_value =   {
-            "task_datetime":"2023-07-17 09:30:00",
+            "task_datetime":"2023-07-23 01:30:00",
             "task_objectives":"计算五个苹果的价格",
             "task_list":self.task_list,
             "task_distribution":2,
             "task_progress":1,
             "task_status":"未完成",
-            "task_result":""
             }
         #添加示例到日程表中
         self.my_calendar[example_key] = example_value 
@@ -104,7 +102,6 @@ class Calendar :
             "task_distribution":scheduled_task_list_length,
             "task_progress":0,
             "task_status":"未完成",
-            "task_result":""
             }
 
             #将日程任务添加到日程表中
@@ -227,10 +224,9 @@ class Calendar :
         if task_datetime in self.my_calendar.keys():
             #查询日程任务
             print("[DEBUG] 日程表中已查询该日程任务")
-            #新建一个字典，存储查询结果
+
             self.query_result = {}
-            #把datetime类型的key转换为字符串类型，写入到新字典中
-            self.query_result[task_datetime.strftime("%Y-%m-%d %H:%M:%S")] = self.my_calendar[task_datetime].copy()
+            self.query_result = self.my_calendar[task_datetime].copy()
         
             return self.query_result
         else:
@@ -264,15 +260,14 @@ class Calendar :
             if key.date() == task_date.date():
                 #新建一个字典，存储查询结果
                 self.query_result = {}
-                #把datetime类型的key转换为字符串类型，写入到新字典中
-                self.query_result[key.strftime("%Y-%m-%d %H:%M:%S")] = self.my_calendar[key].copy()
+                self.query_result= self.my_calendar[key].copy()
                 #把查询结果添加到列表中
                 scheduled_task_list.append(self.query_result)
         if len(scheduled_task_list) == 0:
             print("[DEBUG] 日程表中不存在该天的日程任务")
             return "日程表中不存在该天的日程任务"
         else:
-            print("[DEBUG] 日程表中已查询该天的日程任务")
+            print("[DEBUG] 日程表中已查询到该天的日程任务")
             return scheduled_task_list
     
     #查询日程任务的函数说明
@@ -338,11 +333,7 @@ class Calendar :
 
 
         #更新任务进度
-        scheduled_task["task_progress"] = task_id
-
-        #检查是否已经全部完成，如果完成更新事件状态
-        if task_id == scheduled_task["task_distribution"]:
-            scheduled_task["task_status"] = "已完成"
+        self.my_calendar[task_datetime]["task_progress"] = task_id
 
         #更新日程任务
         self.my_calendar[task_datetime] = scheduled_task
@@ -350,20 +341,6 @@ class Calendar :
         #自动写入到本地文件中
         self.auto_write_my_scheduled()
 
-
-    #根据时间key，改变事件状态
-    def update_task_status(self,task_datetime,scheduled_task_status):
-
-        ##如果key不是datetime类型，将输入的日期时间转换为datetime类型
-        if type(task_datetime) != datetime.datetime:
-            task_datetime = datetime.datetime.strptime(task_datetime, "%Y-%m-%d %H:%M:%S")
-        #根据任务缓存id，找到相应任务
-        scheduled_task = self.my_calendar[task_datetime]
-        #更新任务状态
-        scheduled_task["task_status"] = scheduled_task_status
-
-        #自动写入到本地文件中
-        self.auto_write_my_scheduled()
     
     #根据时间key，回退一步任务进度
     def delete_task_progress(self,task_datetime,task_progress):
@@ -380,6 +357,34 @@ class Calendar :
                 del task_unit["task_result"]
                 #回退任务进度
                 scheduled_task["task_progress"] = task_progress - 1
+
+        #自动写入到本地文件中
+        self.auto_write_my_scheduled()
+
+
+    #根据时间key，获取任务状态
+    def get_task_status(self,task_datetime):
+        #将输入的日期时间转换为datetime类型
+        if type(task_datetime) != datetime.datetime:
+            task_datetime = datetime.datetime.strptime(task_datetime, "%Y-%m-%d %H:%M:%S")
+        #根据任务缓存id，找到相应任务
+        scheduled_task = self.my_calendar[task_datetime]
+        #获取任务状态
+        scheduled_task_status = scheduled_task["task_status"]
+
+        return scheduled_task_status
+
+
+    #根据时间key，改变任务状态
+    def update_task_status(self,task_datetime,scheduled_task_status):
+
+        ##如果key不是datetime类型，将输入的日期时间转换为datetime类型
+        if type(task_datetime) != datetime.datetime:
+            task_datetime = datetime.datetime.strptime(task_datetime, "%Y-%m-%d %H:%M:%S")
+        #根据任务缓存id，找到相应任务
+        scheduled_task = self.my_calendar[task_datetime]
+        #更新任务状态
+        scheduled_task["task_status"] = scheduled_task_status
 
         #自动写入到本地文件中
         self.auto_write_my_scheduled()
