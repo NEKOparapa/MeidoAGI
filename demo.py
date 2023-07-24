@@ -433,7 +433,6 @@ class Calendar_executor:
         return function_response,content
 
 
-
 #————————————————————————————————————————主AI功能函数库————————————————————————————————————————
 class Main_AI_function_library(): 
     #初始化功能函数库
@@ -675,7 +674,6 @@ class Main_AI_function_library():
                 function_list.append(function_ai_call)
         return function_list
 
-
         
 #————————————————————————————————————————主AI对话记忆库————————————————————————————————————————
 class Ai_memory:
@@ -715,6 +713,10 @@ class Ai_memory:
                 self.conversation_history_all = json.load(f)
         else:
             self.conversation_history_all.insert(0,{"role": "system", "content": self.prompt})
+
+    #对话历史文件检查函数
+    def check_conversation_history(self):
+        pass
 
     #获取对话历史
     def read_log(self):
@@ -803,10 +805,13 @@ class Ai_memory:
 
         #如果大于最大tokens数，删除最早的对话记录的第二，第三个元素
         if (self.num_tokens_history + self.num_tokens_functions )  > 4000:
-            print("[DEBUG] 对话历史tokens数超过4080，删除最早的对话记录的第二，第三个元素，保留系统提示语句")
+            #print("[DEBUG] 对话历史tokens数超过4080，删除最早的对话记录的第二，第三个元素，保留系统提示语句")
             #删除列表索引为1，2的元素
-            del self.conversation_history[1:3]
+            #del self.conversation_history[1:3]
 
+            #总结记忆，压缩对话历史
+            print("[DEBUG] 对话历史tokens数超过4080，正在总结记忆，压缩对话历史~",'\n')
+            self.conversation_history = self.compress_memory(self.conversation_history,1)
 
         #将对话记录变量以utf-8格式写入json文件到指定文件夹中
         with open(os.path.join(self.file_path, "conversation_history.json"), "w", encoding="utf-8") as f:
@@ -857,84 +862,68 @@ class Ai_memory:
         pass
 
     #总结记忆，压缩对话历史函数
-    def compress_memory(self,k):
+    def compress_memory(self,dialog_history,k):
+        #对话历史示例
+        dialog_history_example = """[{'role': 'user', 'content': '你好啊'}, {'role': 'assistant', 'content': '你好！有什么我可以帮助你的吗？'}, 
+        {'role': 'user', 'content': '你在干嘛'}, 
+        {'role': 'assistant', 'content': '作为您的AI女仆 ，我在等待您的指示和问题，以便帮助您解答疑惑或完成任务。请告诉我您需要什么帮 助。'}, 
+        {'role': 'user', 'content': '帮我写一篇文章，关于我和我亲爱的爸爸'}, 
+        {'role': 'assistant', 'content': '当然可以帮您写一篇文章关于您和您亲爱的爸爸的文章。在开始之前，我需要一些更详细的信息来编写您想要的内容。以下是一些问题 ，您可以回答其中一些或提供更多信息：\n\n1. 您想要介绍您和您爸爸之间的关系吗？比如是一个亲密的关系，或者您和您爸爸之间有特别的经历或故事。\n2. 您认为您爸爸的哪些特点或品质让您钦佩或感激？\n3. 您和您爸爸之间的共同爱好或活动是什么？\n4. 有没有什么特别的时刻或活动，您和您爸爸一起度过的时光让您难以忘怀？\n5. 您 想要突出强调的其他方面，比如您们的相似之处或相互支持的关系。\n\n请提供以上问 题的答案，或者提供更多细节，我将尽力为您编写一篇关于您和您亲爱的爸爸的文章。'}, 
+        {'role': 'user', 'content': '我的爸爸是非常体贴的人，共同爱好是下棋'}]"""
 
-        print("[DEBUG]开始执行单元任务！！！！！！！！！！！！！！！！！！")
-
-        #任务目标示例
-        task_goal_example = '''我现在有70块，想买5个苹果，想知道买完后还剩多少钱'''
-        #任务列表示例
-        task_list_example = ''' 
-        [
-        {
-            "task_id": 1,
-            "task_description": "获取苹果的单价",
-            "function_used": True,
-            "function_name": "get_the_price_of_the_item",
-            "function_parameters": {"item": "苹果",
-                                    "unit": "人民币"},
-            "function_response": "五块人民币",
-            "task_result": "一个苹果的价格是五块人民币"
-        },
-        {
-            "task_id": 2,
-            "task_description": "计算五个苹果的总价",
-            "function_used": False
-        }
-        ]
-        '''
-        #执行任务结果示例
-        task_result_example = '''
-        根据任务列表，任务id为2的任务描述是"计算五个苹果的总价"。已知一个苹果的价格是五块人民币（来自任务id为1的执行结果），那么我们可以计算五个苹果的总价。
-
-        五个苹果的总价为：5（苹果单价）* 5（苹果数量）= 25。
-
-        任务结果输出为json格式：
-
+        #对话历史总结示例
+        summary_resultst_example = """根据给出的对话历史，可以总结出以下信息：
         ```json
         {
-        "task_id": 2,
-        "task_result": "五个苹果的总价是25块人民币"
+        "summary": "主人想让AI女仆帮忙写一篇关于主人和主人父亲的文章。AI女仆提出了一系列问题，包括介绍主人和主人父亲之间的关系、主人父亲的品质、主人和主人父亲之间的共同爱好或活动、特别的时刻或活动、以及其他想要突出强调的方面。主人回答了其中的一些问题，表示自己和父亲之间的共同爱好是下棋。"
         }
         ```
-        '''
-
+        """
 
         #构建系统提示语句
         prompt = (
-        f"你将接收到一系列对话历史，每个对话历史包含一个或多个对话。对话由两个人进行，他们被标记为"
-        f"你的任务是提取每个对话的主要信息并总结它。你必须将总结的信息呈现为json格式输出,并以json代码块标记。"
+        f"你是一名专业的记录员，你将接收到关于主人和AI女仆的对话历史，主人被标记为user，AI女仆被标记为assistant，而被标记为function的是工具调用返回结果。"
+        f"你的任务是提取对话历史的主要信息并总结它。你必须将总结的信息呈现为json格式,并以json代码块标记。"
         f"请注意，你必须尽可能准确地提取信息，并确保你的总结简洁而全面。你还必须确保你的总结符合上述格式规定，以便于后续处理和分析。"
-        f"分步任务列表示例###{task_list_example}###"
-        f"执行任务结果示例###{task_result_example}###"
+        f"对话历史示例###{dialog_history_example}###"
+        f"总结结果示例###{summary_resultst_example}###"
         )
 
+
+        #获取对话历史列表第一个元素，即系统提示语句
+        the_prompt = dialog_history[0]
+
+        #获取对话历史列表倒数2k个元素，即最新的k对对话内容
+        k = 1
+        conversation_end = dialog_history[-(2*k):]
+
+
+        #除去列表变量第一个元素
+        dialog_history.pop(0)
+
+        #去除列表中倒数2k个元素
+        k = 1
+        dialog_history_copy = dialog_history[:-(2*k)]
+
+        print("[DEBUG] 截取的对话历史内容为：",dialog_history_copy,'\n')
+
+
         #构建分步任务
-        ai_task = f"你需要执行的任务id是{task_id}。"
+        ai_task = f"你需要总结的内容是###{dialog_history_copy}###"
 
         #构建对话
         messages = [{"role": "system", "content": prompt },
                 {"role": "user", "content":  ai_task}]
 
-        print("[DEBUG] 次级执行AI请求发送内容为：",messages,'\n')
+        print("[DEBUG] 总结AI请求发送内容为：",messages,'\n')
 
-        #如果函数列表为空
-        if functions_list == "none functions":
-            response = openai.ChatCompletion.create(
-                model="gpt-3.5-turbo-0613",
-                messages=messages ,
-                temperature=0
-            )
-        #如果函数列表不为空
-        else :
-            #向模型发送用户查询以及它可以访问的函数
-            response = openai.ChatCompletion.create(
-                model="gpt-3.5-turbo-0613",
-                messages=messages ,
-                temperature=0,
-                functions=functions_list,  #关于调用函数说明内容可以放在这里，也可以放在上面的content中，AI都会识别并使用
-                function_call="auto" 
-            )           
+
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo-16k-0613",
+            messages=messages ,
+            temperature=0
+        )
+
 
         # 将字典转换为JSON字符串，并保留非ASCII字符
         json_str = json.dumps(response, ensure_ascii=False)
@@ -942,11 +931,12 @@ class Ai_memory:
         utf8_str = json_str.encode('utf-8')
         # 将字节串转换为字符串
         str_content = utf8_str.decode('utf-8')
-        print("[DEBUG] 次级执行AI全部回复内容为：",str_content,'\n')
+        print("[DEBUG] 总结AI全部内容为：",str_content,'\n')
 
 
-        #解析回复,并自动调用函数，重新发送请求，直到回复中不再有函数调用
-        function_response,task_result = self.parse_response(response,messages,functions_list)
+        # 从回复中提取message部分
+        task_result =  response["choices"][0]["message"][ "content"]
+        print("[DEBUG] 总结AI消息内容为：",task_result,'\n')
 
 
         # 从任务结果示例中提取JSON部分
@@ -954,9 +944,24 @@ class Ai_memory:
         # 将JSON字符串转换为字典变量
         task_result_dict = json.loads(json_str)
         # 从字典变量中提取任务执行结果
-        task_result_new = task_result_dict["task_result"]
+        task_result_new = task_result_dict["summary"]
+        print("[DEBUG] 总结AI提取内容为：",task_result_new,'\n')
 
 
+        #将提取的内容格式化
+        The_summary = {"role": "user", "content": "【system message】"+task_result_new}
+
+        #重新构建对话历史
+        dialog_history_new = []
+        dialog_history_new.append(the_prompt)
+        dialog_history_new.append(The_summary)
+        #提取每个元素，添加到新列表中，以免记录格式错误
+        for i in conversation_end:
+            dialog_history_new.append(i)
+
+        print("[DEBUG] 重新构建的对话历史内容为：",dialog_history_new,'\n')
+
+        return dialog_history_new
 
 
 #————————————————————————————————————————主AI对话请求器————————————————————————————————————————
