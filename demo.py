@@ -1,4 +1,4 @@
-# coding:utf-8
+  # coding:utf-8
 import datetime
 import re
 import threading
@@ -14,7 +14,10 @@ from chromadb.utils import embedding_functions
 #可以导入脚本全部内容，也可以选择导入部分内容
 from ai_toolkits import function_library
 from user.calendar import calendar
-#from agents.cot_agent import  cot_mode
+
+# 获取当前工作目录
+script_dir = os.path.dirname(os.path.abspath(sys.argv[0])) 
+print("[INFO] 当前工作目录是:",script_dir,'\n') 
 
 
 #————————————————————————————————————————日程表执行器————————————————————————————————————————
@@ -22,8 +25,10 @@ class Calendar_executor:
     def __init__(self):
         pass
 
+    #循环检查日程表
     def run (self): 
         while 1 :
+            print("[DEBUG]日程表执行器正在检查日程表~",'\n')
             #获取当前时间
             now_time = datetime.datetime.now()
             #输入当天的年月日，获取日程表当天的全部事件
@@ -33,7 +38,7 @@ class Calendar_executor:
                 #遍历日程表当天的全部事件,如果事件的执行时间小于当前时间和状态是未完成，就执行事件
                 for task in schedule_list:
                     if datetime.datetime.strptime(task['task_datetime'], "%Y-%m-%d %H:%M:%S")< now_time and task['task_status'] == '未完成':
-                        
+                        print("[DEBUG]已发现需要执行的日程安排",'\n')
                         #获取事件状态
                         task_status = task['task_status']
 
@@ -47,7 +52,7 @@ class Calendar_executor:
                             task_status = my_calendar.get_task_status(task['task_datetime'])
 
             #每隔10s检查一次日程表
-            print("[DEBUG]日程表执行器正在检查日程表~",'\n')
+            print("[DEBUG]日程表执行器正在休息中，等待下次检查",'\n')
             time.sleep(10)
 
 
@@ -467,7 +472,7 @@ class Main_AI_function_library():
     #测试函数说明（AI调用）
     function_test_function =   {
             "name": "test_function",
-            "description": "测试用函数,主人需要调用时，才能执行",
+            "description": "测试用函数（当主人说需要调用时，才能调用）",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -813,6 +818,7 @@ class Ai_memory:
             print("[DEBUG] 对话历史tokens数超过4080，正在总结记忆，压缩对话历史~",'\n')
             self.conversation_history = self.compress_memory(self.conversation_history,1)
 
+
         #将对话记录变量以utf-8格式写入json文件到指定文件夹中
         with open(os.path.join(self.file_path, "conversation_history.json"), "w", encoding="utf-8") as f:
             json.dump(self.conversation_history, f, ensure_ascii=False, indent=4)
@@ -1028,7 +1034,7 @@ class Ai_Parser:
             print("[DEBUG] 主AI已调用函数附加说明：",function_content,'\n')
 
             #记录一下AI的函数申请调用回复
-            history.log_message("function_call",function_name,function_arguments,function_content)
+            ai_memory.log_message("function_call",function_name,function_arguments,function_content)
 
 
             #将函数输入参数转换为字典格式
@@ -1062,10 +1068,10 @@ class Ai_Parser:
             print("[DEBUG] 主AI已调用的函数为：",function_name,'输入参数为：',function_arguments,'调用结果为：',function_response,'\n')
 
             #记录函数调用结果
-            history.log_message("function_return",function_name,None,function_response)
+            ai_memory.log_message("function_return",function_name,None,function_response)
 
             #再次发送对话请求
-            Ai_response = request.make_request(history)
+            Ai_response = request.make_request(ai_memory)
 
             #再次提取AI回复内容中message部分
             message = Ai_response["choices"][0]["message"]
@@ -1090,10 +1096,10 @@ class Chat_window:
             print("\n")
 
             #记录用户输入
-            history.log_message("user",None,None,user_input)
+            ai_memory.log_message("user",None,None,user_input)
 
             #发送对话请求
-            Ai_response = request.make_request(history)
+            Ai_response = request.make_request(ai_memory)
 
             #调用AI解析器来解析回复，并自动执行函数调用
             content = parser.parse_response(Ai_response)
@@ -1102,16 +1108,13 @@ class Chat_window:
             print("【助手】：",content,"\n")
 
             #记录AI纯文本回复
-            history.log_message("assistant", None, None, content)
+            ai_memory.log_message("assistant", None, None, content)
         
         
 
 
 #————————————————————————————————————————主程序————————————————————————————————————————
 if __name__ == '__main__':
-    # 获取当前工作目录
-    script_dir = os.path.dirname(os.path.abspath(sys.argv[0])) 
-    print("[INFO] 当前工作目录是:",script_dir,'\n') 
 
     #注册api
     Api_key = "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"
@@ -1130,7 +1133,8 @@ if __name__ == '__main__':
                 )
 
     #创建主AI记忆库
-    history = Ai_memory(script_dir)
+    file_path = os.path.join(script_dir, "user", "memory")
+    ai_memory = Ai_memory(file_path)
 
 
     #创建功能函数库
@@ -1141,9 +1145,12 @@ if __name__ == '__main__':
 
     #创建日程表
     my_calendar = calendar.Calendar()
-
+ 
     #创建日程表执行器
     calendar_executor = Calendar_executor()
+    #后台运行日程表执行器
+    #thread = threading.Thread(target=calendar_executor.run)
+    #thread.start()
 
     #创建AI请求器
     request = Ai_Request()
@@ -1165,10 +1172,11 @@ if __name__ == '__main__':
 
 
     #欢迎用户
-    print("【助手】：欢迎使用AI助手！","\n")
+    print("【系统】：欢迎使用AI助手！","\n")
 
     #开启对话器
     chat.start_conversation()
+
 
 
 
