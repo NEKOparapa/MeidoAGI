@@ -1,10 +1,8 @@
 import json
 
-
-
 from .expansion_toolkit.shopping_toolkit import shopping_toolkit
 from .expansion_toolkit.weather_toolkit import weather_toolkit
-
+from .expansion_toolkit.rssfeeds_toolkit import rssfeeds_toolkit
 
 #————————————————————————————————————————功能函数库————————————————————————————————————————
 class Function_library():
@@ -23,10 +21,10 @@ class Function_library():
         # }
         
         #添加功能函数
-        self.add_function("1", "get_current_weather", "输入位置与温度单位，获取给定位置的当前天气", weather_toolkit.function_get_current_weather, "1")
-        self.add_function("2", "get_n_day_weather_forecast", "输入位置、温度单位和天数，获取该位置未来N天的天气预报", weather_toolkit.function_get_n_day_weather_forecast, "1")
-        self.add_function("3", "get_the_price_of_the_item", "输入物品名词，金额单位，获取物品的单个价格", shopping_toolkit.function_get_the_price_of_the_item, "1")
-
+        self.add_function("1",  weather_toolkit.function_get_current_weather, "1")
+        self.add_function("2",  weather_toolkit.function_get_n_day_weather_forecast, "1")
+        self.add_function("3",  shopping_toolkit.function_get_the_price_of_the_item, "1")
+        self.add_function("4",  rssfeeds_toolkit.function_get_anime_rssfeed, "1")
 
 
 
@@ -42,13 +40,20 @@ class Function_library():
 
         elif function_name == "get_n_day_weather_forecast":
             function_response = weather_toolkit.get_n_day_weather_forecast(location=function_arguments.get("location"),unit=function_arguments.get("unit"),num_days=function_arguments.get("num_days"),)
-        
+
+        elif function_name == "get_anime_rssfeed":
+            function_response = rssfeeds_toolkit.get_anime_rssfeed()
+
         return function_response
 
 
 
     #添加功能函数到库中的函数
-    def add_function(self, function_id, function_name, function_description, function_ai_call, function_permission):
+    def add_function(self, function_id, function_ai_call, function_permission):
+
+        function_name = function_ai_call["name"]
+        function_description = function_ai_call["description"]
+
         #构建功能函数结构
         functions = {
             "function_id": function_id,

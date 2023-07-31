@@ -454,10 +454,10 @@ class Main_AI_function_library():
         #功能函数权限 "function_permission":str",
         # }
         #添加功能函数
-        self.add_function("0", self.function_test_function["name"], self.function_test_function["description"], self.function_test_function, "0")
-        self.add_function("1", self.function_create_a_task_list["name"], self.function_create_a_task_list["description"], self.function_create_a_task_list, "0")
-        self.add_function("2", self.function_search_related_functions["name"], self.function_search_related_functions["description"], self.function_search_related_functions,"0")
-        self.add_function("3", self.function_query_function_class["name"], self.function_query_function_class["description"], self.function_query_function_class, "0")
+        #self.add_function("0", self.function_test_function, "0")
+        self.add_function("1", self.function_create_a_task_list, "0")
+        self.add_function("2", self.function_search_related_functions,"0")
+        self.add_function("3", self.function_query_function_class, "0")
 
 
 
@@ -655,7 +655,11 @@ class Main_AI_function_library():
 
 
     #添加功能函数
-    def add_function(self, function_id, function_name, function_description, function_ai_call, function_permission):
+    def add_function(self, function_id,function_ai_call, function_permission):
+
+        function_name = function_ai_call["name"]
+        function_description = function_ai_call["description"]
+
         #构建功能函数结构
         functions = {
             "function_id": function_id,
