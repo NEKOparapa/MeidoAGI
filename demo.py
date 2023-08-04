@@ -1121,7 +1121,7 @@ class Chat_window:
 if __name__ == '__main__':
 
     #注册api
-    Api_key = "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"
+    Api_key = "sk-Z7SHqfPCBGnMCHwxZUwMT3BlbkFJPJ1tA2ps625NFV2vgCx1x"
     openai.api_key = Api_key
 
     #创建向量存储库,并使用openai的embedding函数
