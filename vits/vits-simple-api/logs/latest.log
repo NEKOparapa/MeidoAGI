@@ -9,61 +9,33 @@ INFO:werkzeug [31m[1mWARNING: This is a development server. Do not use it in a
  * Running on http://192.168.0.144:23456
 INFO:werkzeug [33mPress CTRL+C to quit[0m
 INFO:vits-simple-api [VITS] id:0 format:wav lang:auto length:1.0 noise:0.667 noisew:0.8
-INFO:vits-simple-api [VITS] len:27 text：你好，我是vits语音合成模型，我可以将文字转换成语音
-DEBUG:vits-simple-api [ZH]你好，我是vits语音合成模型，我可以将文字转换成语音[ZH]
-INFO:vits-simple-api [VITS] finish in 5.61s
-INFO:werkzeug 127.0.0.1 - - [05/Aug/2023 02:58:33] "POST /voice HTTP/1.1" 200 -
+INFO:vits-simple-api [VITS] len:15 text：您好！有什么我可以帮助您的吗？
+DEBUG:vits-simple-api [ZH]您好！有什么我可以帮助您的吗？[ZH]
+INFO:vits-simple-api [VITS] finish in 3.20s
+INFO:werkzeug 127.0.0.1 - - [06/Aug/2023 02:54:30] "POST /voice HTTP/1.1" 200 -
 INFO:vits-simple-api [VITS] id:0 format:wav lang:auto length:1.0 noise:0.667 noisew:0.8
-INFO:vits-simple-api [VITS] len:275 text：这个错误通常是由于尝试将非JSON格式的数据作为JSON解析器的输入引起的。在JSON格式中，数据必须以花括号（{）或方括号（[）开头。如果JSON格式不正确，解析器无法解析数据，就会发生类似“invalid character '<' looking for beginning of value”的错误。要解决此问题，您应该检查代码中的JSON数据是否正确格式化。如果您使用的是第三方API，则可能需要检查API响应是否正确格式化。如果您正在编写自己的API，则应确保您的数据按照JSON格式进行序列化。您可以使用JSON库来确保数据正确格式化。
-DEBUG:vits-simple-api [ZH]这个错误通常是由于尝试将非JSON格式的数据作为JSON解析器的输入引起的。在JSON格式中，[ZH][JA]数据必须以花括号（{）或方括号（[）[JA][ZH]开头。[ZH]
-DEBUG:vits-simple-api [ZH]如果JSON格式不正确，解析器无法解析数据，就会发生类似“[ZH][JA]invalid character '<' looking for beginning of value”[JA][ZH]的错误。[ZH]
-DEBUG:vits-simple-api [ZH]要解决此问题，您应该检查代码中的JSON数据是否正确格式化。如果您使用的是第三方API，则可能需要检查API响应是否正确格式化。[ZH]
-DEBUG:vits-simple-api [ZH]如果您正在编写自己的API，则应确保您的数据按照JSON格式进行序列化。您可以使用JSON库来确保数据正确格式化。[ZH]
-INFO:vits-simple-api [VITS] finish in 33.32s
-INFO:werkzeug 127.0.0.1 - - [05/Aug/2023 03:04:01] "POST /voice HTTP/1.1" 200 -
-INFO:werkzeug 127.0.0.1 - - [05/Aug/2023 03:06:44] "GET / HTTP/1.1" 200 -
-INFO:werkzeug 127.0.0.1 - - [05/Aug/2023 03:06:44] "GET /static/js/jquery.slim.min.js HTTP/1.1" 200 -
-INFO:werkzeug 127.0.0.1 - - [05/Aug/2023 03:06:44] "GET /static/js/bootstrap.bundle.min.js HTTP/1.1" 200 -
-INFO:werkzeug 127.0.0.1 - - [05/Aug/2023 03:06:44] "GET /static/css/bootstrap.min.css HTTP/1.1" 200 -
-INFO:werkzeug 127.0.0.1 - - [05/Aug/2023 03:06:44] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
-INFO:vits-simple-api [VITS] id:800 format:wav lang:AUTO length:1.0 noise:0.33 noisew:0.4
-INFO:vits-simple-api [VITS] len:8 text：你好,こんにちは
-DEBUG:vits-simple-api [ZH]你好,[ZH][JA]こんにちは[JA]
-INFO:vits-simple-api [VITS] finish in 0.69s
-INFO:werkzeug 127.0.0.1 - - [05/Aug/2023 03:07:04] "[35m[1mGET /voice/vits?text=你好,こんにちは&id=800 HTTP/1.1[0m" 206 -
-INFO:werkzeug 127.0.0.1 - - [05/Aug/2023 03:07:04] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
-INFO:vits-simple-api [VITS] id:800 format:wav lang:AUTO length:1.0 noise:0.33 noisew:0.4
-INFO:vits-simple-api [VITS] len:8 text：你好,こんにちは
-WARNING:vits-simple-api Streaming response only supports MP3 format.
-DEBUG:vits-simple-api [ZH]你好,[ZH][JA]こんにちは[JA]
-INFO:werkzeug 127.0.0.1 - - [05/Aug/2023 03:07:07] "GET /voice/vits?text=你好,こんにちは&id=800&streaming=true HTTP/1.1" 200 -
-INFO:vits-simple-api [VITS] id:784 format:wav lang:AUTO length:1.0 noise:0.33 noisew:0.4
-INFO:vits-simple-api [VITS] len:8 text：你好,こんにちは
-DEBUG:vits-simple-api [ZH]你好,[ZH][JA]こんにちは[JA]
-INFO:vits-simple-api [VITS] finish in 0.82s
-INFO:werkzeug 127.0.0.1 - - [05/Aug/2023 03:07:12] "[35m[1mGET /voice/vits?text=你好,こんにちは&id=784 HTTP/1.1[0m" 206 -
-INFO:vits-simple-api [VITS] id:638 format:wav lang:AUTO length:1.0 noise:0.33 noisew:0.4
-INFO:vits-simple-api [VITS] len:8 text：你好,こんにちは
-DEBUG:vits-simple-api [ZH]你好,[ZH][JA]こんにちは[JA]
-INFO:vits-simple-api [VITS] finish in 0.91s
-INFO:werkzeug 127.0.0.1 - - [05/Aug/2023 03:07:20] "[35m[1mGET /voice/vits?text=你好,こんにちは&id=638 HTTP/1.1[0m" 206 -
-INFO:vits-simple-api [VITS] id:214 format:wav lang:AUTO length:1.0 noise:0.33 noisew:0.4
-INFO:vits-simple-api [VITS] len:8 text：你好,こんにちは
-DEBUG:vits-simple-api [ZH]你好,[ZH][JA]こんにちは[JA]
-INFO:vits-simple-api [VITS] finish in 0.92s
-INFO:werkzeug 127.0.0.1 - - [05/Aug/2023 03:07:26] "[35m[1mGET /voice/vits?text=你好,こんにちは&id=214 HTTP/1.1[0m" 206 -
-INFO:vits-simple-api [VITS] id:103 format:wav lang:AUTO length:1.0 noise:0.33 noisew:0.4
-INFO:vits-simple-api [VITS] len:8 text：你好,こんにちは
-DEBUG:vits-simple-api [ZH]你好,[ZH][JA]こんにちは[JA]
-INFO:vits-simple-api [VITS] finish in 0.81s
-INFO:werkzeug 127.0.0.1 - - [05/Aug/2023 03:07:33] "[35m[1mGET /voice/vits?text=你好,こんにちは&id=103 HTTP/1.1[0m" 206 -
-INFO:vits-simple-api [VITS] id:103 format:wav lang:AUTO length:1.0 noise:0.33 noisew:0.4
-INFO:vits-simple-api [VITS] len:9 text：你好,我爱你么么哒
-DEBUG:vits-simple-api [ZH]你好,我爱你么么哒[ZH]
-INFO:vits-simple-api [VITS] finish in 1.01s
-INFO:werkzeug 127.0.0.1 - - [05/Aug/2023 03:07:49] "[35m[1mGET /voice/vits?text=你好,我爱你么么哒&id=103 HTTP/1.1[0m" 206 -
-INFO:vits-simple-api [VITS] id:103 format:wav lang:AUTO length:1.0 noise:0.33 noisew:0.4
-INFO:vits-simple-api [VITS] len:9 text：你好,我爱你么么哒
-WARNING:vits-simple-api Streaming response only supports MP3 format.
-DEBUG:vits-simple-api [ZH]你好,我爱你么么哒[ZH]
-INFO:werkzeug 127.0.0.1 - - [05/Aug/2023 03:08:06] "GET /voice/vits?text=你好,我爱你么么哒&id=103&streaming=true HTTP/1.1" 200 -
+INFO:vits-simple-api [VITS] len:17 text：你好，请问有什么我可以帮助你的吗？
+DEBUG:vits-simple-api [ZH]你好，请问有什么我可以帮助你的吗？[ZH]
+INFO:vits-simple-api [VITS] finish in 1.96s
+INFO:werkzeug 127.0.0.1 - - [06/Aug/2023 02:55:38] "POST /voice HTTP/1.1" 200 -
+INFO:vits-simple-api [VITS] id:0 format:wav lang:auto length:1.0 noise:0.667 noisew:0.8
+INFO:vits-simple-api [VITS] len:15 text：你好！有什么我可以帮助你的吗？
+DEBUG:vits-simple-api [ZH]你好！有什么我可以帮助你的吗？[ZH]
+INFO:vits-simple-api [VITS] finish in 1.63s
+INFO:werkzeug 127.0.0.1 - - [06/Aug/2023 02:56:22] "POST /voice HTTP/1.1" 200 -
+INFO:vits-simple-api [VITS] id:0 format:wav lang:auto length:1.0 noise:0.667 noisew:0.8
+INFO:vits-simple-api [VITS] len:48 text：谢谢你的夸奖！作为AI，我没有情感，但我会尽力帮助你解答问题和完成任务。有什么我可以为你做的吗？
+DEBUG:vits-simple-api [ZH]谢谢你的夸奖！作为AI，我没有情感，但我会尽力帮助你解答问题和完成任务。有什么我可以为你做的吗？[ZH]
+INFO:vits-simple-api [VITS] finish in 5.83s
+INFO:werkzeug 127.0.0.1 - - [06/Aug/2023 02:57:13] "POST /voice HTTP/1.1" 200 -
+INFO:vits-simple-api [VITS] id:0 format:wav lang:auto length:1.0 noise:0.667 noisew:0.8
+INFO:vits-simple-api [VITS] len:15 text：你好！有什么我可以帮助你的吗？
+DEBUG:vits-simple-api [ZH]你好！有什么我可以帮助你的吗？[ZH]
+INFO:vits-simple-api [VITS] finish in 1.61s
+INFO:werkzeug 127.0.0.1 - - [06/Aug/2023 02:58:24] "POST /voice HTTP/1.1" 200 -
+INFO:vits-simple-api [VITS] id:0 format:wav lang:auto length:1.0 noise:0.667 noisew:0.8
+INFO:vits-simple-api [VITS] len:64 text：我是你的AI女仆，专门为你提供帮助和回答问题的人工智能助手。我可以帮你完成任务、提供信息、解答疑惑等等。有什么我可以为你做的吗？
+DEBUG:vits-simple-api [ZH]我是你的AI女仆，专门为你提供帮助和回答问题的人工智能助手。我可以帮你完成任务、提供信息、解答疑惑等等。[ZH]
+DEBUG:vits-simple-api [ZH]有什么我可以为你做的吗？[ZH]
+INFO:vits-simple-api [VITS] finish in 7.95s
+INFO:werkzeug 127.0.0.1 - - [06/Aug/2023 02:59:08] "POST /voice HTTP/1.1" 200 -

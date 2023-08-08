@@ -9,7 +9,7 @@ from requests_toolbelt.multipart.encoder import MultipartEncoder  #需要安装r
 import pyaudio  
 import wave  
 
-abs_path = os.path.dirname(__file__)
+abs_path = os.path.dirname(__file__) #获取当前文件的绝对路径，不是调用文件的绝对路径
 base = "http://127.0.0.1:23456"
 
 
@@ -80,14 +80,11 @@ def voice_vits(text, id=0, format="wav", lang="auto", length=1, noise=0.667, noi
 
     res = requests.post(url=url, data=m, headers=headers)
     fname = re.findall("filename=(.+)", res.headers["Content-Disposition"])[0]
-    path = f"{abs_path}/{fname}"
+    path = f"{abs_path}/cache/{fname}" 
 
     with open(path, "wb") as f:
         f.write(res.content)
-    print('语音存储位置：',path)
-
-    #播放wav文件
-    play_wav(path)
+    #print('语音存储位置：',path)
 
     return path
 

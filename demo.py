@@ -14,6 +14,7 @@ from chromadb.utils import embedding_functions
 #可以导入脚本全部内容，也可以选择导入部分内容
 from ai_toolkits import function_library
 from user.calendar import calendar
+from vits import TTS_vits
 
 # 获取当前工作目录
 script_dir = os.path.dirname(os.path.abspath(sys.argv[0])) 
@@ -1108,8 +1109,14 @@ class Chat_window:
             #调用AI解析器来解析回复，并自动执行函数调用
             content = parser.parse_response(Ai_response)
 
+            #生成AI回复的语音
+            file_path = TTS_vits.voice_vits(text=content)
+
             #输出AI纯文本回复内容
             print("【助手】：",content,"\n")
+
+            #播放AI回复的语音
+            TTS_vits.play_wav(file_path)
 
             #记录AI纯文本回复
             ai_memory.log_message("assistant", None, None, content)
@@ -1121,7 +1128,7 @@ class Chat_window:
 if __name__ == '__main__':
 
     #注册api
-    Api_key = "sk-Z7SHqfPCBGnMCHwxZUwMT3BlbkFJPJ1tA2ps625NFV2vgCx1x"
+    Api_key = "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"
     openai.api_key = Api_key
 
     #创建向量存储库,并使用openai的embedding函数
