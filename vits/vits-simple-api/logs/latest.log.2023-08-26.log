@@ -1,0 +1,108 @@
+INFO:vits-simple-api torch:2.0.1+cpu cuda_available:False
+INFO:vits-simple-api device:cpu device.type:cpu
+INFO:vits-simple-api [VITS] 804 speakers
+INFO:vits-simple-api 804 speakers in total
+INFO:apscheduler.scheduler Added job "clean_task" to job store "default"
+INFO:werkzeug [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:23456
+ * Running on http://192.168.0.175:23456
+INFO:werkzeug [33mPress CTRL+C to quit[0m
+INFO:vits-simple-api [VITS] id:0 format:wav lang:auto length:1.0 noise:0.667 noisew:0.8
+INFO:vits-simple-api [VITS] len:15 text：你好！有什么我可以帮助你的吗？
+DEBUG:vits-simple-api [ZH]你好！有什么我可以帮助你的吗？[ZH]
+INFO:vits-simple-api [VITS] finish in 1.83s
+INFO:werkzeug 127.0.0.1 - - [26/Aug/2023 22:28:33] "POST /voice HTTP/1.1" 200 -
+INFO:vits-simple-api [VITS] id:0 format:wav lang:auto length:1.0 noise:0.667 noisew:0.8
+INFO:vits-simple-api [VITS] len:35 text：当前时间是2023年8月23日12:00。请问有什么我可以帮助您的吗？
+DEBUG:vits-simple-api [ZH]当前时间是2023年8月23日12:00。请问有什么我可以帮助您的吗？[ZH]
+INFO:vits-simple-api [VITS] finish in 2.30s
+INFO:werkzeug 127.0.0.1 - - [26/Aug/2023 22:36:11] "POST /voice HTTP/1.1" 200 -
+INFO:vits-simple-api [VITS] id:0 format:wav lang:auto length:1.0 noise:0.667 noisew:0.8
+INFO:vits-simple-api [VITS] len:25 text：当前时间是2023-08-26 22:38:25。
+DEBUG:vits-simple-api [ZH]当前时间是2023-08-26 22:38:[ZH][JA]25。[JA]
+INFO:vits-simple-api [VITS] finish in 2.08s
+INFO:werkzeug 127.0.0.1 - - [26/Aug/2023 22:38:29] "POST /voice HTTP/1.1" 200 -
+INFO:vits-simple-api [VITS] id:0 format:wav lang:auto length:1.0 noise:0.667 noisew:0.8
+INFO:vits-simple-api [VITS] len:25 text：当前时间是2023-08-26 22:42:03。
+DEBUG:vits-simple-api [ZH]当前时间是2023-08-26 22:42:[ZH][JA]03。[JA]
+INFO:vits-simple-api [VITS] finish in 1.98s
+INFO:werkzeug 127.0.0.1 - - [26/Aug/2023 22:42:07] "POST /voice HTTP/1.1" 200 -
+INFO:vits-simple-api [VITS] id:0 format:wav lang:auto length:1.0 noise:0.667 noisew:0.8
+INFO:vits-simple-api [VITS] len:24 text：现在的时间是2022年11月15日 13:00。
+DEBUG:vits-simple-api [ZH]现在的时间是2022年11月15日 13:[ZH][JA]00。[JA]
+INFO:vits-simple-api [VITS] finish in 1.71s
+INFO:werkzeug 127.0.0.1 - - [26/Aug/2023 22:56:58] "POST /voice HTTP/1.1" 200 -
+INFO:vits-simple-api [VITS] id:0 format:wav lang:auto length:1.0 noise:0.667 noisew:0.8
+INFO:vits-simple-api [VITS] len:65 text：抱歉，我以为你是在问现实世界的时间。实际上，作为一名语言模型AI，我没有实时的时间观念。如果你有其他问题或需要帮助的话，请告诉我。
+DEBUG:vits-simple-api [ZH]抱歉，我以为你是在问现实世界的时间。实际上，作为一名语言模型AI，我没有实时的时间观念。如果你有其他问题或需要帮助的话，[ZH]
+DEBUG:vits-simple-api [ZH]请告诉我。[ZH]
+INFO:vits-simple-api [VITS] finish in 4.67s
+INFO:werkzeug 127.0.0.1 - - [26/Aug/2023 22:58:09] "POST /voice HTTP/1.1" 200 -
+INFO:vits-simple-api [VITS] id:0 format:wav lang:auto length:1.0 noise:0.667 noisew:0.8
+INFO:vits-simple-api [VITS] len:76 text：我作为一个AI语言模型，无法获取实时的时间信息。请您查看您的设备或其他可靠的时间来源以获取准确的当前时间。如果您有其他问题或需要帮助的话，请随时告诉我。
+DEBUG:vits-simple-api [ZH]我作为一个AI语言模型，无法获取实时的时间信息。请您查看您的设备或其他可靠的时间来源以获取准确的当前时间。[ZH]
+DEBUG:vits-simple-api [ZH]如果您有其他问题或需要帮助的话，请随时告诉我。[ZH]
+INFO:vits-simple-api [VITS] finish in 5.02s
+INFO:werkzeug 127.0.0.1 - - [26/Aug/2023 22:59:56] "POST /voice HTTP/1.1" 200 -
+INFO:vits-simple-api [VITS] id:0 format:wav lang:auto length:1.0 noise:0.667 noisew:0.8
+INFO:vits-simple-api [VITS] len:38 text：当前时间为：2023-08-26 23:09:48。有什么我可以帮助你的吗？
+DEBUG:vits-simple-api [ZH]当前时间为：2023-08-26 23:09:48。有什么我可以帮助你的吗？[ZH]
+INFO:vits-simple-api [VITS] finish in 2.59s
+INFO:werkzeug 127.0.0.1 - - [26/Aug/2023 23:09:57] "POST /voice HTTP/1.1" 200 -
+INFO:vits-simple-api [VITS] id:0 format:wav lang:auto length:1.0 noise:0.667 noisew:0.8
+INFO:vits-simple-api [VITS] len:53 text：我是你的AI女仆，专门负责帮助你解答问题和完成任务。你可以随时向我提问或委托任务。有什么我可以帮助你的吗？
+DEBUG:vits-simple-api [ZH]我是你的AI女仆，专门负责帮助你解答问题和完成任务。你可以随时向我提问或委托任务。有什么我可以帮助你的吗？[ZH]
+INFO:vits-simple-api [VITS] finish in 3.85s
+INFO:werkzeug 127.0.0.1 - - [26/Aug/2023 23:10:25] "POST /voice HTTP/1.1" 200 -
+INFO:vits-simple-api [VITS] id:0 format:wav lang:auto length:1.0 noise:0.667 noisew:0.8
+INFO:vits-simple-api [VITS] len:14 text：你好！有什么我能帮助你的吗？
+DEBUG:vits-simple-api [ZH]你好！有什么我能帮助你的吗？[ZH]
+INFO:vits-simple-api [VITS] finish in 0.98s
+INFO:werkzeug 127.0.0.1 - - [26/Aug/2023 23:16:39] "POST /voice HTTP/1.1" 200 -
+INFO:vits-simple-api [VITS] id:0 format:wav lang:auto length:1.0 noise:0.667 noisew:0.8
+INFO:vits-simple-api [VITS] len:15 text：你好！有什么我可以帮助您的吗？
+DEBUG:vits-simple-api [ZH]你好！有什么我可以帮助您的吗？[ZH]
+INFO:vits-simple-api [VITS] finish in 0.96s
+INFO:werkzeug 127.0.0.1 - - [26/Aug/2023 23:25:48] "POST /voice HTTP/1.1" 200 -
+INFO:vits-simple-api [VITS] id:0 format:wav lang:auto length:1.0 noise:0.667 noisew:0.8
+INFO:vits-simple-api [VITS] len:14 text：你好！有什么可以帮助你的吗？
+DEBUG:vits-simple-api [ZH]你好！有什么可以帮助你的吗？[ZH]
+INFO:vits-simple-api [VITS] finish in 0.80s
+INFO:werkzeug 127.0.0.1 - - [26/Aug/2023 23:34:52] "POST /voice HTTP/1.1" 200 -
+INFO:vits-simple-api torch:2.0.1+cpu cuda_available:False
+INFO:vits-simple-api device:cpu device.type:cpu
+INFO:vits-simple-api [VITS] 804 speakers
+INFO:vits-simple-api 804 speakers in total
+INFO:apscheduler.scheduler Added job "clean_task" to job store "default"
+INFO:werkzeug [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:23456
+ * Running on http://192.168.0.175:23456
+INFO:werkzeug [33mPress CTRL+C to quit[0m
+INFO:vits-simple-api [VITS] id:0 format:wav lang:auto length:1.0 noise:0.667 noisew:0.8
+INFO:vits-simple-api [VITS] len:14 text：你好！有什么可以帮助你的吗？
+DEBUG:vits-simple-api [ZH]你好！有什么可以帮助你的吗？[ZH]
+INFO:vits-simple-api [VITS] finish in 1.79s
+INFO:werkzeug 127.0.0.1 - - [26/Aug/2023 23:43:55] "POST /voice HTTP/1.1" 200 -
+INFO:vits-simple-api [VITS] id:0 format:wav lang:auto length:1.0 noise:0.667 noisew:0.8
+INFO:vits-simple-api [VITS] len:54 text：非常抱歉，由于技术问题，我无法获取当前的时间。请您手动查看一下当前的时间。如有其他问题，我会尽力帮助您解答。
+DEBUG:vits-simple-api [ZH]非常抱歉，由于技术问题，我无法获取当前的时间。请您手动查看一下当前的时间。如有其他问题，我会尽力帮助您解答。[ZH]
+INFO:vits-simple-api [VITS] finish in 3.91s
+INFO:werkzeug 127.0.0.1 - - [26/Aug/2023 23:44:15] "POST /voice HTTP/1.1" 200 -
+INFO:vits-simple-api [VITS] id:0 format:wav lang:auto length:1.0 noise:0.667 noisew:0.8
+INFO:vits-simple-api [VITS] len:54 text：非常抱歉，由于技术问题，我无法获取当前的时间。请您手动查看一下当前的时间。如有其他问题，我会尽力帮助您解答。
+DEBUG:vits-simple-api [ZH]非常抱歉，由于技术问题，我无法获取当前的时间。请您手动查看一下当前的时间。如有其他问题，我会尽力帮助您解答。[ZH]
+INFO:vits-simple-api [VITS] finish in 4.13s
+INFO:werkzeug 127.0.0.1 - - [26/Aug/2023 23:44:38] "POST /voice HTTP/1.1" 200 -
+INFO:vits-simple-api [VITS] id:0 format:wav lang:auto length:1.0 noise:0.667 noisew:0.8
+INFO:vits-simple-api [VITS] len:55 text：非常抱歉，由于技术问题，我无法获取当前的时间。建议您手动查看设备的当前时间。如有其他问题，我会尽力帮助您解答。
+DEBUG:vits-simple-api [ZH]非常抱歉，由于技术问题，我无法获取当前的时间。建议您手动查看设备的当前时间。如有其他问题，我会尽力帮助您解答。[ZH]
+INFO:vits-simple-api [VITS] finish in 4.00s
+INFO:werkzeug 127.0.0.1 - - [26/Aug/2023 23:45:26] "POST /voice HTTP/1.1" 200 -
+INFO:vits-simple-api [VITS] id:0 format:wav lang:auto length:1.0 noise:0.667 noisew:0.8
+INFO:vits-simple-api [VITS] len:79 text：非常抱歉，由于技术限制，我无法获取当前时间。但您可以通过查看您设备上的系统时间或向语音助手或搜索引擎询问当前时间。如果您有其他问题，我将竭尽所能地帮助您解答。
+DEBUG:vits-simple-api [ZH]非常抱歉，由于技术限制，我无法获取当前时间。但您可以通过查看您设备上的系统时间或向语音助手或搜索引擎询问当前时间。[ZH]
+DEBUG:vits-simple-api [ZH]如果您有其他问题，[ZH][JA]我将竭尽所能地帮助您解答。[JA]
+INFO:vits-simple-api [VITS] finish in 5.45s
+INFO:werkzeug 127.0.0.1 - - [26/Aug/2023 23:46:07] "POST /voice HTTP/1.1" 200 -

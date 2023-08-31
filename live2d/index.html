@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live2D Demo</title>
+</head>
+    <style>
+        body {
+        margin: 0; /* 作用是去除浏览器默认的边距 */
+        padding: 0;  /* 作用是去除浏览器默认的边距 */
+        overflow: hidden; /* 作用是去除浏览器默认的滚动条 */
+        background-color: transparent;  /* 作用是去除浏览器默认的背景颜色 */
+        }
+    </style>
+
+<body>
+
+    <!-- 引入pixi.js和live2d -->
+    <script src="https://cubism.live2d.com/sdk-web/cubismcore/live2dcubismcore.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/dylanNew/live2d/webgl/Live2D/lib/live2d.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/pixi.js@6.5.2/dist/browser/pixi.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/pixi-live2d-display/dist/index.min.js"></script>
+
+    <!-- 创建画布 -->
+    <canvas id=canvas></canvas>
+
+    <!-- js脚本内容 -->
+    <script>
+
+        //创建了一个名为 live2d 的变量，它引用了 PIXI.live2d 对象。
+        const live2d = PIXI.live2d;
+
+        // 创建全局模型变量，否则其他函数无法调用，而且要放在下面函数前面，不然不能正确调用口型同步函数
+        let model;
+        
+        //创建了一个 PIXI 应用对象 app，并设置了一些参数，例如画布的 DOM 元素、自动启动、背景颜色等。
+        (async function main() {
+        const app = new PIXI.Application({
+            view: document.getElementById("canvas"),
+            autoStart: true,
+            //resizeTo: window,
+            transparent: true, //透明背景
+        });
+
+        //创建模型,必须用await等待模型加载完毕后再执行，否则会报错。
+        model = await PIXI.live2d.Live2DModel.from("live2d-model/粉福女仆/粉福女仆.model3.json");
+
+        //把模型添加到PIXI舞台上
+        app.stage.addChild(model);
+
+        //计算模型缩放比例,使模型适应屏幕大小，然后设置模型缩放
+        const scaleX = (innerWidth * 0.4) / model.width;
+        const scaleY = (innerHeight * 0.8) / model.height;
+        model.scale.set( 2 * Math.min(scaleX, scaleY));
+
+        //设置模型位置
+        model.y = innerHeight * 0.2;
+        model.x = innerWidth * 0.1;
+
+
+        //开口测试
+        //model.internalModel.coreModel.setParameterValueById('ParamMouthOpenY', 0.9999);
+        playAudioWithMouthControl('test/test.wav', 'test/loudness.json');
+
+
+        })();
+
+    </script>
+
+
+
+
+
+
+
+
+
+
+
+
+    <!-- 设置底部横条，它包含一个输入框和两个按钮 -->
+    <div id="bottom-bar">
+        <textarea id="input-field" placeholder="请输入对话内容"></textarea>
+        <button id="button1">发送</button>
+        <button id="button2">设置</button>
+    </div>
+    <style>
+        /* 设置CSS，这将会让横条固定在页面底部 */
+        #bottom-bar {
+            position: fixed; 
+            bottom: 0;
+            width: 100%;
+            background-color: #ccc;
+            -webkit-app-region: drag; /* 允许拖动窗口 */
+            border-radius: 30px; /* 所有四个角都设置为圆角 */
+
+
+            display: flex; /* 设置为Flexbox容器 */
+            /* justify-content: center; /* 使元素在横轴上居中 */
+            align-items: center; /* 使元素在纵轴上居中 */
+            height: 30px; /* 设置高度 */
+            max-height: 110px; /* 设置最大高度 */
+        }
+        /* 设置按钮的属性 */
+        #bottom-bar button {
+            margin: 5px; /* 设置元素之间的间距 */
+            -webkit-app-region: no-drag; /*禁止拖动窗口 */
+        }
+        /* 设置输入框的属性 */
+        #bottom-bar textarea {
+            resize: none; /* 禁止手动调整大小 */
+            border: none; /* 去掉默认的边框 */
+
+            height: 20px; /* 设置高度 */
+            max-height: 90px; /* 设置最大高度 */
+            width: 210px; /* 设置长度 */
+
+            margin: 5px; /* 设置与其他元素之间的间距 */
+            margin-left: 20px; /* 设置元素距离左边框的间距 */
+            -webkit-app-region: no-drag; /* 禁止拖动窗口 */
+        }
+    </style>
+
+
+
+    <!-- 监听设置，方便主进程监听 -->
+    <script>
+        // 引入electron模块，需要将nodeIntegration设置为true，才能在页面上使用requir
+        const { ipcRenderer } = require('electron');
+        // 引入http模块，用于发送http请求
+        const http = require('http');
+
+        // 监听输入框内容变化事件
+        document.getElementById('input-field').addEventListener('input', function () {
+            var inputField = this;
+            var bottomBar = document.getElementById('bottom-bar');
+
+            // 重置输入框的高度，以便获取其内容实际高度
+            inputField.style.height = 'auto';
+
+            // 获取输入框内容的实际滚动高度
+            var contentHeight = inputField.scrollHeight;
+
+            // 设置输入框的高度
+            inputField.style.height = contentHeight + 'px';
+
+            // 计算底部横条的高度
+            var bottomBarHeight = contentHeight + 10; // 输入框高度加上固定距离
+
+            // 设置底部横条的高度
+            bottomBar.style.height = bottomBarHeight + 'px';
+
+
+        });
+
+        // 监听鼠标右键点击事件
+        document.getElementById('canvas').addEventListener('mousedown', function (event) {
+            if (event.button === 2) {            // 右键点击
+                const bottomBar = document.getElementById('bottom-bar');
+                // 切换底部横条的显示/隐藏状态
+                bottomBar.style.visibility = bottomBar.style.visibility === 'hidden' ? 'visible' : 'hidden';  //不能使用display: none;不然元素将不再占据空间，因此无法继续保持原来布局。
+            }
+        });
+
+        // 按钮1的监听设置
+        document.getElementById('button1').addEventListener('click', () => {
+            // 获取输入框内容，并发送消息到主进程
+            input_content  = document.getElementById('input-field').value
+            //打印到主进程
+            ipcRenderer.send('DEBUG', input_content);
+            // 清空输入框内容
+            document.getElementById('input-field').value = ''
+
+            //构建发送的数据
+            const data = JSON.stringify({
+            "user_input": input_content
+            });
+
+            const options = {
+                hostname: '127.0.0.1',
+                port: 5000,
+                path: '/chat',
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json; charset=UTF-8', // 这里一定要设置charset=UTF-8，否则输入中文会报错
+                    'Content-Length': Buffer.byteLength(data, 'utf8')  // 使用 Buffer.byteLength 而不是 data.length,否则计算中文字符长度会出错
+            }
+            };
+
+            // 发送http请求
+            const req = http.request(options, (res) => {
+
+
+            // 如果接收到数据块。
+            let data = '';
+            res.on('data', (chunk) => {
+                data += chunk;
+            });
+
+            // 如果请求结束，则打印返回的数据
+            res.on('end', () => {
+                console.log(JSON.parse(data));
+                var audio_path = JSON.parse(data).assistant_audio_path;
+                var mouth_data_path = JSON.parse(data).assistant_mouth_data_path;
+                var response_text = JSON.parse(data).assistant_response_text;
+
+                // Send the data to the main process
+                ipcRenderer.send('DEBUG', { audio_path, mouth_data_path, response_text });
+
+                // 播放音频并控制口型
+                playAudioWithMouthControl(audio_path, mouth_data_path);
+            });
+            });
+
+
+            // 如果请求出错，则打印错误信息
+            req.on('error', (error) => {
+            console.error(`problem with request: ${error.message}`);
+            ipcRenderer.send('DEBUG', { error});
+
+            });
+
+            
+            req.write(data);
+            req.end();
+
+        })
+
+        //按钮2的监听设置
+        document.getElementById('button2').addEventListener('click', () => {
+            ipcRenderer.send('DEBUG', document.getElementById('input-field').value);
+            document.getElementById('input-field').value = '';
+        });
+
+
+    </script>
+
+
+
+
+
+
+
+
+
+    <script>
+        // 播放音频并控制口型函数
+        async function playAudioWithMouthControl( audioUrl, mouthDataUrl) {
+
+            // 添加时间戳来避免缓存，下次调用还是一样的url，但是浏览器会读取文件而不是缓存
+            audioUrl += '?' + new Date().getTime();
+            mouthDataUrl += '?' + new Date().getTime();
+
+            // 创建 AudioContext
+            let audioContext = new AudioContext();
+            let audioElement = new Audio(audioUrl);
+            let audioSource = audioContext.createMediaElementSource(audioElement);
+            audioSource.connect(audioContext.destination);
+            audioElement.play();
+
+            // 获取口型数据
+            let response = await fetch(mouthDataUrl);
+            let mouthData = await response.json();
+
+            // 存储原来的update函数
+            const originalUpdate = model.internalModel.motionManager.update;
+
+            // 创建一个新的update函数
+            model.internalModel.motionManager.update = () => {
+                // 首先调用原来的update函数
+                originalUpdate.call(model.internalModel.motionManager, model.internalModel.coreModel, Date.now()/1000);
+
+                // 检查当前时间是否超过了口型数据的长度
+                if (Math.floor(audioElement.currentTime * 10) < mouthData.length) {
+                    // 获取对应时间点的口部开度值
+                    let mouthValue = mouthData[Math.floor(audioElement.currentTime * 10)];
+
+                    // 设置模型的口部参数
+                    model.internalModel.coreModel.setParameterValueById("ParamMouthOpenY", mouthValue);
+                } else {
+                    // 如果口型数据使用完，则恢复原来的update函数
+                    model.internalModel.motionManager.update = originalUpdate;
+                    // 设置模型的口部参数为0,加个保险
+                    model.internalModel.coreModel.setParameterValueById('ParamMouthOpenY',0);
+                    // 清理 AudioContext 和口型数据
+                    audioSource.disconnect();
+                    audioContext.close();
+                    mouthData = null; // 清理口型数据
+                }
+            }
+
+            // 当音频播放完毕时，恢复原来的update函数
+            audioElement.addEventListener('ended', () => {
+                model.internalModel.motionManager.update = originalUpdate;
+                // 设置模型的口部参数为0,加个保险
+                model.internalModel.coreModel.setParameterValueById('ParamMouthOpenY',0);
+                // 清理 AudioContext 和口型数据
+                audioSource.disconnect();
+                audioContext.close();
+                mouthData = null; // 清理口型数据
+            });
+        }
+    </script>
+
+
+
+</body>
+</html>

@@ -1,0 +1,115 @@
+INFO:vits-simple-api torch:2.0.1+cpu cuda_available:False
+INFO:vits-simple-api device:cpu device.type:cpu
+INFO:vits-simple-api [VITS] 804 speakers
+INFO:vits-simple-api 804 speakers in total
+INFO:apscheduler.scheduler Added job "clean_task" to job store "default"
+INFO:werkzeug [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:23456
+ * Running on http://192.168.0.112:23456
+INFO:werkzeug [33mPress CTRL+C to quit[0m
+INFO:werkzeug 127.0.0.1 - - [14/Aug/2023 22:29:20] "GET /voice/speakers HTTP/1.1" 200 -
+INFO:werkzeug 127.0.0.1 - - [14/Aug/2023 22:29:20] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+INFO:werkzeug 127.0.0.1 - - [14/Aug/2023 22:29:30] "GET / HTTP/1.1" 200 -
+INFO:werkzeug 127.0.0.1 - - [14/Aug/2023 22:29:31] "GET /static/css/bootstrap.min.css HTTP/1.1" 200 -
+INFO:werkzeug 127.0.0.1 - - [14/Aug/2023 22:29:31] "GET /static/js/jquery.slim.min.js HTTP/1.1" 200 -
+INFO:werkzeug 127.0.0.1 - - [14/Aug/2023 22:29:31] "GET /static/js/bootstrap.bundle.min.js HTTP/1.1" 200 -
+INFO:vits-simple-api [VITS] id:0 format:wav lang:AUTO length:1.0 noise:0.33 noisew:0.4
+INFO:vits-simple-api [VITS] len:8 text：你好,こんにちは
+INFO:vits-simple-api [VITS] id:0 format:wav lang:AUTO length:1.0 noise:0.33 noisew:0.4
+INFO:vits-simple-api [VITS] len:8 text：你好,こんにちは
+INFO:vits-simple-api [VITS] id:2 format:wav lang:AUTO length:1.0 noise:0.33 noisew:0.4
+INFO:vits-simple-api [VITS] len:8 text：你好,こんにちは
+INFO:werkzeug 127.0.0.1 - - [14/Aug/2023 22:30:32] "GET / HTTP/1.1" 200 -
+INFO:werkzeug 127.0.0.1 - - [14/Aug/2023 22:30:32] "[36mGET /static/css/bootstrap.min.css HTTP/1.1[0m" 304 -
+INFO:werkzeug 127.0.0.1 - - [14/Aug/2023 22:30:32] "[36mGET /static/js/jquery.slim.min.js HTTP/1.1[0m" 304 -
+INFO:werkzeug 127.0.0.1 - - [14/Aug/2023 22:30:32] "[36mGET /static/js/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+INFO:vits-simple-api [VITS] id:4 format:wav lang:AUTO length:1.0 noise:0.33 noisew:0.4
+INFO:vits-simple-api [VITS] len:8 text：你好,こんにちは
+INFO:vits-simple-api [VITS] id:4 format:wav lang:AUTO length:1.0 noise:0.33 noisew:0.4
+INFO:vits-simple-api [VITS] len:8 text：你好,こんにちは
+INFO:vits-simple-api [VITS] id:4 format:wav lang:AUTO length:1.0 noise:0.33 noisew:0.4
+INFO:vits-simple-api [VITS] len:8 text：你好,こんにちは
+INFO:vits-simple-api [VITS] id:4 format:wav lang:AUTO length:1.0 noise:0.33 noisew:0.4
+INFO:vits-simple-api [VITS] len:8 text：你好,こんにちは
+INFO:vits-simple-api [VITS] id:4 format:wav lang:AUTO length:1.0 noise:0.33 noisew:0.4
+INFO:vits-simple-api [VITS] len:8 text：你好,こんにちは
+INFO:vits-simple-api [VITS] id:4 format:wav lang:AUTO length:1.0 noise:0.33 noisew:0.4
+INFO:vits-simple-api [VITS] len:8 text：你好,こんにちは
+INFO:vits-simple-api [VITS] id:4 format:wav lang:AUTO length:1.0 noise:0.33 noisew:0.4
+INFO:vits-simple-api [VITS] len:8 text：你好,こんにちは
+INFO:vits-simple-api [VITS] id:4 format:wav lang:AUTO length:1.0 noise:0.33 noisew:0.4
+INFO:vits-simple-api [VITS] len:8 text：你好,こんにちは
+INFO:vits-simple-api [VITS] id:4 format:wav lang:AUTO length:1.0 noise:0.33 noisew:0.4
+INFO:vits-simple-api [VITS] len:8 text：你好,こんにちは
+INFO:vits-simple-api [VITS] id:4 format:wav lang:AUTO length:1.0 noise:0.33 noisew:0.4
+INFO:vits-simple-api [VITS] len:8 text：你好,こんにちは
+INFO:vits-simple-api [VITS] id:4 format:wav lang:AUTO length:1.0 noise:0.33 noisew:0.4
+INFO:vits-simple-api [VITS] len:8 text：你好,こんにちは
+INFO:vits-simple-api [VITS] id:1 format:wav lang:AUTO length:1.0 noise:0.33 noisew:0.4
+INFO:vits-simple-api [VITS] len:8 text：你好,こんにちは
+INFO:vits-simple-api [VITS] id:1 format:wav lang:AUTO length:1.0 noise:0.33 noisew:0.4
+INFO:vits-simple-api [VITS] len:8 text：你好,こんにちは
+WARNING:vits-simple-api Streaming response only supports MP3 format.
+INFO:vits-simple-api [VITS] id:1 format:wav lang:AUTO length:1.0 noise:0.33 noisew:0.4
+INFO:vits-simple-api [VITS] len:8 text：你好,こんにちは
+INFO:vits-simple-api [VITS] id:1 format:wav lang:AUTO length:1.0 noise:0.33 noisew:0.4
+INFO:vits-simple-api [VITS] len:8 text：你好,こんにちは
+INFO:vits-simple-api [VITS] id:1 format:wav lang:AUTO length:1.0 noise:0.33 noisew:0.4
+INFO:vits-simple-api [VITS] len:8 text：你好,こんにちは
+INFO:vits-simple-api [VITS] id:1 format:wav lang:AUTO length:1.0 noise:0.33 noisew:0.4
+INFO:vits-simple-api [VITS] len:8 text：你好,こんにちは
+INFO:vits-simple-api [VITS] id:1 format:wav lang:AUTO length:1.0 noise:0.33 noisew:0.4
+INFO:vits-simple-api [VITS] len:8 text：你好,こんにちは
+INFO:vits-simple-api [VITS] id:1 format:wav lang:AUTO length:1.0 noise:0.33 noisew:0.4
+INFO:vits-simple-api [VITS] len:8 text：你好,こんにちは
+INFO:vits-simple-api torch:2.0.1+cpu cuda_available:False
+INFO:vits-simple-api device:cpu device.type:cpu
+INFO:vits-simple-api [VITS] 804 speakers
+INFO:vits-simple-api 804 speakers in total
+INFO:apscheduler.scheduler Added job "clean_task" to job store "default"
+INFO:werkzeug [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:23456
+ * Running on http://192.168.0.112:23456
+INFO:werkzeug [33mPress CTRL+C to quit[0m
+INFO:werkzeug 127.0.0.1 - - [14/Aug/2023 22:33:28] "GET / HTTP/1.1" 200 -
+INFO:werkzeug 127.0.0.1 - - [14/Aug/2023 22:33:28] "[36mGET /static/css/bootstrap.min.css HTTP/1.1[0m" 304 -
+INFO:werkzeug 127.0.0.1 - - [14/Aug/2023 22:33:28] "[36mGET /static/js/jquery.slim.min.js HTTP/1.1[0m" 304 -
+INFO:werkzeug 127.0.0.1 - - [14/Aug/2023 22:33:28] "[36mGET /static/js/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+INFO:vits-simple-api [VITS] id:0 format:wav lang:AUTO length:1.0 noise:0.33 noisew:0.4
+INFO:vits-simple-api [VITS] len:8 text：你好,こんにちは
+DEBUG:vits-simple-api [ZH]你好,[ZH][JA]こんにちは[JA]
+INFO:vits-simple-api [VITS] finish in 2.39s
+INFO:werkzeug 127.0.0.1 - - [14/Aug/2023 22:33:32] "[35m[1mGET /voice/vits?text=你好,こんにちは&id=0 HTTP/1.1[0m" 206 -
+INFO:werkzeug 127.0.0.1 - - [14/Aug/2023 22:33:32] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+INFO:vits-simple-api [VITS] id:336 format:wav lang:AUTO length:1.0 noise:0.33 noisew:0.4
+INFO:vits-simple-api [VITS] len:8 text：你好,こんにちは
+DEBUG:vits-simple-api [ZH]你好,[ZH][JA]こんにちは[JA]
+INFO:vits-simple-api [VITS] finish in 0.49s
+INFO:werkzeug 127.0.0.1 - - [14/Aug/2023 22:33:46] "[35m[1mGET /voice/vits?text=你好,こんにちは&id=336 HTTP/1.1[0m" 206 -
+INFO:vits-simple-api [VITS] id:363 format:wav lang:AUTO length:1.0 noise:0.33 noisew:0.4
+INFO:vits-simple-api [VITS] len:8 text：你好,こんにちは
+DEBUG:vits-simple-api [ZH]你好,[ZH][JA]こんにちは[JA]
+INFO:vits-simple-api [VITS] finish in 0.49s
+INFO:werkzeug 127.0.0.1 - - [14/Aug/2023 22:33:49] "[35m[1mGET /voice/vits?text=你好,こんにちは&id=363 HTTP/1.1[0m" 206 -
+INFO:vits-simple-api [VITS] id:623 format:wav lang:AUTO length:1.0 noise:0.33 noisew:0.4
+INFO:vits-simple-api [VITS] len:8 text：你好,こんにちは
+DEBUG:vits-simple-api [ZH]你好,[ZH][JA]こんにちは[JA]
+INFO:vits-simple-api [VITS] finish in 0.34s
+INFO:werkzeug 127.0.0.1 - - [14/Aug/2023 22:33:53] "[35m[1mGET /voice/vits?text=你好,こんにちは&id=623 HTTP/1.1[0m" 206 -
+INFO:vits-simple-api [VITS] id:798 format:wav lang:AUTO length:1.0 noise:0.33 noisew:0.4
+INFO:vits-simple-api [VITS] len:8 text：你好,こんにちは
+DEBUG:vits-simple-api [ZH]你好,[ZH][JA]こんにちは[JA]
+INFO:vits-simple-api [VITS] finish in 0.43s
+INFO:werkzeug 127.0.0.1 - - [14/Aug/2023 22:33:56] "[35m[1mGET /voice/vits?text=你好,こんにちは&id=798 HTTP/1.1[0m" 206 -
+INFO:vits-simple-api [VITS] id:0 format:wav lang:AUTO length:1.0 noise:0.33 noisew:0.4
+INFO:vits-simple-api [VITS] len:8 text：你好,こんにちは
+DEBUG:vits-simple-api [ZH]你好,[ZH][JA]こんにちは[JA]
+INFO:vits-simple-api [VITS] finish in 0.57s
+INFO:werkzeug 127.0.0.1 - - [14/Aug/2023 22:34:00] "[35m[1mGET /voice/vits?text=你好,こんにちは&id=0 HTTP/1.1[0m" 206 -
+INFO:vits-simple-api [VITS] id:0 format:wav lang:auto length:1.0 noise:0.667 noisew:0.8
+INFO:vits-simple-api [VITS] len:15 text：你好！有什么我可以帮助你的吗？
+DEBUG:vits-simple-api [ZH]你好！有什么我可以帮助你的吗？[ZH]
+INFO:vits-simple-api [VITS] finish in 0.95s
+INFO:werkzeug 127.0.0.1 - - [14/Aug/2023 22:43:13] "POST /voice HTTP/1.1" 200 -

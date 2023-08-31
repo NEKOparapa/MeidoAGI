@@ -1,0 +1,41 @@
+INFO:vits-simple-api torch:2.0.0+cpu cuda_available:False
+INFO:vits-simple-api device:cpu device.type:cpu
+INFO:vits-simple-api [VITS] 804 speakers
+INFO:vits-simple-api 804 speakers in total
+INFO:apscheduler.scheduler Added job "clean_task" to job store "default"
+INFO:werkzeug [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:23456
+ * Running on http://192.168.0.144:23456
+INFO:werkzeug [33mPress CTRL+C to quit[0m
+INFO:vits-simple-api [VITS] id:0 format:wav lang:auto length:1.0 noise:0.667 noisew:0.8
+INFO:vits-simple-api [VITS] len:15 text：您好！有什么我可以帮助您的吗？
+DEBUG:vits-simple-api [ZH]您好！有什么我可以帮助您的吗？[ZH]
+INFO:vits-simple-api [VITS] finish in 3.20s
+INFO:werkzeug 127.0.0.1 - - [06/Aug/2023 02:54:30] "POST /voice HTTP/1.1" 200 -
+INFO:vits-simple-api [VITS] id:0 format:wav lang:auto length:1.0 noise:0.667 noisew:0.8
+INFO:vits-simple-api [VITS] len:17 text：你好，请问有什么我可以帮助你的吗？
+DEBUG:vits-simple-api [ZH]你好，请问有什么我可以帮助你的吗？[ZH]
+INFO:vits-simple-api [VITS] finish in 1.96s
+INFO:werkzeug 127.0.0.1 - - [06/Aug/2023 02:55:38] "POST /voice HTTP/1.1" 200 -
+INFO:vits-simple-api [VITS] id:0 format:wav lang:auto length:1.0 noise:0.667 noisew:0.8
+INFO:vits-simple-api [VITS] len:15 text：你好！有什么我可以帮助你的吗？
+DEBUG:vits-simple-api [ZH]你好！有什么我可以帮助你的吗？[ZH]
+INFO:vits-simple-api [VITS] finish in 1.63s
+INFO:werkzeug 127.0.0.1 - - [06/Aug/2023 02:56:22] "POST /voice HTTP/1.1" 200 -
+INFO:vits-simple-api [VITS] id:0 format:wav lang:auto length:1.0 noise:0.667 noisew:0.8
+INFO:vits-simple-api [VITS] len:48 text：谢谢你的夸奖！作为AI，我没有情感，但我会尽力帮助你解答问题和完成任务。有什么我可以为你做的吗？
+DEBUG:vits-simple-api [ZH]谢谢你的夸奖！作为AI，我没有情感，但我会尽力帮助你解答问题和完成任务。有什么我可以为你做的吗？[ZH]
+INFO:vits-simple-api [VITS] finish in 5.83s
+INFO:werkzeug 127.0.0.1 - - [06/Aug/2023 02:57:13] "POST /voice HTTP/1.1" 200 -
+INFO:vits-simple-api [VITS] id:0 format:wav lang:auto length:1.0 noise:0.667 noisew:0.8
+INFO:vits-simple-api [VITS] len:15 text：你好！有什么我可以帮助你的吗？
+DEBUG:vits-simple-api [ZH]你好！有什么我可以帮助你的吗？[ZH]
+INFO:vits-simple-api [VITS] finish in 1.61s
+INFO:werkzeug 127.0.0.1 - - [06/Aug/2023 02:58:24] "POST /voice HTTP/1.1" 200 -
+INFO:vits-simple-api [VITS] id:0 format:wav lang:auto length:1.0 noise:0.667 noisew:0.8
+INFO:vits-simple-api [VITS] len:64 text：我是你的AI女仆，专门为你提供帮助和回答问题的人工智能助手。我可以帮你完成任务、提供信息、解答疑惑等等。有什么我可以为你做的吗？
+DEBUG:vits-simple-api [ZH]我是你的AI女仆，专门为你提供帮助和回答问题的人工智能助手。我可以帮你完成任务、提供信息、解答疑惑等等。[ZH]
+DEBUG:vits-simple-api [ZH]有什么我可以为你做的吗？[ZH]
+INFO:vits-simple-api [VITS] finish in 7.95s
+INFO:werkzeug 127.0.0.1 - - [06/Aug/2023 02:59:08] "POST /voice HTTP/1.1" 200 -

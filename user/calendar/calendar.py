@@ -1,5 +1,7 @@
 import datetime
 import json
+import os
+import sys
 
 #创建日程表类
 class Calendar :
@@ -401,6 +403,11 @@ class Calendar :
             #把datetime类型的key转换为字符串类型
             self.my_calendar_copy[key.strftime("%Y-%m-%d %H:%M:%S")] = self.my_calendar[key].copy()
 
+        #获取当前脚本的路径
+        script_dir = os.path.dirname(os.path.abspath(sys.argv[0])) 
+        #拼接文件路径
+        file_path = os.path.join(script_dir, "data", "my_calenda.json")
+
         #把任务库写入到本地文件中，指定编码格式为utf-8
-        with open("my_calenda.json", "w", encoding="utf-8") as f:
+        with open(file_path, "w", encoding="utf-8") as f:
             json.dump(self.my_calendar_copy, f, ensure_ascii=False, indent=4)
