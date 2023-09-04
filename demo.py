@@ -15,8 +15,8 @@ from chromadb.utils import embedding_functions
 from flask import Flask, request, jsonify  #需要安装库pip install flask
 
 #导入其他脚本
-from ai_toolkits import function_library
-from user.calendar import calendar
+from toolkits import function_library
+from calendario import calendar_table  #库名冲突了，就随便用一个了
 from vits import TTS_vits,ATM_vits
 
 # 获取当前工作目录，之前项目使用os.path.dirname(os.path.abspath(__file__))来获取路径，但打包后路径不正确
@@ -1154,15 +1154,15 @@ class Ai_Parser:
         
 
 
-#————————————————————————————————————————主AI对话及配置接口————————————————————————————————————————
+#————————————————————————————————————————主AI对话接口————————————————————————————————————————
 class ChatApp:
     def __init__(self):
         self.app = Flask(__name__)
-        self.configure_routes()
-        self.configure_routes1()
+        self.Chat_routes()
+        self.voice_to_text()
 
     #AI对话接口
-    def configure_routes(self):
+    def Chat_routes(self):
         @self.app.route('/chat', methods=['POST'])
         def chat():
             #打印原始数据
@@ -1202,23 +1202,46 @@ class ChatApp:
                 'assistant_mouth_data_path': mouth_data_path
             })
         
-    #系统配置接口
-    def configure_routes1(self):
-        pass
+    #语音转文本在线接口
+    def voice_to_text(self):
+        @self.app.route('/whisper', methods=['GET', 'POST'])
+        def whisper():
+            if request.method == 'POST':
+                #获取文件路径
+                audio_path = request.json.get('audio_path')
 
+                #打开音频
+                audio_file= open(audio_path, "rb")
+
+                #发送请求，返回的是字典格式的数据
+                response = openai.Audio.transcribe("whisper-1", audio_file)
+
+                # 提取文本内容
+                text = response['text']
+
+                #返回数据
+                response = {'user_input': text}
+                return jsonify(response)
+            else:
+                return 'GET请求不支持'
+        
     def run(self):
         # 启动服务器，完整地址为 http://localhost:5000/chat'
         self.app.run(host='0.0.0.0', port=5000, debug=True)
-        
-        
+
+
+#————————————————————————————————————————系统配置接口————————————————————————————————————————     
+class ConfigApp:
+    def __init__(self):
+        pass
 
 
 #————————————————————————————————————————主程序————————————————————————————————————————
 if __name__ == '__main__':
         
     # 读取 YAML 配置文件
-    config_path = os.path.join(script_dir, "data", "config.yaml")
-    with open(config_path, 'r') as file:
+    config_path = os.path.join(script_dir, "data", "System_Configuration.yaml")
+    with open(config_path, 'r', encoding='utf-8') as file:
         config = yaml.safe_load(file)
         # 访问具体配置项
         Api_key = config['openai']['api_key']
@@ -1271,18 +1294,28 @@ if __name__ == '__main__':
 
 
     #创建日程表
-    my_calendar = calendar.Calendar()
+    my_calendar = calendar_table.Calendar()
  
     #创建日程表执行器
     calendar_executor = Calendar_executor()
+
     #后台运行日程表执行器
-    #thread = threading.Thread(target=calendar_executor.run)
-    #thread.start()
+    with open(config_path, 'r', encoding='utf-8') as file:
+        # 加载YAML数据
+        data = yaml.safe_load(file)
+    calendar_switch = data['calendario']['switch']
 
-    print("[INFO] 日程表模块启动完成！","\n")
+    if calendar_switch == 'on':
+        thread = threading.Thread(target=calendar_executor.run)
+        thread.start()
+        print("[INFO] 日程表执行器启动完成！","\n")
+    elif calendar_switch == 'off':
+        print("[INFO] 日程表执行器关闭中！","\n")
+    else:
+        print("[INFO] 无法正确读取日程表配置信息！","\n")
 
 
-    #开启接口
+    #开启后端接口
     chat_app = ChatApp()
     chat_app.run()
 
