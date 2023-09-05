@@ -7,10 +7,9 @@
 #  环境支持🏕️
 ***
    
- * **`🟪好用的魔法工具`**:我们**强烈建议**您选择优质稳定的代理工具,不然api接口会频繁报错无法连接,显示错误代码443或者一直没有回复
- * **`🔵Mtool/🔴Translator++`**:[🔵Mtool下载地址](https://afdian.net/a/AdventCirno?tab=feed)  [🔴Translator++下载地址](https://dreamsavior.net/download/)[🔴Translator++ Github简体中文文档地址](https://github.com/zyf722/TranslatorPlusPlusChineseWiki)
-   > 两者免费版本就可以,新人推荐Mtool,如果希望能够自行校正,构建用户词典,获得更好的翻译效果,推荐Translator++
-* **`🤖Chat-GPT账号`**:建议您新建一个API_Key,并且最好在使用期间不要和其他程序一起使用,不然容易达到请求次数限制
+ * **`🟪魔法工具`**:我们**强烈建议**您选择优质稳定的代理工具,不然api接口会频繁报错无法连接,显示错误代码443或者一直没有回复
+ * **`python环境`**:[python下载地址](https://afdian.net/a/AdventCirno?tab=feed) 下载3.10及以上的版本，并在安装时勾选添加到环境选项。
+ * **`node.js环境`**:[node.js下载地址](https://afdian.net/a/AdventCirno?tab=feed) 下载最新即可
 
 # 使用方法📝
 ***
@@ -32,4 +31,5 @@
     > <img src="https://github.com/NEKOparapa/AiNiee-chatgpt/blob/main/Example%20image/代理账号设置.png" width="600" height="400"><br> 
     > 代理账号配置说明:<br>
     >`API KEY`: 填入国内代理平台给你生成的API KEY<br>
+
 
