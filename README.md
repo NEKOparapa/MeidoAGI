@@ -1,7 +1,7 @@
 
 <h1><p align='center' >MeidoAGI</p></h1>
 
-<p align='center' >这是一款基于`Mtool`或`Translator++`的 AI自动批翻译工具,主要是用来翻译各种RPG游戏</p>
+<p align='center' >一款可灵活拓展功能，可自定义语音和界面模型的桌宠AI代理</p>
 
 
 #  环境支持🏕️
