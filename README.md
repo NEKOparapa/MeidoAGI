@@ -51,5 +51,6 @@
 # 工具编写规范🧰 
 ***
 * ### 第一步：编写完整的可调用Python函数和函数调用说明！
+  在编写过程中如果函数名如果是 `def example_functions() ` ,则对应的函数调用说明字典名字则应该是`funtion_` + `example_functions`,最终是`funtion_example_functions`.
       
 
