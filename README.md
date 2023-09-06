@@ -51,6 +51,18 @@
 # 工具编写规范🧰 
 ***
 * ### 第一步：编写完整的可调用Python函数和函数调用说明！
-  在编写过程中如果函数名如果是 `def example_functions() ` ,则对应的函数调用说明字典名字则应该是`funtion_` + `example_functions`,最终是`funtion_example_functions`.
-      
+   在编写过程中如果函数名如果是 `def example_functions() ` ,则对应的函数调用说明字典名字则应该是`funtion_` + `example_functions`,最终是`funtion_example_functions`.
+   下面是一个工具脚本完整编写示例
+   ```
+   #python3.10 版本请使用下面命令
+   pip install https://github.com/Artrajz/archived/raw/main/fasttext/fasttext-0.9.2-cp310-cp310-win_amd64.whl
+   #python3.9  版本请使用下面命令
+   pip install https://github.com/Artrajz/archived/raw/main/fasttext/fasttext-0.9.2-cp39-cp39-win_amd64.whl
+   ```
+* ### 第二步：在根目录的toolkits文件夹中，创建专属文件夹，并放进脚本
+   还希望同时放入一份README.md，用来简单说明一下脚本的功能，如果有配置文件，则写明一下配置的教程。
+
+
+
+* ### 第三步：如果你的项目需要用户自行配置类似平台key，账号许可等内容，请把配置文件放在data文件夹里的Extended_Configuration文件夹里
 
