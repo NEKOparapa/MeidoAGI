@@ -68,7 +68,7 @@
        }
        return json.dumps(weather_info)
    
-   #定义AI调用函数的信息，包括函数名字，描述，参数，参数类型，参数范围，参数描述，必需给出的参数
+   #对应的函数调用说明，包括函数名字，描述，参数，参数类型，参数范围，参数描述，必需给出的参数
    function_get_current_weather = {
                "name": "get_current_weather", #函数名字
    
