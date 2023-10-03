@@ -46,5 +46,54 @@
 # 项目运行🕹️ 
 ***
 * ### 女仆启动！
-   在根目录下依次打开`启动语音模块`，`启动交互界面`，`启动MeidoAGI`
+   打开系统代理，并在根目录下依次打开`启动语音模块`，`启动交互界面`，`启动MeidoAGI`
+
+  
+
+# 工具编写规范🧰 
+***
+* ### 第一步：编写完整的可调用Python函数和函数调用说明！
+   在编写过程中如果函数名如果是 `def example_functions() ` ,则对应的函数调用说明字典名字则应该是`funtion_` + `example_functions`,最终是`funtion_example_functions`.
+   下面是一个工具脚本完整编写示例
+   ```
+   import json
+   
+   
+   #获取给定位置的当前天气--------------------------------------------
+   def get_current_weather(location, unit):
+       """Get the current weather in a given location"""
+       weather_info = {
+           "location": location,
+           "temperature": "31",
+           "unit": unit,
+           "forecast": "晴天",
+       }
+       return json.dumps(weather_info)
+   
+   #对应的函数调用说明，包括函数名字，描述，参数，参数类型，参数范围，参数描述，必需给出的参数
+   function_get_current_weather = {
+               "name": "get_current_weather", #函数名字
+   
+               "description": "输入位置与温度单位，获取给定位置的当前天气", #函数描述
+   
+               "parameters": { "type": "object", 
+                               "properties": {"location": {"type": "string",     #参数类型
+                                                           "description": "需要查询的城市，例如南宁、北京", #参数描述
+                                                           },
+                                               "unit": {"type": "string",  
+                                                       "enum": ["摄氏度", "华氏度"],    #参数范围
+                                                       "description": "使用的温度单位，从用户语言进行推断。" #参数描述
+                                                       },
+                                               },
+                               "required": ["location","unit"], #必需给出的参数
+                               },
+                   }
+   ```
+* ### 第二步：放置脚本文件
+   在根目录的toolkits文件夹中，创建专属文件夹，并放进脚本。还希望同时放入一份README.md，用来简单说明一下脚本的功能，如果有配置文件，则写明一下配置的教程。
+
+
+
+* ### 放置相关配置文件（可选）
+   如果你的项目需要用户自行配置类似平台key，账号许可等内容，请把配置文件放在data文件夹里的Extended_Configuration文件夹里
 
