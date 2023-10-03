@@ -44,7 +44,7 @@
         });
 
         //创建模型,必须用await等待模型加载完毕后再执行，否则会报错。
-        model = await PIXI.live2d.Live2DModel.from("live2d-model/粉福女仆/粉福女仆.model3.json");
+        model = await PIXI.live2d.Live2DModel.from("live2d-model/MXAhri/mxahri.model3.json");
 
         //把模型添加到PIXI舞台上
         app.stage.addChild(model);
@@ -55,8 +55,12 @@
         model.scale.set( 2 * Math.min(scaleX, scaleY));
 
         //设置模型位置
-        model.y = innerHeight * 0.2;
-        model.x = innerWidth * 0.1;
+        //model.y = innerHeight * 0.2;
+        //model.x = innerWidth * 0.1;
+
+        //设置模型位置置下
+        model.x = (innerWidth - model.width) / 2;  // model.x 设置为屏幕宽度的一半减去模型宽度的一半，以将模型置于屏幕的水平中心
+        model.y = innerHeight - model.height;    //将 model.y 设置为屏幕高度减去模型高度，以将模型置于屏幕底部。
 
 
         //开口测试

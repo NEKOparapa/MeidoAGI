@@ -1,0 +1,65 @@
+{
+	"Version": 3,
+	"FileReferences": {
+		"Moc": "MXAhri.moc3",
+		"Textures": [
+			"MXAhri.4096/texture_00.png"
+		],
+		"Physics": "MXAhri.physics3.json",
+		"DisplayInfo": "MXAhri.cdi3.json",
+		"Expressions": [
+			{
+				"Name": "aixin",
+				"File": "aixin.exp3.json"
+			},
+			{
+				"Name": "heshan",
+				"File": "heshan.exp3.json"
+			},
+			{
+				"Name": "kaiR",
+				"File": "kaiR.exp3.json"
+			},
+			{
+				"Name": "lianhong",
+				"File": "lianhong.exp3.json"
+			},
+			{
+				"Name": "shanshuo",
+				"File": "shanshuo.exp3.json"
+			},
+			{
+				"Name": "shengqi",
+				"File": "shengqi.exp3.json"
+			},
+			{
+				"Name": "weiba",
+				"File": "weiba.exp3.json"
+			},
+			{
+				"Name": "weiqu",
+				"File": "weiqu.exp3.json"
+			},
+			{
+				"Name": "youhun",
+				"File": "youhun.exp3.json"
+			}
+		]
+	},
+	"Groups": [
+		{
+			"Target": "Parameter",
+			"Name": "LipSync",
+			"Ids": []
+		},
+		{
+			"Target": "Parameter",
+			"Name": "EyeBlink",
+			"Ids": [
+				"ParamEyeLOpen",
+				"ParamEyeROpen"
+			]
+		}
+	],
+	"HitAreas": []
+}

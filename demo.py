@@ -15,9 +15,9 @@ from chromadb.utils import embedding_functions
 from flask import Flask, request, jsonify  #需要安装库pip install flask
 
 #导入其他脚本
-from toolkits import function_library
-from calendario import calendar_table  #库名冲突了，就随便用一个了
-from vits import TTS_vits,ATM_vits
+from .toolkits import function_library
+from .calendario import calendar_table  #库名冲突了，就随便用一个了
+from .vits import TTS_vits,ATM_vits
 
 # 获取当前工作目录，之前项目使用os.path.dirname(os.path.abspath(__file__))来获取路径，但打包后路径不正确
 script_dir = os.path.dirname(os.path.abspath(sys.argv[0])) 
