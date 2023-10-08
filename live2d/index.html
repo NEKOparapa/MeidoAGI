@@ -39,7 +39,7 @@
         const app = new PIXI.Application({
             view: document.getElementById("canvas"),
             autoStart: true,
-            //resizeTo: window,
+            //resizeTo: window,     //自动调整大小
             transparent: true, //透明背景
         });
 
@@ -60,7 +60,7 @@
 
         //设置模型位置置下
         model.x = (innerWidth - model.width) / 2;  // model.x 设置为屏幕宽度的一半减去模型宽度的一半，以将模型置于屏幕的水平中心
-        model.y = innerHeight - model.height;    //将 model.y 设置为屏幕高度减去模型高度，以将模型置于屏幕底部。
+        model.y = innerHeight - model.height - model.height * 0.1 ;    //将 model.y 设置为屏幕高度减去模型高度，以将模型置于屏幕底部。
 
 
         //开口测试
@@ -82,20 +82,18 @@
 
 
 
-
     <!-- 设置底部横条，它包含一个输入框和两个按钮 -->
     <div id="bottom-bar">
         <textarea id="input-field" placeholder="请输入对话内容"></textarea>
         <button id="button1">发送</button>
-        <button id="button2">设置</button>
     </div>
     <style>
         /* 设置CSS，这将会让横条固定在页面底部 */
         #bottom-bar {
-            position: fixed; 
-            bottom: 0;
-            width: 100%;
-            background-color: #ccc;
+            position: fixed;  /* 设置为固定定位 */
+            bottom: 0; /* 设置距离底部的距离 */
+            width: 100%; /* 设置宽度 */
+            background-color: #ccc; /* 设置背景颜色 */
             -webkit-app-region: drag; /* 允许拖动窗口 */
             border-radius: 30px; /* 所有四个角都设置为圆角 */
 
@@ -106,11 +104,7 @@
             height: 30px; /* 设置高度 */
             max-height: 110px; /* 设置最大高度 */
         }
-        /* 设置按钮的属性 */
-        #bottom-bar button {
-            margin: 5px; /* 设置元素之间的间距 */
-            -webkit-app-region: no-drag; /*禁止拖动窗口 */
-        }
+
         /* 设置输入框的属性 */
         #bottom-bar textarea {
             resize: none; /* 禁止手动调整大小 */
@@ -118,13 +112,40 @@
 
             height: 20px; /* 设置高度 */
             max-height: 90px; /* 设置最大高度 */
-            width: 210px; /* 设置长度 */
+            width: 250px; /* 设置长度 */
 
-            margin: 5px; /* 设置与其他元素之间的间距 */
+            margin: 10px; /* 设置与其他元素之间的间距 */
             margin-left: 20px; /* 设置元素距离左边框的间距 */
             -webkit-app-region: no-drag; /* 禁止拖动窗口 */
         }
+
+        /* 设置发送按钮的属性 */
+        #button1 {
+            height: 25px; /* 设置高度 */
+            width: 50px; /* 设置长度 */
+            -webkit-app-region: no-drag; /* 禁止拖动窗口 */
+        }
     </style>
+
+    <!-- 拖动标签 -->
+    <div id="drag-bar"></div>
+    <style>
+        /* 设置CSS，这将会让拖动标签固定在页面顶部 */
+        #drag-bar {
+            position: fixed;  /* 设置为固定定位 */
+            bottom: 250px;
+            right: 25px;
+            height: 30px; /* 设置高度 */
+            width: 30px; /* 设置长度 */
+            background-color: #ccc; /* 设置背景颜色 */
+            -webkit-app-region: drag; /* 允许拖动窗口 */
+            border-radius: 25px; /* 所有四个角都设置为圆角 */
+        }
+    </style>
+
+
+
+
 
 
 
@@ -161,9 +182,17 @@
         // 监听鼠标右键点击事件
         document.getElementById('canvas').addEventListener('mousedown', function (event) {
             if (event.button === 2) {            // 右键点击
-                const bottomBar = document.getElementById('bottom-bar');
+                const bottomBar = document.getElementById('bottom-bar');  
+                const dragBar = document.getElementById('drag-bar');
                 // 切换底部横条的显示/隐藏状态
-                bottomBar.style.visibility = bottomBar.style.visibility === 'hidden' ? 'visible' : 'hidden';  //不能使用display: none;不然元素将不再占据空间，因此无法继续保持原来布局。
+                if (bottomBar.style.visibility === 'hidden') { //不能使用display: none;不然元素将不再占据空间，因此无法继续保持原来布局。
+                    bottomBar.style.visibility = 'visible';
+                    dragBar.style.visibility = 'visible';
+                        } 
+                else {
+                    bottomBar.style.visibility = 'hidden';
+                    dragBar.style.visibility = 'hidden';
+                        }
             }
         });
 
