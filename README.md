@@ -20,7 +20,6 @@
    pip install -r requirements.txt
    ```
 * ### 安装npm依赖
-   在根目录下打开CMD窗口，并输入下面安装全部依赖库命令:
    先运行
    ```
    npm install -g cnpm --registry=https://registry.npmmirror.com
