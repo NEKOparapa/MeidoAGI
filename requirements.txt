@@ -51,9 +51,10 @@ tqdm
 
 
 
-
-
+# System
 openai
 tiktoken
 chromadb
+
+# Tool
 beautifulsoup4
