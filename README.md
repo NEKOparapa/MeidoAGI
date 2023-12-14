@@ -14,18 +14,23 @@
 
 # 首次使用📝
 ***
-* ### 下载python依赖
+* ### 安装pip依赖
    在根目录下打开CMD窗口，并输入下面安装全部依赖库命令:
    ```
    pip install -r requirements.txt
    ```
-   windows下可能安装不了其中的fasttext,可以用以下命令单独安装
+* ### 安装npm依赖
+   在根目录下打开CMD窗口，并输入下面安装全部依赖库命令:
+   先运行
    ```
-   #python3.10 版本请使用下面命令
-   pip install https://github.com/Artrajz/archived/raw/main/fasttext/fasttext-0.9.2-cp310-cp310-win_amd64.whl
-   #python3.9  版本请使用下面命令
-   pip install https://github.com/Artrajz/archived/raw/main/fasttext/fasttext-0.9.2-cp39-cp39-win_amd64.whl
+   npm install -g cnpm --registry=https://registry.npmmirror.com
    ```
+   
+   再运行
+   ```
+   cnpm install --save-dev electron
+   ```
+   
 * ### 系统配置
    在根目录下打开data文件夹，记事本打开System_Configuration.yaml文件:
    ```
