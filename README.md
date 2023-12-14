@@ -1,7 +1,7 @@
 
 <h1><p align='center' >MeidoAGI</p></h1>
 
-<p align='center' >一款可灵活拓展功能，可自定义语音和界面模型的桌宠AI代理</p>
+<p align='center' >一款可灵活拓展功能，可自定义语音和界面模型的桌宠AI</p>
 
 
 #  环境支持🏕️
