@@ -20,7 +20,7 @@
    pip install -r requirements.txt
    ```
 * ### 安装npm依赖
-   先运行
+   在lve2d目录下打开CMD窗口，先运行
    ```
    npm install -g cnpm --registry=https://registry.npmmirror.com
    ```
