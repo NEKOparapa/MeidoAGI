@@ -8,9 +8,8 @@ const {  app, BrowserWindow, ipcMain } = require('electron')  //需要额外安�
 //分函数：创建窗口并加载html
 function createWindow () {
   const win = new BrowserWindow({
-    // 设置窗口的宽高
-    width: 350,
-    height: 600,
+    width: 350,    // 设置整体应用窗口的宽高，相当于底板大小
+    height: 380,
     resizable: false, // 禁用鼠标调整窗口大小功能
     transparent: true,     // 设置窗口透明
     frame: false,          // 禁用默认的窗口框架

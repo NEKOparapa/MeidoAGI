@@ -1,0 +1,8 @@
+# openai配置
+openai:
+  api_key: 
+
+
+# 日程表配置
+calendario:
+  switch: "on"

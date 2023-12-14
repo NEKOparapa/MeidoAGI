@@ -13,7 +13,7 @@ def google_search(search_words):
 
     # 读取 YAML 配置文件
     try:
-        config_path = os.path.join(script_dir, "data", "Extended_Configuration" ,"google_search.yaml")
+        config_path = os.path.join(script_dir, "config", "Extended_Configuration" ,"google_search.yaml")
         with open(config_path, 'r') as file:
             config = yaml.safe_load(file)
             # 访问具体配置项
@@ -45,7 +45,8 @@ def google_search(search_words):
     data = response.json()
 
     # 保存为JSON文件
-    with open('search_results.json', 'w', encoding='utf-8') as f:
+    save_path1 = os.path.join(script_dir, "cache", "search_results.json")
+    with open(save_path1, 'w', encoding='utf-8') as f:
         json.dump(data, f, ensure_ascii=False, indent=4)
 
 
@@ -55,16 +56,22 @@ def google_search(search_words):
     #提取搜索结果里的主要信息
     records = []
     for result in results:
-        record = {
-            'title': result['title'],
-            'link': result['link'],  
-            'snippet': result['snippet']
-        }
-        
-        records.append(record)
+        # 检查 'title'，'link'，'snippet' 是否存在，存在就添加到 record 中，有些搜索结果没有'snippet'
+        record = {}
+        if 'title' in result:
+            record['title'] = result['title']
+        if 'link' in result:
+            record['link'] = result['link']
+        if 'snippet' in result:
+            record['snippet'] = result['snippet']
+
+        # 只有在 record 不为空时才添加到 records 列表中
+        if record:
+            records.append(record)
 
     # 保存为JSON文件
-    with open('results.json', 'w', encoding='utf-8') as f:
+    save_path2 = os.path.join(script_dir, "cache", "results.json")
+    with open(save_path2, 'w', encoding='utf-8') as f:
         json.dump(records, f, ensure_ascii=False, indent=4)
 
     #返回搜索结果
@@ -72,38 +79,44 @@ def google_search(search_words):
 
 #配套函数调用说明
 function_google_search  = {
-        "name": "google_search",
-        "description": "输入关键字、短语或问题等，谷歌将根据这些关键词提供相关的搜索结果",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "search_words": {
-                    "type": "string",
-                    "description": "需要搜索的关键字、短语或问题等",
+        "type": "function",
+        "function": {
+                    "name": "google_search",
+                    "description": "输入关键字、短语或问题等，谷歌将根据这些关键词提供相关的搜索结果",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "search_words": {
+                                "type": "string",
+                                "description": "需要搜索的关键字、短语或问题等",
+                            }
+                        },
+                        "required": ["search_words"]
+                    },
                 }
-            },
-            "required": ["search_words"]
-        },
-    }
+}
 
 
-#系统打开网站函数
+#默认浏览器打开网站函数
 def open_website(website_url):
     webbrowser.open(website_url)
     return "已打开指定网站" + website_url
 
 #配套函数调用说明
 function_open_website  = {
-        "name": "open_website",
-        "description": "输入网站，将自动调用系统默认浏览器打开该网站",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "website_url": {
-                    "type": "string",
-                    "description": "网站",
+        "type": "function",
+        "function": {
+                    "name": "open_website",
+                    "description": "输入网站，将自动调用系统默认浏览器打开该网站",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "website_url": {
+                                "type": "string",
+                                "description": "网站",
+                            }
+                        },
+                        "required": ["website_url"]
+                    },
                 }
-            },
-            "required": ["website_url"]
-        },
-    }
+}

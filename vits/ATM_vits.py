@@ -31,8 +31,12 @@ def convertAudioToMouthData(audio_path):
     # 由于NumPy数组不能直接序列化为JSON，我们需要将其转换为普通的Python列表
     mouthdata = loudness_normalized.tolist()
 
+    #缩小一下数值
+    mouthdata = [x * 0.6 for x in mouthdata]
+
     # 设置路径及文件名
     path = f"{abs_path}/cache/mouthdata.json" 
+    print('[DEBUG] 已生成口型数据存储位置：',path,'\n')
 
     # 将结果写入JSON文件
     with open(path, 'w') as f:

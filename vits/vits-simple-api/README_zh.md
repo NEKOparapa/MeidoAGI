@@ -5,7 +5,7 @@
     <br/>
     <p>
         <img src="https://img.shields.io/github/license/Artrajz/vits-simple-api">
-    	<img src="https://img.shields.io/badge/python-3.9%7C3.10-green">
+    	<img src="https://img.shields.io/badge/python-3.10-green">
         <a href="https://hub.docker.com/r/artrajz/vits-simple-api">
             <img src="https://img.shields.io/docker/pulls/artrajz/vits-simple-api"></a>
     </p>
@@ -16,43 +16,20 @@
 
 
 
+
 # Feature
 
-- [x] VITS语音合成
-- [x] VITS语音转换
+- [x] VITS语音合成，语音转换
 - [x] HuBert-soft VITS模型
-- [x] W2V2 VITS / emotional-vits维度情感模型
+- [x] W2V2 VITS / [emotional-vits](https://github.com/innnky/emotional-vits)维度情感模型
+- [x] [vits_chinese](https://github.com/PlayVoice/vits_chinese)
+- [x] [Bert-VITS2](https://github.com/Stardust-minus/Bert-VITS2)
 - [x] 加载多模型
 - [x] 自动识别语言并处理，根据模型的cleaner设置语言类型识别的范围，支持自定义语言类型范围
 - [x] 自定义默认参数
 - [x] 长文本批处理
 - [x] GPU加速推理
 - [x] SSML语音合成标记语言（完善中...）
-
-<details><summary>Update Logs</summary><pre><code>
-<h2>2023.6.5</h2>
-<p>更换音频编码使用的库，增加flac格式，增加中文对读简单数学公式的支持</p>
-<h2>2023.5.24</h2>
-<p>添加dimensional_emotion api,从文件夹加载多个npy文件,Docker添加了Linux/ARM64和Linux/ARM64/v8平台</p>
-<h2>2023.5.15</h2>
-<p>增加english_cleaner，需要额外安装espeak才能使用</p>
-<h2>2023.5.12</h2>
-<p>增加ssml支持，但仍需完善。重构部分功能，hubert_vits中的speaker_id改为id</p>
-<h2>2023.5.2</h2>
-<p>增加w2v2-vits/emotional-vits模型支持，修改了speakers映射表并添加了对应模型支持的语言</p>
-<h2>2023.4.23</h2>
-<p>增加api key鉴权，默认禁用，需要在config.py中启用</p>
-<h2>2023.4.17</h2>
-<p>修改单语言的cleaner需要标注才会clean，增加GPU加速推理，但需要手动安装gpu推理环境</p>
-<h2>2023.4.12</h2>
-<p>项目由MoeGoe-Simple-API更名为vits-simple-api，支持长文本批处理，增加长文本分段阈值max</p>
-<h2>2023.4.7</h2>
-<p>增加配置文件可自定义默认参数，本次更新需要手动更新config.py，具体使用方法见config.py</p>
-<h2>2023.4.6</h2>
-<p>加入自动识别语种选项auto，lang参数默认修改为auto，自动识别仍有一定缺陷，请自行选择</p>
-<p>统一POST请求类型为multipart/form-data</p>
-</code></pre></details>
-
 
 
 ## demo
@@ -72,7 +49,7 @@ https://user-images.githubusercontent.com/73542220/237995061-c1f25b4e-dd86-438a-
 
 # 部署
 
-## Docker部署
+## Docker部署（Linux推荐）
 
 ### 镜像拉取脚本
 
@@ -80,7 +57,7 @@ https://user-images.githubusercontent.com/73542220/237995061-c1f25b4e-dd86-438a-
 bash -c "$(wget -O- https://raw.githubusercontent.com/Artrajz/vits-simple-api/main/vits-simple-api-installer-latest.sh)"
 ```
 
-- 目前docker镜像支持的平台`linux/amd64,linux/arm64`
+- 目前docker镜像支持的平台`linux/amd64,linux/arm64`（arm64仅有CPU版本）
 - 在拉取完成后，需要导入VITS模型才能使用，请根据以下步骤导入模型。
 
 ### 下载VITS模型
@@ -161,17 +138,15 @@ DIMENSIONAL_EMOTION_MODEL = ABS_PATH + "/Model/model.yaml"
 
 ###  下载python依赖
 
-推荐使用python的虚拟环境，python版本 >= 3.9
+推荐使用python的虚拟环境
 
 `pip install -r requirements.txt`
 
 windows下可能安装不了fasttext,可以用以下命令安装，附[wheels下载地址](https://www.lfd.uci.edu/~gohlke/pythonlibs/#fasttext)
 
 ```
-#python3.10 win_amd64
+# python3.10 win_amd64
 pip install https://github.com/Artrajz/archived/raw/main/fasttext/fasttext-0.9.2-cp310-cp310-win_amd64.whl
-#python3.9 win_amd64
-pip install https://github.com/Artrajz/archived/raw/main/fasttext/fasttext-0.9.2-cp39-cp39-win_amd64.whl
 ```
 
 ### 下载VITS模型
@@ -246,27 +221,23 @@ nvidia-smi
 
 ### 安装GPU版pytorch
 
-CUDA11.7对应的pytorch是用这个命令安装
+CUDA11.7对应的pytorch是用这个命令安装，推荐使用1.13.1+cu117，其他版本可能存在内存不稳定的问题。
 
 ```
-pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu117
+pip install torch==1.13.1+cu117 --extra-index-url https://download.pytorch.org/whl/cu117
 ```
-
-对应版本的命令可以在[官网](https://pytorch.org/get-started/locally/)找到
 
 ## Linux
 
 安装过程类似，但我没有相应的环境所以没办法测试
 
-# Openjtalk安装问题
+# 依赖安装问题
 
-如果你是arm64架构的平台，由于pypi官网上没有arm64对应的whl，可能安装会出现一些问题，你可以使用我构建的whl来安装
+由于pypi.org没有pyopenjtalk的whl文件，通常需要从源代码来安装，这一过程对于一些人来说可能比较麻烦，所以你也可以使用我构建的whl来安装。
 
 ```
-pip install openjtalk==0.3.0.dev2 --index-url https://pypi.artrajz.cn/simple
+pip install pyopenjtalk -i https://pypi.artrajz.cn/simple
 ```
-
-或者是自己手动构建一个whl，可以根据[教程](https://artrajz.cn/index.php/archives/167/)来构建
 
 # API
 
@@ -298,190 +269,9 @@ pip install openjtalk==0.3.0.dev2 --index-url https://pypi.artrajz.cn/simple
 
 ## POST
 
-- python
-
-```python
-import re
-import requests
-import os
-import random
-import string
-from requests_toolbelt.multipart.encoder import MultipartEncoder
-
-abs_path = os.path.dirname(__file__)
-base = "http://127.0.0.1:23456"
+- 见`api_test.py`
 
 
-# 映射表
-def voice_speakers():
-    url = f"{base}/voice/speakers"
-
-    res = requests.post(url=url)
-    json = res.json()
-    for i in json:
-        print(i)
-        for j in json[i]:
-            print(j)
-    return json
-
-
-# 语音合成 voice vits
-def voice_vits(text, id=0, format="wav", lang="auto", length=1, noise=0.667, noisew=0.8, max=50):
-    fields = {
-        "text": text,
-        "id": str(id),
-        "format": format,
-        "lang": lang,
-        "length": str(length),
-        "noise": str(noise),
-        "noisew": str(noisew),
-        "max": str(max)
-    }
-    boundary = '----VoiceConversionFormBoundary' + ''.join(random.sample(string.ascii_letters + string.digits, 16))
-
-    m = MultipartEncoder(fields=fields, boundary=boundary)
-    headers = {"Content-Type": m.content_type}
-    url = f"{base}/voice"
-
-    res = requests.post(url=url, data=m, headers=headers)
-    fname = re.findall("filename=(.+)", res.headers["Content-Disposition"])[0]
-    path = f"{abs_path}/{fname}"
-
-    with open(path, "wb") as f:
-        f.write(res.content)
-    print(path)
-    return path
-
-
-# 语音转换 hubert-vits
-def voice_hubert_vits(upload_path, id, format="wav", length=1, noise=0.667, noisew=0.8):
-    upload_name = os.path.basename(upload_path)
-    upload_type = f'audio/{upload_name.split(".")[1]}'  # wav,ogg
-
-    with open(upload_path, 'rb') as upload_file:
-        fields = {
-            "upload": (upload_name, upload_file, upload_type),
-            "id": str(id),
-            "format": format,
-            "length": str(length),
-            "noise": str(noise),
-            "noisew": str(noisew),
-        }
-        boundary = '----VoiceConversionFormBoundary' + ''.join(random.sample(string.ascii_letters + string.digits, 16))
-
-        m = MultipartEncoder(fields=fields, boundary=boundary)
-        headers = {"Content-Type": m.content_type}
-        url = f"{base}/voice/hubert-vits"
-
-        res = requests.post(url=url, data=m, headers=headers)
-    fname = re.findall("filename=(.+)", res.headers["Content-Disposition"])[0]
-    path = f"{abs_path}/{fname}"
-
-    with open(path, "wb") as f:
-        f.write(res.content)
-    print(path)
-    return path
-
-
-# 维度情感模型 w2v2-vits
-def voice_w2v2_vits(text, id=0, format="wav", lang="auto", length=1, noise=0.667, noisew=0.8, max=50, emotion=0):
-    fields = {
-        "text": text,
-        "id": str(id),
-        "format": format,
-        "lang": lang,
-        "length": str(length),
-        "noise": str(noise),
-        "noisew": str(noisew),
-        "max": str(max),
-        "emotion": str(emotion)
-    }
-    boundary = '----VoiceConversionFormBoundary' + ''.join(random.sample(string.ascii_letters + string.digits, 16))
-
-    m = MultipartEncoder(fields=fields, boundary=boundary)
-    headers = {"Content-Type": m.content_type}
-    url = f"{base}/voice/w2v2-vits"
-
-    res = requests.post(url=url, data=m, headers=headers)
-    fname = re.findall("filename=(.+)", res.headers["Content-Disposition"])[0]
-    path = f"{abs_path}/{fname}"
-
-    with open(path, "wb") as f:
-        f.write(res.content)
-    print(path)
-    return path
-
-
-# 语音转换 同VITS模型内角色之间的音色转换
-def voice_conversion(upload_path, original_id, target_id):
-    upload_name = os.path.basename(upload_path)
-    upload_type = f'audio/{upload_name.split(".")[1]}'  # wav,ogg
-
-    with open(upload_path, 'rb') as upload_file:
-        fields = {
-            "upload": (upload_name, upload_file, upload_type),
-            "original_id": str(original_id),
-            "target_id": str(target_id),
-        }
-        boundary = '----VoiceConversionFormBoundary' + ''.join(random.sample(string.ascii_letters + string.digits, 16))
-        m = MultipartEncoder(fields=fields, boundary=boundary)
-
-        headers = {"Content-Type": m.content_type}
-        url = f"{base}/voice/conversion"
-
-        res = requests.post(url=url, data=m, headers=headers)
-
-    fname = re.findall("filename=(.+)", res.headers["Content-Disposition"])[0]
-    path = f"{abs_path}/{fname}"
-
-    with open(path, "wb") as f:
-        f.write(res.content)
-    print(path)
-    return path
-
-
-def voice_ssml(ssml):
-    fields = {
-        "ssml": ssml,
-    }
-    boundary = '----VoiceConversionFormBoundary' + ''.join(random.sample(string.ascii_letters + string.digits, 16))
-
-    m = MultipartEncoder(fields=fields, boundary=boundary)
-    headers = {"Content-Type": m.content_type}
-    url = f"{base}/voice/ssml"
-
-    res = requests.post(url=url, data=m, headers=headers)
-    fname = re.findall("filename=(.+)", res.headers["Content-Disposition"])[0]
-    path = f"{abs_path}/{fname}"
-
-    with open(path, "wb") as f:
-        f.write(res.content)
-    print(path)
-    return path
-
-def voice_dimensional_emotion(upload_path):
-    upload_name = os.path.basename(upload_path)
-    upload_type = f'audio/{upload_name.split(".")[1]}'  # wav,ogg
-
-    with open(upload_path, 'rb') as upload_file:
-        fields = {
-            "upload": (upload_name, upload_file, upload_type),
-        }
-        boundary = '----VoiceConversionFormBoundary' + ''.join(random.sample(string.ascii_letters + string.digits, 16))
-
-        m = MultipartEncoder(fields=fields, boundary=boundary)
-        headers = {"Content-Type": m.content_type}
-        url = f"{base}/voice/dimension-emotion"
-
-        res = requests.post(url=url, data=m, headers=headers)
-    fname = re.findall("filename=(.+)", res.headers["Content-Disposition"])[0]
-    path = f"{abs_path}/{fname}"
-
-    with open(path, "wb") as f:
-        f.write(res.content)
-    print(path)
-    return path
-```
 
 ## API KEY
 
@@ -493,17 +283,17 @@ def voice_dimensional_emotion(upload_path):
 
 ## VITS语音合成
 
-| Name          | Parameter | Is must | Default | Type  | Instruction                                                  |
-| ------------- | --------- | ------- | ------- | ----- | ------------------------------------------------------------ |
-| 合成文本      | text      | true    |         | str   |                                                              |
-| 角色id        | id        | false   | 0       | int   |                                                              |
-| 音频格式      | format    | false   | wav     | str   | 支持wav,ogg,silk,mp3,flac                                    |
-| 文本语言      | lang      | false   | auto    | str   | auto为自动识别语言模式，也是默认模式。lang=mix时，文本应该用[ZH] 或 [JA] 包裹。方言无法自动识别。 |
-| 语音长度/语速 | length    | false   | 1.0     | float | 调节语音长度，相当于调节语速，该数值越大语速越慢             |
-| 噪声          | noise     | false   | 0.667   | float |                                                              |
-| 噪声偏差      | noisew    | false   | 0.8     | float |                                                              |
-| 分段阈值      | max       | false   | 50      | int   | 按标点符号分段，加起来大于max时为一段文本。max<=0表示不分段。 |
-| 流式响应      | streaming | false   | false   | bool  | 流式合成语音，更快的首包响应。                               |
+| Name          | Parameter | Is must | Default             | Type  | Instruction                                                  |
+| ------------- | --------- | ------- | ------------------- | ----- | ------------------------------------------------------------ |
+| 合成文本      | text      | true    |                     | str   | 需要合成语音的文本。                                         |
+| 角色id        | id        | false   | 从`config.py`中获取 | int   | 即说话人id。                                                 |
+| 音频格式      | format    | false   | 从`config.py`中获取 | str   | 支持wav,ogg,silk,mp3,flac                                    |
+| 文本语言      | lang      | false   | 从`config.py`中获取 | str   | auto为自动识别语言模式，也是默认模式。lang=mix时，文本应该用[ZH] 或 [JA] 包裹。方言无法自动识别。 |
+| 语音长度/语速 | length    | false   | 从`config.py`中获取 | float | 调节语音长度，相当于调节语速，该数值越大语速越慢。           |
+| 噪声          | noise     | false   | 从`config.py`中获取 | float | 样本噪声，控制合成的随机性。                                 |
+| sdp噪声       | noisew    | false   | 从`config.py`中获取 | float | 随机时长预测器噪声，控制音素发音长度。                       |
+| 分段阈值      | max       | false   | 从`config.py`中获取 | int   | 按标点符号分段，加起来大于max时为一段文本。max<=0表示不分段。 |
+| 流式响应      | streaming | false   | false               | bool  | 流式合成语音，更快的首包响应。                               |
 
 ## VITS 语音转换
 
@@ -517,12 +307,26 @@ def voice_dimensional_emotion(upload_path):
 
 | Name          | Parameter | Is must | Default | Type  | Instruction                                      |
 | ------------- | --------- | ------- | ------- | ----- | ------------------------------------------------ |
-| 上传音频      | upload    | true    |         | file  |                                                  |
-| 目标角色id    | id        | true    |         | int   |                                                  |
+| 上传音频      | upload    | true    |         | file  | 需要转换说话人的音频文件。                       |
+| 目标角色id    | id        | true    |         | int   | 目标说话人id。                                   |
 | 音频格式      | format    | true    |         | str   | wav,ogg,silk                                     |
 | 语音长度/语速 | length    | true    |         | float | 调节语音长度，相当于调节语速，该数值越大语速越慢 |
-| 噪声          | noise     | true    |         | float |                                                  |
-| 噪声偏差      | noisew    | true    |         | float |                                                  |
+| 噪声          | noise     | true    |         | float | 样本噪声，控制合成的随机性。                     |
+| sdp噪声       | noisew    | true    |         | float | 随机时长预测器噪声，控制音素发音长度。           |
+
+## W2V2-VITS
+
+| Name          | Parameter | Is must | Default             | Type  | Instruction                                                  |
+| ------------- | --------- | ------- | ------------------- | ----- | ------------------------------------------------------------ |
+| 合成文本      | text      | true    |                     | str   | 需要合成语音的文本。                                         |
+| 角色id        | id        | false   | 从`config.py`中获取 | int   | 即说话人id。                                                 |
+| 音频格式      | format    | false   | 从`config.py`中获取 | str   | 支持wav,ogg,silk,mp3,flac                                    |
+| 文本语言      | lang      | false   | 从`config.py`中获取 | str   | auto为自动识别语言模式，也是默认模式。lang=mix时，文本应该用[ZH] 或 [JA] 包裹。方言无法自动识别。 |
+| 语音长度/语速 | length    | false   | 从`config.py`中获取 | float | 调节语音长度，相当于调节语速，该数值越大语速越慢             |
+| 噪声          | noise     | false   | 从`config.py`中获取 | float | 样本噪声，控制合成的随机性。                                 |
+| sdp噪声       | noisew    | false   | 从`config.py`中获取 | float | 随机时长预测器噪声，控制音素发音长度。                       |
+| 分段阈值      | max       | false   | 从`config.py`中获取 | int   | 按标点符号分段，加起来大于max时为一段文本。max<=0表示不分段。 |
+| 维度情感      | emotion   | false   | 0                   | int   | 范围取决于npy情感参考文件，如[innnky](https://huggingface.co/spaces/innnky/nene-emotion/tree/main)的all_emotions.npy模型范围是0-5457 |
 
 ## Dimensional emotion
 
@@ -530,19 +334,19 @@ def voice_dimensional_emotion(upload_path):
 | -------- | --------- | ------- | ------- | ---- | ----------------------------- |
 | 上传音频 | upload    | true    |         | file | 返回存储维度情感向量的npy文件 |
 
-## W2V2-VITS
+## Bert-VITS2语音合成
 
-| Name          | Parameter | Is must | Default | Type  | Instruction                                                  |
-| ------------- | --------- | ------- | ------- | ----- | ------------------------------------------------------------ |
-| 合成文本      | text      | true    |         | str   |                                                              |
-| 角色id        | id        | false   | 0       | int   |                                                              |
-| 音频格式      | format    | false   | wav     | str   | 支持wav,ogg,silk,mp3,flac                                    |
-| 文本语言      | lang      | false   | auto    | str   | auto为自动识别语言模式，也是默认模式。lang=mix时，文本应该用[ZH] 或 [JA] 包裹。方言无法自动识别。 |
-| 语音长度/语速 | length    | false   | 1.0     | float | 调节语音长度，相当于调节语速，该数值越大语速越慢             |
-| 噪声          | noise     | false   | 0.667   | float |                                                              |
-| 噪声偏差      | noisew    | false   | 0.8     | float |                                                              |
-| 分段阈值      | max       | false   | 50      | int   | 按标点符号分段，加起来大于max时为一段文本。max<=0表示不分段。 |
-| 维度情感      | emotion   | false   | 0       | int   | 范围取决于npy情感参考文件，如[innnky](https://huggingface.co/spaces/innnky/nene-emotion/tree/main)的all_emotions.npy模型范围是0-5457 |
+| Name          | Parameter | Is must | Default             | Type  | Instruction                                                  |
+| ------------- | --------- | ------- | ------------------- | ----- | ------------------------------------------------------------ |
+| 合成文本      | text      | true    |                     | str   | 需要合成语音的文本。                                         |
+| 角色id        | id        | false   | 从`config.py`中获取 | int   | 即说话人id。                                                 |
+| 音频格式      | format    | false   | 从`config.py`中获取 | str   | 支持wav,ogg,silk,mp3,flac                                    |
+| 文本语言      | lang      | false   | 从`config.py`中获取 | str   | auto为自动识别语言模式，也是默认模式，但目前只支持识别整段文本的语言，无法细分到每个句子。其余可选语言zh和ja。 |
+| 语音长度/语速 | length    | false   | 从`config.py`中获取 | float | 调节语音长度，相当于调节语速，该数值越大语速越慢。           |
+| 噪声          | noise     | false   | 从`config.py`中获取 | float | 样本噪声，控制合成的随机性。                                 |
+| sdp噪声       | noisew    | false   | 从`config.py`中获取 | float | 随机时长预测器噪声，控制音素发音长度。                       |
+| 分段阈值      | max       | false   | 从`config.py`中获取 | int   | 按标点符号分段，加起来大于max时为一段文本。max<=0表示不分段。 |
+| SDP/DP混合比  | sdp_ratio | false   | 从`config.py`中获取 | int   | SDP在合成时的占比，理论上此比率越高，合成的语音语调方差越大。 |
 
 ## SSML语音合成标记语言
 目前支持的元素与属性
@@ -625,4 +429,5 @@ def voice_dimensional_emotion(upload_path):
 - emotional-vits:https://github.com/innnky/emotional-vits
 - vits-uma-genshin-honkai:https://huggingface.co/spaces/zomehwh/vits-uma-genshin-honkai
 - vits_chinese:https://github.com/PlayVoice/vits_chinese
+- Bert_VITS2:https://github.com/fishaudio/Bert-VITS2
 

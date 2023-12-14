@@ -6,18 +6,20 @@ import threading
 import sys
 import time
 import openai #需要安装库pip install openai
+from openai import OpenAI
 import json
 import os
 import tiktoken #需要安装库pip install tiktoken
 import chromadb #需要安装库pip install chromadb 
 from chromadb.utils import embedding_functions
+import http.client
 
 from flask import Flask, request, jsonify  #需要安装库pip install flask
 
 #导入其他脚本
-from .toolkits import function_library
-from .calendario import calendar_table  #库名冲突了，就随便用一个了
-from .vits import TTS_vits,ATM_vits
+from toolkits import tool_library
+from calendario import calendar_table  #库名冲突了，就随便用一个了
+from vits import TTS_vits,ATM_vits
 
 # 获取当前工作目录，之前项目使用os.path.dirname(os.path.abspath(__file__))来获取路径，但打包后路径不正确
 script_dir = os.path.dirname(os.path.abspath(sys.argv[0])) 
@@ -32,54 +34,73 @@ class Calendar_executor:
     #循环检查日程表，并自动执行日程表中的任务
     def run (self): 
         while 1 :
-            print("[DEBUG]日程表执行器正在检查日程表~",'\n')
+            print("[DEBUG] 日程表执行器正在检查日程表~",'\n')
             #获取当前时间
             now_time = datetime.datetime.now()
             #输入当天的年月日，获取日程表当天的全部事件
             schedule_list = my_calendar.query_scheduled_task_by_date(now_time)
+
             #如果日程表是列表类型，说明当天有事件
             if type(schedule_list) == list:
                 #遍历日程表当天的全部事件,如果事件的执行时间小于当前时间和状态是未完成，就执行事件
-                print("[DEBUG]日程表执行器正在检查日程表中需要执行的任务~",'\n')
+                #print("[DEBUG] 已查询到当天的事件内容，正在检查是否需要执行",'\n')
                 for task in schedule_list:
-                    #如果事件的执行时间小于当前时间和状态是未完成，就执行事件
+                    #如果事件的执行时间小于当前时间和状态是未完成，就执行任务
                     if datetime.datetime.strptime(task['task_datetime'], "%Y-%m-%d %H:%M:%S")< now_time and task['task_status'] == '未完成':
-                        print("[DEBUG]已发现需要执行的日程安排",'\n')
+                        print("[DEBUG] 已发现需要执行的日程安排，准备开始执行任务",'\n')
+
                         #获取事件状态
                         task_status = task['task_status']
-
                         while task_status == "未完成" :
-                            print("[DEBUG]日程表执行器正在执行日程表任务:",task['task_datetime'],'\n')
+                            print("[DEBUG] 日程表执行器正在执行日程表任务:",task['task_datetime'],'\n')
 
-                            #执行任务，并添加执行错误重试机制
+                            #执行任务，并添加执行错误重试次数限制
+                            max_retries = 5
+                            retry_count = 0
                             while 1:
                                 try:
                                     self.execute_unit_task_AI_agent(task['task_datetime'])
                                     break
                                 except Exception as e:
-                                    print("[DEBUG]日程表执行器执行任务出现错误，正在重试, 错误信息：",e,'\n')
+                                    print("[DEBUG] 日程表执行器执行单元任务出现错误，正在重试, 错误信息：",e,'\n')
+                                    retry_count += 1 # 错误计次
+                                    if retry_count > max_retries:
+                                        break
 
-                                    pass
+                            #检查是否无法正常执行任务
+                            if retry_count > max_retries:
+                                # 更改任务状态，并退出该任务
+                                my_calendar.update_task_status(task['task_datetime'],"无法执行")
+                                break
 
-                            #审查任务，并添加执行错误重试机制
+                            #审查任务
                             while 1:
                                 try:
                                     self.review_unit_task_AI_agent(task['task_datetime'])
                                     break
                                 except Exception as e:
-                                    print("[DEBUG]日程表执行器审查任务出现错误，正在重试, 错误信息：",e,'\n')
-                                    pass
+                                    print("[DEBUG] 日程表执行器审查单元任务出现错误，正在重试, 错误信息：",e,'\n')
+
 
                             #重新获取事件状态
                             task_status = my_calendar.get_task_status(task['task_datetime'])
 
+
+                    #如果事件的执行时间小于当前时间和状态是已完成，且未通知过，就执行通知事件
+                    if datetime.datetime.strptime(task['task_datetime'], "%Y-%m-%d %H:%M:%S")< now_time and task['task_status'] == '已完成'and task['notification_status'] == "未通知":
+                        #改变通知状态为已通知
+                        my_calendar.update_task_notification_status(task['task_datetime'],"已通知")
+                        #使用语音通知
+                        self.send_daily_task_notification(task)
+
+            #如果日程表不是列表类型，说明当天没有安排事件
             else :
-                print("[DEBUG]日程表执行器没有发现需要执行的日程安排",'\n')
+                #print("[DEBUG] 日程表执行器没有发现需要执行的日程安排",'\n')
+                pass
 
             #每隔10s检查一次日程表
-            print("[DEBUG]日程表执行器正在休息中，等待下次检查",'\n')
+            #print("[DEBUG] 日程表执行器正在休息中，等待下次检查",'\n')
             time.sleep(10)
-
 
 
     #执行单元任务的AI代理
@@ -87,10 +108,10 @@ class Calendar_executor:
 
         print("[DEBUG]开始执行单元任务！！！！！！！！！！！！！！！！！！")
 
-        #任务目标示例
-        task_goal_example = '''我现在有70块，想买5个苹果，想知道买完后还剩多少钱'''
-        #任务列表示例
-        task_list_example = ''' 
+        #无工具调用任务目标示例
+        task_goal_example1 = '''我现在有70块，想买5个苹果，想知道买完后还剩多少钱'''
+        #无工具调用任务列表示例
+        task_list_example1 = ''' 
         [
         {
             "task_id": 1,
@@ -109,8 +130,8 @@ class Calendar_executor:
         }
         ]
         '''
-        #执行任务结果示例
-        task_result_example = '''
+        #无工具调用执行任务结果示例
+        task_result_example1 = '''
         根据任务列表，任务id为2的任务描述是"计算五个苹果的总价"。已知一个苹果的价格是五块人民币（来自任务id为1的执行结果），那么我们可以计算五个苹果的总价。
 
         五个苹果的总价为：5（苹果单价）* 5（苹果数量）= 25。
@@ -124,9 +145,52 @@ class Calendar_executor:
         }
         ```
         '''
+
+
+        #任务目标示例2
+        task_goal_example2 = '''我现在有70块，想买5个苹果，想知道买完后还剩多少钱'''
+        #任务列表示例2
+        task_list_example2 = ''' 
+        [
+        {
+            "task_id": 1,
+            "task_description": "获取苹果的单价",
+            "function_used": True,
+            "function_name": "get_the_price_of_the_item",
+            "function_parameters": {"item": "苹果",
+                                    "unit": "人民币"}
+        },
+        {
+            "task_id": 2,
+            "task_description": "计算五个苹果的总价",
+            "function_used": False
+        }
+        ]
+        '''
+        #工具调用回应结果2
+        tool_return2 = ''' {"item": "苹果",
+                            "unit": "人民币"
+                            "price": "5" }'''
+
+
+        #执行任务结果示例2
+        task_result_example2 = '''
+        根据任务列表，任务id为1的任务描述是"获取苹果的单价"。已知经过工具调用，返回的结果是{"item": "苹果","unit": "人民币","price": "5" },那么可以知道一个苹果的价格是五块人民币。
+
+        任务结果输出为json格式：
+
+        ```json
+        {
+        "task_id": 1,
+        "task_result": "一个苹果的价格是五块人民币"
+        }
+        ```
+        '''
+
+
+
         #根据日期时间，获取具体任务，需要重新获取任务，因为任务进度已经更新
         task = my_calendar.query_scheduled_task_by_datetime(task_datetime)
-
         #获取任务目标
         task_objectives = task["task_objectives"]
         #获取任务列表
@@ -136,73 +200,98 @@ class Calendar_executor:
         #获取任务执行id
         task_id = task_progress + 1
 
-
-        #根据任务执行id与任务列表，获取当前任务需要到的函数id
-        functions_list = []
+        #获取相应的工具调用规范
+        tools_list = []
         for unit_task in task_list:
             #如果任务id与当前任务执行id相同
             if unit_task["task_id"] == task_id:
-                #如果任务需要使用函数
+                #如果任务需要使用工具
                 if unit_task["function_used"] == True:
-                    #获取函数名字
-                    function_name = unit_task["function_name"]
-                    #获取函数调用说明
-                    function_ai_call = extended_function_library.get_function_by_name(function_name)
-                    #将函数调用说明添加到函数列表中
-                    functions_list.append(function_ai_call)
+                    #获取工具名字
+                    tool_name = unit_task["function_name"]
+                    #获取工具调用说明
+                    tool_specifications = extended_tools_library.get_tool_by_name(tool_name)
+                    #将工具调用说明添加到工具列表中
+                    tools_list.append(tool_specifications)
                 else :
-                    #如果任务不需要使用函数，那么函数列表为空
-                    functions_list = "none functions"
+                    #如果任务不需要使用工具，那么工具列表为空
+                    tools_list = "none functions"
 
 
-        #构建系统提示语句
-        prompt = (
-        f"你是一个专业的任务执行AI，请根据任务目标、 分步任务列表与所指定的任务id，完成对应的该步任务。"
-        f"分步任务列表是按时间顺序排列，请根据前面任务执行结果，函数调用结果，进行推理说明，输出该步任务的结果，任务结果以json格式输出,并以json代码块标记。"
-        f"任务目标示例###{task_goal_example}###"
-        f"分步任务列表示例###{task_list_example}###"
-        f"执行任务结果示例###{task_result_example}###"
-        f"当前任务目标是：###{task_objectives}###，当前分步任务列表是：###{task_list}###，如果需要使用到函数，仅使用为您提供的函数###{functions_list}###。"
-        )
 
-        #构建分步任务
-        ai_task = f"你需要执行的任务id是{task_id}。"
+        #如果不需要工具调用
+        if tools_list == "none functions":
 
-        #构建对话
-        messages = [{"role": "system", "content": prompt },
-                {"role": "user", "content":  ai_task}]
+            #构建系统提示语句
+            prompt = (
+            f"你是一个专业的任务执行AI，请根据任务目标、 分步任务列表与所指定的任务id，完成对应的该步任务。"
+            f"分步任务列表是按时间顺序排列，请根据前面任务执行结果，工具调用结果，进行推理说明，输出该步任务的结果。"
+            f"任务目标示例###{task_goal_example1}###"
+            f"分步任务列表示例###{task_list_example1}###"
+            f"任务结果必须以json格式输出,并以json代码块标记，执行任务结果示例###{task_result_example1}###"
+            f"当前任务目标是：###{task_objectives}###，当前分步任务列表是：###{task_list}###。"
+            )
 
-        print("[DEBUG] 次级执行AI请求发送内容为：",messages,'\n')
+            #构建当前任务目标
+            ai_task = f"你当前需要执行的任务id是{task_id}。"
 
-        #如果函数列表为空
-        if functions_list == "none functions":
-            response = openai.ChatCompletion.create(
-                model="gpt-3.5-turbo-0613",
+            #构建对话
+            messages = [{"role": "system", "content": prompt },
+                    {"role": "user", "content":  ai_task}]
+
+            print("[DEBUG] 次级执行AI请求发送内容为：",messages,'\n')
+
+
+            response = openaiclient.chat.completions.create( 
+                model="gpt-3.5-turbo-1106",
                 messages=messages ,
                 temperature=0
             )
-        #如果函数列表不为空
+            #构建空的工具调用结果
+            function_response = None
+            #获取AI全部回复内容
+            task_result = response.choices[0].message.content
+            print("[DEBUG] 次级执行AI全部回复内容为：",task_result,'\n')
+
+        #如果需要工具调用
         else :
+            
+            #构建系统提示语句
+            prompt = (
+            f"你是一个专业的任务执行AI，请根据任务目标、 分步任务列表与所指定的任务id，完成对应的该步任务。"
+            f"分步任务列表是按时间顺序排列，请根据前面任务执行结果，工具调用结果，进行推理说明，输出该步任务的结果。"
+            f"任务目标示例###{task_goal_example2}###"
+            f"分步任务列表示例###{task_list_example2}###"
+            f"工具调用结果示例###{tool_return2}###"
+            f"任务结果以json格式输出,并以json代码块标记执行，任务结果示例###{task_result_example2}###"
+            f"当前任务目标是：###{task_objectives}###，当前分步任务列表是：###{task_list}###，如果需要使用到工具，仅使用为您提供的工具###{tools_list}###。"
+            )
+
+            #构建当前任务目标
+            ai_task = f"你当前需要执行的任务id是{task_id}。"
+
+            #构建对话
+            messages = [{"role": "system", "content": prompt },
+                    {"role": "user", "content":  ai_task}]
+
+            print("[DEBUG] 次级执行AI请求发送内容为：",messages,'\n')
+
+
             #向模型发送用户查询以及它可以访问的函数
-            response = openai.ChatCompletion.create(
-                model="gpt-3.5-turbo-0613",
+            response = openaiclient.chat.completions.create( 
+                model="gpt-3.5-turbo-1106",
                 messages=messages ,
                 temperature=0,
-                functions=functions_list,  #关于调用函数说明内容可以放在这里，也可以放在上面的content中，AI都会识别并使用
-                function_call="auto" 
-            )           
-
-        # 将字典转换为JSON字符串，并保留非ASCII字符
-        json_str = json.dumps(response, ensure_ascii=False)
-        # 将JSON字符串中的Unicode编码内容转换为UTF-8编码
-        utf8_str = json_str.encode('utf-8')
-        # 将字节串转换为字符串
-        str_content = utf8_str.decode('utf-8')
-        print("[DEBUG] 次级执行AI全部回复内容为：",str_content,'\n')
-
-
-        #解析回复,并自动调用函数，重新发送请求，直到回复中不再有函数调用
-        function_response,task_result = self.parse_response(response,messages,functions_list)
+                tools=tools_list,  #关于调用函数说明内容可以放在这里，也可以放在上面的content中，AI都会识别并使用
+                tool_choice="auto",
+            )
+            #构建空的工具调用结果
+            function_response = None           
+            #获取AI全部回复内容
+            task_result = response.choices[0].message.content
+            print("[DEBUG] 次级执行AI全部回复内容为：",task_result,'\n')
+            #解析回复,如果AI进行工具调用将自动执行相关工具
+            function_response,task_result = self.parse_response(response,messages,tools_list)
 
 
         # 从任务结果示例中提取JSON部分
@@ -213,11 +302,14 @@ class Calendar_executor:
         task_result_new = task_result_dict["task_result"]
 
         #更新任务进度 
-        my_calendar.update_task_progress(task['task_datetime'],task_id,function_response,task_result_new)
+        my_calendar.update_task_progress(task_datetime = task['task_datetime'],
+                                         task_id = task_id,
+                                         function_response = function_response,
+                                         task_result = task_result_new
+                                         )
 
         print("[DEBUG] 次级AI单元任务执行结果为：",task_result,'\n')
         print("[DEBUG] 该单元任务执行结束！！！！！！！！！！！！！！！！！！",'\n')
-
 
 
     #审查单元任务的AI代理（审查单元任务的输入输出是否正确，正确就录入任务数据库，错误就返回信息到任务数据库）
@@ -262,7 +354,7 @@ class Calendar_executor:
         task_result_example = '''
         根据您提供的任务列表，我将审查任务ID为2的任务。任务目标是计算买一个苹果、一个香蕉、一个橘子后剩余的钱数。
 
-        任务2的描述是 "获取香蕉的单价"，功能函数已被正确使用（“get_the_price_of_the_item”函数），参数也正确（item为"香蕉"，unit为"人民币"）。函数的响应是"10块人民币"。
+        任务2的描述是 "获取香蕉的单价"，工具已被正确使用（“get_the_price_of_the_item”函数），参数也正确（item为"香蕉"，unit为"人民币"）。工具的响应是"10块人民币"。
 
         但是，在当前任务结果中，任务2的结果出现错误。任务结果为：“一个香蕉的价格是五块人民币”，实际的任务结果应该是：“一个香蕉的价格是十块人民币”。
 
@@ -291,23 +383,23 @@ class Calendar_executor:
         #获取任务审查id
         task_id = task_progress 
 
-        #审查AI挂载的函数功能列表
-        functions_list = []
-        #根据任务审查id与任务列表，获取当前任务需要到的函数id
+        #获取工具调用规范
+        tools_list = []
+        #根据任务审查id与任务列表，获取当前任务需要到的工具id
         for unit_task in task_list:
             #如果任务id与当前任务审查id相同
             if unit_task["task_id"] == task_id:
-                #如果任务需要使用函数
+                #如果任务需要使用工具
                 if unit_task["function_used"] == True:
-                    #获取函数名字
+                    #获取工具名字
                     function_name = unit_task["function_name"]
-                    #获取函数调用说明
-                    function_ai_call = extended_function_library.get_function_by_name(function_name)
-                    #将函数调用说明添加到函数列表中
-                    functions_list.append(function_ai_call)
+                    #获取工具调用说明
+                    tool_specifications = extended_tools_library.get_tool_by_name(function_name)
+                    #将工具调用说明添加到工具列表中
+                    tools_list.append(tool_specifications)
                 else :
-                    #如果任务不需要使用函数，那么函数列表为空
-                    functions_list = "none functions"
+                    #如果任务不需要使用工具，那么工具列表为空
+                    tools_list = "none functions"
     
 
         #构建系统提示语句
@@ -317,48 +409,45 @@ class Calendar_executor:
         f"任务目标示例：###{task_goal_example}###"
         f"分步任务列表示例：###{task_list_example}###"
         f"审查结果示例：###{task_result_example}###"
-        f"当前任务目标是：###{task_objectives}###，当前分步任务列表是：###{task_list}###，如果需要使用到函数，仅使用为您提供的函数：###{functions_list}###。"
+        f"当前任务目标是：###{task_objectives}###，当前分步任务列表是：###{task_list}###，如果需要使用到工具，仅使用为您提供的工具：###{tools_list}###。"
         )
 
 
         #指定审查任务id
-        task_review = f"你需要审查的任务id是{task_progress }。"
+        task_review = f"你当前需要审查的任务id是{task_progress }。"
 
         messages = [{"role": "system", "content": prompt },
                 {"role": "user", "content":  task_review}]
 
         print("[DEBUG] 次级审查AI请求发送内容为：",messages,'\n')
 
-        #如果函数列表为空
-        if functions_list == "none functions":
-            response = openai.ChatCompletion.create(
-                model="gpt-3.5-turbo-0613",
+        # 如果没有工具调用
+        if tools_list == "none functions":
+            response = openaiclient.chat.completions.create( 
+                model="gpt-3.5-turbo-1106",
                 messages=messages ,
                 temperature=0
             )
-        #如果函数列表不为空
+            #获取AI全部回复内容
+            review_result = response.choices[0].message.content
+            print("[DEBUG] 次级审查AI内容为：",review_result,'\n')
+
+        # 如果有工具调用
         else :
             #向模型发送用户查询以及它可以访问的函数
-            response = openai.ChatCompletion.create(
-                model="gpt-3.5-turbo-0613",
+            response = openaiclient.chat.completions.create( 
+                model="gpt-3.5-turbo-1106",
                 messages=messages ,
                 temperature=0,
-                functions=functions_list,  #关于调用函数说明内容可以放在这里，也可以放在上面的content中，AI都会识别并使用
-                function_call="auto"
-            ) 
+                tools=tools_list,  #关于调用函数说明内容可以放在这里，也可以放在上面的content中，AI都会识别并使用
+                tool_choice="auto",
+            )
+            #获取AI全部回复内容
+            review_result = response.choices[0].message.content
+            print("[DEBUG] 次级审查AI全部回复内容为：",review_result,'\n')
+            #解析回复,如果AI进行工具调用将自动执行相关工具
+            function_response,review_result = self.parse_response(response,messages,tools_list)
 
-
-        # 将字典转换为JSON字符串，并保留非ASCII字符
-        json_str = json.dumps(response, ensure_ascii=False)
-        # 将JSON字符串中的Unicode编码内容转换为UTF-8编码
-        utf8_str = json_str.encode('utf-8')
-        # 将字节串转换为字符串
-        str_content = utf8_str.decode('utf-8')
-        print("[DEBUG] 次级审查AI回复内容为：",str_content,'\n')
-
-
-        #解析回复,并自动调用函数，重新发送请求，直到回复中不再有函数调用
-        function_response,review_result = self.parse_response(response,messages,functions_list)
 
         # 从任务结果示例中提取JSON部分
         json_str = re.search(r'```json(.*?)```', review_result, re.S).group(1)
@@ -367,223 +456,256 @@ class Calendar_executor:
         # 从字典变量中提取任务审查结果
         review_result_new = review_result_dict["review_result"]
 
-        if review_result_new == "correct":
-            print("[DEBUG] 任务执行结果正确~",'\n')
 
+        # 解析审查结果
+        if review_result_new == "incorrect":
+            #提取正确结果
+            #correct_task_result = review_result_dict["correct_task_result"]
+            #直接回退进度
+            my_calendar.delete_task_progress(task['task_datetime'],task_progress)
+            print("[DEBUG] 任务执行结果错误~需要回退任务进度，并重新执行",'\n')
+
+        else:
+            print("[DEBUG] 任务执行结果正确~",'\n')
             #如果任务进度等于任务分步列表长度，说明任务已经完成
             if task_progress == task["task_distribution"]:
                 print("[DEBUG] 该任务列表已经全部完成~",'\n')
                 my_calendar.update_task_status(task['task_datetime'],"已完成")
-        
-        elif review_result_new == "incorrect":
-            #提取正确结果
-            correct_task_result = review_result_dict["correct_task_result"]
-            #直接回退进度
-            my_calendar.delete_task_progress(task['task_datetime'],task_progress)
-
-            print("[DEBUG] 任务执行结果错误~",'\n')
 
         print("[DEBUG] 任务执行结果审查结束~",'\n')
 
 
     #执行与审查AI的解析回复函数
-    def parse_response(self,response,messages,functions_list):
+    def parse_response(self,response,conversation_history,functions_list):
 
         #提取AI回复内容中message部分
-        message = response["choices"][0]["message"]
+        message = response.choices[0].message
+        #提取ai调用的所有工具内容
+        tool_calls = message.tool_calls
 
-        #存储调用功能函数里的函数回复
-        function_response = 'null' #以免没有函数调用时，无法返回函数调用结果
+        #存储调用工具里的函数回复
+        tool_return = None #以免没有工具调用时，无法返回工具调用结果
 
-        while message.get("function_call"):
-            print("[DEBUG] 次级AI正在申请调用函数~",'\n')
+        # 如果AI进行工具调用
+        if tool_calls:
+            try:
+                print("[DEBUG] 次级AI正在申请调用工具~",'\n')
+                # 只调用一个工具
+                tool_call = tool_calls[0]
+                #获取工具调用名称
+                tool_name = tool_call.function.name
+                #获取工具调用id
+                tool_id = tool_call.id
+                #获取工具调用参数
+                tool_arguments = tool_call.function.arguments
+                #获取工具调用附加回复
+                tool_content = message.content
 
-            #获取函数调用名称
-            function_name = message["function_call"]["name"]
-            #获取函数调用参数
-            function_arguments = message["function_call"]["arguments"]
-            #获取函数调用附加回复
-            function_content = message['content']
+                #将函数输入参数转换为字典格式
+                print("[DEBUG] ",'传入参数为：',tool_arguments,'\n')
+                tool_arguments = json.loads(tool_arguments)
 
-            #将函数输入参数转换为字典格式
-            function_arguments = json.loads(function_arguments)
+                #调用函数,获得工具调用结果
+                tool_return = extended_tools_library.call_tool(tool_name,tool_arguments)
 
-            #调用函数,获得函数调用结果
-            function_response = extended_function_library.call_function(function_name,function_arguments)
+            except Exception as e:
+                print("[ERROR] 主AI调用工具时出错,","错误信息为：",e,'\n')
+                tool_return = "[ERROR] 调用工具时出错,无法成功提取调用工具"
 
-            print("[DEBUG] 函数调用附加说明：",function_content,'\n')
-            print("[DEBUG] 调用函数名字为：",function_name,'传入参数为：',function_arguments,'函数调用结果为：',function_response,'\n')
+            #print("[DEBUG] 工具调用附加说明：",tool_content)
+            print("[DEBUG] AI调用工具名字为：",tool_name,'传入参数为：',tool_arguments,'\n','工具调用结果为：',tool_return,'\n')
+            
 
-            #把ai申请调用函数动作与函数调用结果拼接到对话历史中
-            messages.append({"role": "assistant",
-                           "content": function_content ,
-                           "function_call": {"name": function_name,
-                                             "arguments": str(function_arguments)} #将函数输入参数转换为字符串格式
 
+            #构建AI的工具调用历史
+            tools=[{'id': tool_id,
+                    'type': 'function',
+                    'function': {'name': tool_name,
+                                'arguments': str(tool_arguments)
+                                }
+                }]
+            
+
+            #把ai申请调用函数动作与工具调用结果拼接到对话历史中
+            conversation_history.append({"role": "assistant",
+                            "tool_calls": tools,
                             })
-            messages.append({"role": "function","name": function_name ,"content": function_response})
+            conversation_history.append({"role": "tool",
+                             "name": tool_name ,
+                             "tool_call_id": tool_id, 
+                             "content": str(tool_return)})
 
-            print("[DEBUG] 次级AI正在重新发送请求~",'\n')
-            print("[DEBUG] 次级AI请求发送内容为：",messages,'\n')
-
-            #如果函数列表为空
-            if functions_list == "none functions":
-                Ai_response = openai.ChatCompletion.create(
-                    model="gpt-3.5-turbo-0613",
-                    messages=messages ,
-                    temperature=0
-                )
-            #如果函数列表不为空
-            else :
-                #向模型发送用户查询以及它可以访问的函数
-                Ai_response = openai.ChatCompletion.create(
-                    model="gpt-3.5-turbo-0613",
-                    messages=messages ,
-                    temperature=0,
-                    functions=functions_list,  #关于调用函数说明内容可以放在这里，也可以放在上面的content中，AI都会识别并使用
-                    function_call="auto"
-                ) 
-
-            # 将字典转换为JSON字符串，并保留非ASCII字符
-            json_str = json.dumps(Ai_response, ensure_ascii=False)
-            # 将JSON字符串中的Unicode编码内容转换为UTF-8编码
-            utf8_str = json_str.encode('utf-8')
-            # 将字节串转换为字符串
-            str_content = utf8_str.decode('utf-8')
-            print("[DEBUG] 次级AI接口回复内容为：",str_content,'\n')
+            print("[DEBUG] 正在将工具调用结果发送给次级AI：",conversation_history,'\n')
 
 
-            #再次提取AI回复内容中message部分
-            message = Ai_response["choices"][0]["message"]
+            #向模型发送用户查询以及它可以访问的函数
+            Ai_response = openaiclient.chat.completions.create( 
+                model="gpt-3.5-turbo-1106",
+                messages=conversation_history ,
+                temperature=0,
+                tools=functions_list,  #关于调用函数说明内容可以放在这里，也可以放在上面的content中，AI都会识别并使用
+                tool_choice="auto", 
+            ) 
 
 
-        #获取AI回复内容
-        content = message['content']
-        return function_response,content
+            content = Ai_response.choices[0].message.content
+            print("[DEBUG] 次级AI获知工具调用结果后的回复内容为：",content,'\n')
+            return tool_return,content
+
+        # 如果AI不进行工具调用
+        content = message.content
+        return tool_return,content
 
 
-#————————————————————————————————————————主AI功能函数库————————————————————————————————————————
-class Main_AI_function_library(): 
-    #初始化功能函数库
-    def __init__(self):
-        #功能函数库
-        self.function_library = {}
-        #功能函数库的结构为字典结构
-        #key为整数变量与功能函数id相同，但为数字id： 0
-        #value为字典结构，存储功能函数的信息：{
-        #功能函数id "function_id":str,
-        #功能函数名字 "function_name":str,
-        #功能函数描述 "function_description":str,
-        #功能函数说明（AI调用） "function_ai_call":{},
-        #功能函数权限 "function_permission":str",
-        # }
-        #添加功能函数
-        #self.add_function("0", self.function_test_function, "0")
-        self.add_function("1", self.function_create_a_task_list, "0")
-        self.add_function("2", self.function_search_related_functions,"0")
-        self.add_function("3", self.function_query_function_class, "0")
+    #发送日常任务执行结果通知的函数
+    def send_daily_task_notification(self,task):
+
+        #获取任务目标
+        task_objectives = task["task_objectives"]
+
+        #获取任务执行结果
+        task_list = task["task_list"]
+        #获取任务列表最后一个任务的执行结果
+        task_result = task_list[-1]["task_result"]
+
+        #构建任务结果通知语句
+        content =  f"主人，您的代办任务：{task_objectives}，任务已经完成，任务执行结果是：{task_result}。"
 
 
+        # 生成 AI 回复的语音
+        audio_path = TTS_vits.voice_vits(text=content)
 
+        # 生成语音的口型数据文件
+        mouth_data_path = ATM_vits.convertAudioToMouthData(audio_path)
 
-    #测试函数------------------------------------------------
-    def test_function(self):
-        print("测试函数中")
-        calendar_executor.run()
-
-        return "测试函数执行完成"
-    
-    #测试函数说明（AI调用）
-    function_test_function =   {
-            "name": "test_function",
-            "description": "测试用函数（当主人说需要调用时，才能调用）",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "switch": {
-                        "type": "string",
-                        "description": "调用该测试函数，则输入on",
-                    }
-                },
-                "required": ["switch"]
-            },
+        data = {
+            "assistant_audio_path": audio_path,
+            "assistant_mouth_data_path": mouth_data_path,
+            "assistant_response_text": content
         }
 
+        # 将数据转换为 JSON 字符串
+        json_data = json.dumps(data)
+
+        # 设置请求头
+        headers = {
+            'Content-Type': 'application/json',
+            'Content-Length': len(json_data)
+        }
+
+        # 发送 POST 请求
+        conn = http.client.HTTPConnection('localhost', 4000)
+        conn.request('POST', '/notification', json_data, headers)
+
+        # 获取响应
+        response = conn.getresponse()
+
+        # 打印响应结果
+        #print('Response Status:', response.status)
+        #print('Response Body:', response.read().decode())
+
+        # 关闭连接
+        conn.close()
+
+
+#————————————————————————————————————————主AI默认工具库————————————————————————————————————————
+class Main_AI_tool_library(): 
+    #初始化工具库
+    def __init__(self):
+        #工具库
+        self.tools_library = {}
+        #工具库的结构为字典结构
+        #key为整数变量与工具id相同，但为数字id： 0
+        #value为字典结构，存储工具的信息：{
+        #工具id "tool_id":str,
+        #工具名字 "tool_name":str,
+        #工具描述 "tool_description":str,
+        #调用规范 "tool_specifications":{},
+        #工具权限 "tool_permission":str",
+        # }
+        
+        #添加工具
+        self.add_tools("1", self.function_create_a_task_list, "0")
+        self.add_tools("2", self.function_search_related_tools,"0")
+        self.add_tools("3", self.function_query_tool_class, "0")
 
 
     #搜索拓展工具库中的工具函数------------------------------------------------
-    def  search_related_functions(self, function_description):
+    def  search_related_tools(self, tool_description):
         #查询向量库，获取相似度最高前N个文本描述
         results = collection.query(
-            query_texts=function_description,
+            query_texts=tool_description,
             n_results=3,
             include=[ "documents",  "distances"])
         
-        print("[DEBUG]语义搜索到的功能函数：",results,'\n')
+        print("[DEBUG] 语义搜索到的工具：",results,'\n')
         #提取关联的函数id，注意返回的是字典结构，但key对应的value是嵌套列表结构，比如ids键对应的值为[['0','1','2']]
-        function_id_list = results['ids'][0]  # 获取ids键的值
-        print("[DEBUG]提取到的功能函数id：" ,function_id_list,'\n')
+        tools_id_list = results['ids'][0]  # 获取ids键的值
+        print("[DEBUG] 提取到的工具id：" ,tools_id_list,'\n')
 
-        #根据函数id，获取相应的功能函数说明（AI调用）的内容
-        function_ai_call_list = extended_function_library.get_function_by_id_list(function_id_list)
-        print("[DEBUG]搜索到的功能函数说明（AI调用）：" ,function_ai_call_list,'\n')
+        #根据函数id，获取相应的工具调用规范
+        tools_specifications_list = extended_tools_library.get_tool_by_id_list(tools_id_list)
+        print("[DEBUG] 所有工具相应的调用规范：" ,tools_specifications_list,'\n')
 
-        return function_ai_call_list
+        return tools_specifications_list
         
-    #搜索拓展工具库中的工具函数说明（AI调用）
-    function_search_related_functions =   {
-            "name": "search_related_functions",
-            "description": "根据用户需要到的函数功能的详细描述，进行语义搜索，将最可能有关的的3个功能函数返回",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "function_description": {
-                        "type": "string",
-                        "description": "关于函数功能的详细描述",
-                    }
-                },
-                "required": ["function_description"]
-            },
-        }
+    #搜索拓展工具库中的工具调用规范
+    function_search_related_tools =   {
+        "type": "function",
+        "function": {
+                    "name": "search_related_tools",
+                    "description": "根据用户需要到的工具的功能描述，在工具库中搜索，将相关功能的工具返回",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "tool_description": {
+                                "type": "string",
+                                "description": "关于工具功能的详细描述",
+                            }
+                        },
+                        "required": ["tool_description"]
+                    },
+                }
+    }
 
     #查询日程表的工具函数------------------------------------------------
-    def  query_function_class(self, function_class):
+    def  query_tool_class(self, tool_class):
         #创建存储函数说明的列表
-        function_ai_call_list = []
+        tool_specifications_list = []
 
-        if function_class == "添加类":
-            #将添加类的功能函数说明添加到函数列表中
-            function_ai_call_list.append(my_calendar.function_add_scheduled_task)
-        elif function_class == "删除类":
-            #将删除类的功能函数说明添加到函数列表中
-            function_ai_call_list.append(my_calendar.function_delete_scheduled_task)
-        elif function_class == "更改类":
-            #将更改类的功能函数说明添加到函数列表中
-            function_ai_call_list.append(my_calendar.function_modify_scheduled_task)
-        elif function_class == "查询类":
-            #将查询类的功能函数说明添加到函数列表中
-            function_ai_call_list.append(my_calendar.function_query_scheduled_task_by_datetime)
-            function_ai_call_list.append(my_calendar.function_query_scheduled_task_by_date)
+        if tool_class == "添加类":
+            #将添加类的工具说明添加到函数列表中
+            tool_specifications_list.append(my_calendar.function_add_scheduled_task)
+        elif tool_class == "删除类":
+            #将删除类的工具说明添加到函数列表中
+            tool_specifications_list.append(my_calendar.function_delete_scheduled_task)
+        elif tool_class == "查询类":
+            #将查询类的工具说明添加到函数列表中
+            tool_specifications_list.append(my_calendar.function_query_scheduled_task_by_datetime)
+            tool_specifications_list.append(my_calendar.function_query_scheduled_task_by_date)
 
 
-        return function_ai_call_list
+        return tool_specifications_list
         
-    #查询日程表的工具函数说明（AI调用）
-    function_query_function_class =   {
-            "name": "query_function_class",
-            "description": "日程表拥有对日程表任务进行添加，删除，查询的三大类功能，输入需要调用的功能类，返回该类下所有功能函数的调用说明",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "function_class": {
-                        "type": "string",
-                        "description": "需要调用的日程表功能类",
-                        "enum": ["添加类","删除类","查询类"], 
-                    }
-                },
-                "required": ["function_class"]
-            },
-        }
+    #查询日程表的工具调用规范
+    function_query_tool_class =   {
+        "type": "function",
+        "function": {
+                    "name": "query_tool_class",
+                    "description": "有把定时任务进行添加到日程表，从日程表删除定时任务，在日程表中查询定时任务的三大类工具，输入需要调用的工具类，返回该类下的工具调用规范说明",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "tool_class": {
+                                "type": "string",
+                                "description": "需要调用的日程表工具类",
+                                "enum": ["添加类","删除类","查询类"], 
+                            }
+                        },
+                        "required": ["tool_class"]
+                    },
+                }
+    }
 
     #根据任务目标创建分步式任务的AI代理------------------------------------------------
     def create_a_task_list(self,task_objectives):
@@ -631,14 +753,14 @@ class Main_AI_function_library():
         ```
         '''
         #次级AI挂载的函数功能列表
-        functions_list = []
+        tools_list = []
         #从数据库获取权限为1的函数功能列表，根据id，再从ai函数数据库读取数据，作为次级ai挂载函数功能列表
-        functions_list = extended_function_library.get_function_by_permission("1")
+        tools_list = extended_tools_library.get_tool_by_permission("1")
 
         #构建prompt
         prompt = (
         f"你是一个专业的任务创建AI，请根据用户提出的任务目标，创建一个实现该目标的JSON数组的任务列表。"
-        f"根据最终目标创建每一步任务，每步任务应该详细说明，每步任务应该尽量使用库中的功能函数完成，当前功能函数库为###{functions_list}###。"
+        f"根据最终目标创建每一步任务，每步任务应该详细说明，每步任务应该尽量使用库中的工具完成，当前工具库为###{tools_list}###。"
         f"确保所有任务ID按时间顺序排列。第一步始终是关于任务目标的理解，以及拆分任务的推理说明，尽可能详细。"
         f"任务目标示例：###{task_objectives_example}###"
         f"任务列表示例：###{task_list_example}###"
@@ -650,62 +772,63 @@ class Main_AI_function_library():
 
 
         #向模型发送用户查询以及它可以访问的函数
-        response = openai.ChatCompletion.create(
+        response = openaiclient.chat.completions.create( 
             model="gpt-3.5-turbo-0613",
             messages=messages ,
         )
 
         #返回任务列表
-        task_list = response["choices"][0]["message"]['content']
+        task_list = response.choices[0].message.content
         return task_list
 
-    #配套的供AI申请调用的函数说明（AI调用）
+    #配套的供AI申请调用的函数说明
     function_create_a_task_list = {
-            "name": "create_a_task_list",
-            "description": "输入事件任务目标，次级AI会创建分步式任务列表，并返回",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "task_objectives": {
-                        "type": "string",
-                        "description": "关于事件任务目标的详细描述",
-                    }
-                },
-                "required": ["task_objectives"]
-            },
-        }
+        "type": "function",
+        "function": {
+                    "name": "create_a_task_list",
+                    "description": "输入定时任务的目标，代理AI会创建如何执行定时任务的分步式任务列表，并返回该列表",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "task_objectives": {
+                                "type": "string",
+                                "description": "关于定时任务目标的详细描述",
+                            }
+                        },
+                        "required": ["task_objectives"]
+                    },
+                }
+    }
 
 
+    #添加工具
+    def add_tools(self, tool_id,tool_specifications, tool_permission):
 
+        tool_name = tool_specifications["function"]["name"]
+        tool_description = tool_specifications["function"]["description"]
 
-    #添加功能函数
-    def add_function(self, function_id,function_ai_call, function_permission):
-
-        function_name = function_ai_call["name"]
-        function_description = function_ai_call["description"]
-
-        #构建功能函数结构
-        functions = {
-            "function_id": function_id,
-            "function_name": function_name,
-            "function_description": function_description,
-            "function_ai_call": function_ai_call,
-            "function_permission": function_permission
+        #构建工具结构
+        tools = {
+            "tool_id": tool_id,
+            "tool_name": tool_name,
+            "tool_description": tool_description,
+            "tool_specifications": tool_specifications,
+            "tool_permission": tool_permission
         }
         #写入数据库
-        self.function_library[int(function_id)] = functions
+        self.tools_library[int(tool_id)] = tools
 
 
-    #根据函数权限，获取相应的全部功能函数说明
-    def get_function_by_permission(self, permission):
-        function_list = []
-        #遍历功能函数库，注意是字典结构，所以需要用到items()方法
-        for function_id, function in self.function_library.items():
-            if function["function_permission"] == permission:
-                #只获取功能函数说明（AI调用）的内容
-                function_ai_call = function["function_ai_call"].copy()
-                function_list.append(function_ai_call)
-        return function_list
+    #根据函数权限，获取相应的全部工具说明
+    def get_tools_by_permission(self, permission):
+        tools_list = []
+        #遍历工具库，注意是字典结构，所以需要用到items()方法
+        for tool_id, tool in self.tools_library.items():
+            if tool["tool_permission"] == permission:
+                #只获取工具说明的内容
+                tool_call = tool["tool_specifications"].copy()
+                tools_list.append(tool_call)
+        return tools_list
 
         
 #————————————————————————————————————————主AI对话记忆库————————————————————————————————————————
@@ -723,94 +846,147 @@ class Ai_memory:
         try:
             if os.path.exists(os.path.join(self.file_path, "conversation_history.json")):
                 with open(os.path.join(self.file_path, "conversation_history.json"), "r", encoding="utf-8") as f:
-                    self.conversation_history = json.load(f)
+                    data = json.load(f)
+                    # 检查一下记忆数据是否合规有效
+                    if self.check_conversation_history(data) == 'Correct':
+                        self.conversation_history = data
+                        print("[DEBUG] 已成功读取对话历史文件！！！！！！！！！！！！！)",'\n')
+                    else:
+                        print("[DEBUG] 历史文件内容格式存在错误！！！！！！！！！！！！！)",'\n')
         except:
-            print("[DEBUG] 读取对话历史文件失败！！！！！！！！！！！！！)",'\n')
+            print("[DEBUG] 读取最近对话历史文件失败！！！！！！！！！！！！！)",'\n')
 
         #在文件夹下寻找conversation_history_all.json文件，如果存在则读取json文件（增加错误跳过语句）
         try:
             if os.path.exists(os.path.join(self.file_path, "conversation_history_all.json")):
                 with open(os.path.join(self.file_path, "conversation_history_all.json"), "r", encoding="utf-8") as f:
-                    self.conversation_history_all = json.load(f)
+                    data = json.load(f)
+                    # 检查一下记忆数据是否合规有效
+                    if self.check_conversation_history(data) == 'Correct':
+                        self.conversation_history_all = data
+                        print("[DEBUG] 已成功读取完整对话历史文件！！！！！！！！！！！！！)",'\n')
+                    else:
+                        print("[DEBUG] 完整历史文件内容格式存在错误！！！！！！！！！！！！！)",'\n')
         except:
             print("[DEBUG] 读取完整对话历史文件失败！！！！！！！！！！！！！)",'\n')
 
 
     #对话历史文件检查函数
-    def check_conversation_history(self):
-        pass
+    def check_conversation_history(self,data):
+        assistant_tool_calls = []
+        tool_tool_call_ids = []
 
-    #获取对话历史
+        # 处理 assistant 角色的数据,获取工具调用id
+        for item in data:
+            if item.get("role") == "assistant" and "tool_calls" in item:
+                tool_calls = item["tool_calls"]
+                for tool_call in tool_calls:
+                    if "id" in tool_call:
+                        assistant_tool_calls.append(tool_call["id"])
+
+        # 处理 tool 角色的数据,获取工具调用id
+        for item in data:
+            if item.get("role") == "tool" and "tool_call_id" in item:
+                tool_tool_call_ids.append(item["tool_call_id"])
+
+        # 检查两个id列表是否相同
+        if set(assistant_tool_calls) == set(tool_tool_call_ids):
+            return("Correct")
+        else:
+            return("Error")
+
+    #获取最近的对话历史
     def read_log(self):
         return self.conversation_history
 
     #记录对话历史
-    def log_message(self,role,function_name,function_arguments,content):
+    def log_message(self,role,content=None,tool_calls=None,tool_result=None):
 
         #用户内容格式参考
-        self.user_content_structure = {"role": "user", "content": "What's the weather like in Boston?"}
-
-
-        #AI调用函数格式参考
-        self.function_call_structure = {"role": "assistant",
-                                        "content": None ,
-                                        "function_call": {
-                                                        "name": "get_current_weather",
-                                                        "arguments": "{\n  \"location\": \"Boston\",\n  \"unit\": \"celsius\"\n}"
-                                                          }
-                                        }
-
-        #函数调用结果格式参考
-        self.function_return_structure = {"role": "function",
-                                           "name": "get_current_weather",
-                                           "content":  {
-                                                        "location": "Boston",
-                                                        "temperature": "72",
-                                                        "unit": "fahrenheit",
-                                                        "forecast": ["sunny", "windy"],
-                                                        }}
+        self.user_content_structure = {"role": "user", 
+                                       "content": "What's the weather like in Boston?"}
 
         #AI回复格式参考
-        self.AI_content_structure = {"role": "assistant", "content": "The current weather in Boston is sunny and windy with a temperature of 72 degrees Fahrenheit."}
+        self.AI_content_structure = {"role": "assistant", 
+                                     "content": "The current weather in Boston is sunny and windy with a temperature of 72 degrees Fahrenheit."}
+
+
+        #AI调用工具格式参考
+        self.function_call_structure = {"role": "assistant",
+                                        "content": None ,
+                                        'tool_calls': [{'id': 'call_o7uyztQLeVIoRdjcDkDJY3ni',
+                                                        'type': 'function',
+                                                        'function': {'name': 'get_current_weather','arguments': '{\n  "location": "Tokyo",\n  "format": "celsius"\n}'}
+                                                        },
+                                                        {'id': 'call_o7uyztQLeVIoRdjcDkDJYxxx',
+                                                        'type': 'function',
+                                                        'function': {'name': 'get_current_weather','arguments': '{\n  "location": "beijing",\n  "format": "celsius"\n}'}
+                                                        },
+                                                    ]
+                                        }
+
+        #工具调用结果格式参考
+        self.function_return_result ={"role": "tool", 
+                                      "tool_call_id": 'call_o7uyztQLeVIoRdjcDkDJY3ni', 
+                                      "name": 'get_current_weather', 
+                                      "content": "15",
+                                      }
 
 
         #如果是用户输入消息
         if role == "user":
             The_message = {"role": "user", "content": content}
 
-        #如果是函数调用
-        elif role == "function_call":
-            The_message = {"role": "assistant",
-                           "content": content ,
-                           "function_call": {"name": function_name,
-                                             "arguments": function_arguments}
+        #如果是AI回复
+        elif role == "assistant":
+            #如果是通常回复
+            if tool_calls is  None:
+                The_message = {"role": "assistant", "content": content}
 
+            #如果是工具调用
+            else:
+                tools = []
+
+                for tool_call in tool_calls:
+                    tool={'id': tool_call.id,
+                          'type': 'function',
+                          'function': {'name': tool_call.function.name,
+                                       'arguments': tool_call.function.arguments
+                                       }
                         }
-        #如果是函数调用结果
-        elif role == "function_return":
-            #如果content是列表，表明需要记录的是搜索功能函数的结果
-            if isinstance(content,list):
+                    
+                    tools.append(tool)
+                    
+                The_message = {"role": "assistant",
+                            "content": content ,
+                            "tool_calls": tools,
+                            }
+        #如果是工具调用结果
+        elif role == "tool":
+            #如果content是列表，表明需要记录的是搜索工具的结果
+            if isinstance(tool_result["content"],list):
                 #使用新列表变量，来保存，避免原列表被修改
                 content_copy = []
 
                 #将content_copy转化成字符串变量，避免请求时格式错误
-                content_copy = json.dumps(content)
-            #如果是字典，表明需要记录的是功能函数的结果
-            elif isinstance(content,dict):
+                content_copy = json.dumps(tool_result["content"])
+            #如果是字典，表明需要记录的是工具的结果
+            elif isinstance(tool_result["content"],dict):
                 #使用新字典变量，来保存，避免原字典被修改
                 content_copy = {}
 
                 #将content_copy转化成字符串变量，避免请求时格式错误
-                content_copy = json.dumps(content)
+                content_copy = json.dumps(tool_result["content"])
 
             else:
-                content_copy = content
+                content_copy = tool_result["content"]
 
-            The_message = {"role": "function","name": function_name ,"content": content_copy}
+            The_message = {"role": "tool",
+                           "name": tool_result["name"],
+                           "tool_call_id": tool_result["tool_call_id"], 
+                           "content": content_copy}
 
-        #如果是AI通常回复
-        elif role == "assistant":
-            The_message = {"role": "assistant", "content": content}
+
 
         #将对话记录到可发送的对话历史的列表
         self.conversation_history.append(The_message)
@@ -820,23 +996,29 @@ class Ai_memory:
 
         #计算系统提示语句的tokens数
         self.num_tokens_prompt = self.num_tokens_from_string(ai_request.prompt)
-        print("[DEBUG] 系统提示语句tokens数为：",self.num_tokens_prompt,"个",'\n')
+        #print("[DEBUG] 系统提示语句tokens数为：",self.num_tokens_prompt,"个",'\n')
+
         #计算对话历史的总tokens数
         self.num_tokens_history = self.num_tokens_from_messages(self.conversation_history)
-        print("[DEBUG] 对话历史tokens数为：",self.num_tokens_history,"个",'\n')
-        #计算挂载函数列表的tokens数
-        str_content = str(ai_request.default_functions_list)
+        #print("[DEBUG] 对话历史tokens数为：",self.num_tokens_history,"个",'\n')
+
+        #计算挂载工具列表的tokens数
+        str_content = str(ai_request.default_tools)
         self.num_tokens_functions= self.num_tokens_from_string(str_content)
         #print("[DEBUG] 当前挂载的内容为：",ai_request.default_functions_list,'\n')
-        print("[DEBUG] 挂载函数tokens数为：",self.num_tokens_functions,"个",'\n')
+        #print("[DEBUG] 挂载函数tokens数为：",self.num_tokens_functions,"个",'\n')
 
 
-        #如果大于最大tokens数，则进行总结记忆，压缩对话历史
+        #如果发送内容大于最大tokens数，则进行总结记忆，压缩对话历史
         if (self.num_tokens_prompt  + self.num_tokens_history + self.num_tokens_functions )  > 4000:
 
             #总结记忆，压缩对话历史
             print("[DEBUG] 对话历史tokens数超过4080，正在总结记忆，压缩对话历史~",'\n')
-            self.conversation_history = self.compress_memory(self.conversation_history,1)
+            #使用ai来总结历史记忆，如果出错则清空之前对话
+            try:
+                self.conversation_history = self.compress_memory(dialog_history = self.conversation_history)
+            except:
+                self.conversation_history = []
 
 
         #将对话记录变量以utf-8格式写入json文件到指定文件夹中
@@ -847,30 +1029,17 @@ class Ai_memory:
         with open(os.path.join(self.file_path, "conversation_history_all.json"), "w", encoding="utf-8") as f:
             json.dump(self.conversation_history_all, f, ensure_ascii=False, indent=4)
 
-    #计算消息列表内容的tokens的函数
-    def num_tokens_from_messages(self,messages, model="gpt-3.5-turbo-0613"):
+    # 计算消息列表内容的tokens的函数
+    def num_tokens_from_messages(self,messages):
         """Return the number of tokens used by a list of messages."""
         try:
-            encoding = tiktoken.encoding_for_model(model)
+            encoding = tiktoken.encoding_for_model("gpt-3.5-turbo")
         except KeyError:
             print("Warning: model not found. Using cl100k_base encoding.")
             encoding = tiktoken.get_encoding("cl100k_base")
-        if model in {
-            "gpt-3.5-turbo",
-            "gpt-3.5-turbo-0613",
-            "gpt-3.5-turbo-16k",
-            "gpt-3.5-turbo-16k-0613",
-            "gpt-4",
-            "gpt-4-0613",
-            "gpt-4-32k",
-            "gpt-4-32k-0613",
-            }:
-            tokens_per_message = 3
-            tokens_per_name = 1
-        else:
-            raise NotImplementedError(
-                f"""num_tokens_from_messages() is not implemented for model {model}. See https://github.com/openai/openai-python/blob/main/chatml.md for information on how messages are converted to tokens."""
-            )
+
+        tokens_per_message = 3
+        tokens_per_name = 1
         num_tokens = 0
         for message in messages:
             num_tokens += tokens_per_message
@@ -883,7 +1052,7 @@ class Ai_memory:
         num_tokens += 3  # every reply is primed with <|start|>assistant<|message|>
         return num_tokens
 
-    #计算字符串内容的tokens的函数
+    # 计算字符串内容的tokens的函数
     def num_tokens_from_string(self,string: str) -> int:
         """Returns the number of tokens in a text string."""
         encoding = tiktoken.get_encoding("cl100k_base")
@@ -891,8 +1060,12 @@ class Ai_memory:
         return num_tokens
 
 
-    #总结记忆，压缩对话历史函数
-    def compress_memory(self,dialog_history,k = 1):
+    # 总结记忆，压缩对话历史函数
+    def compress_memory(self,dialog_history,k = 2):
+
+        #复制历史对话，防止影响到原字典
+        old_dialog_history = dialog_history.copy()
+
         #对话历史示例
         dialog_history_example = """[{'role': 'user', 'content': '你好啊'}, {'role': 'assistant', 'content': '你好！有什么我可以帮助你的吗？'}, 
         {'role': 'user', 'content': '你在干嘛'}, 
@@ -912,53 +1085,42 @@ class Ai_memory:
 
         #构建系统提示语句
         prompt = (
-        f"你是一名专业的记录员，你将接收到关于主人和AI女仆的对话历史，主人被标记为user，AI女仆被标记为assistant，而被标记为function的是工具调用返回结果。"
+        f"你是一名专业的记录员，你将接收到关于用户和AI的对话历史，用户被标记为user，AI被标记为assistant，而被标记为tool的是工具调用返回结果。"
         f"你的任务是提取对话历史的主要信息并总结它。你必须将总结的信息呈现为json格式,并以json代码块标记。"
         f"请注意，你必须尽可能准确地提取信息，并确保你的总结简洁而全面。你还必须确保你的总结符合上述格式规定，以便于后续处理和分析。"
         f"对话历史示例###{dialog_history_example}###"
         f"总结结果示例###{summary_resultst_example}###"
         )
 
+        # 根据最近的对话历史，重新计算截取位置
+        k = self.find_last_index(data = old_dialog_history,k = k)
 
-        #保存对话历史列表倒数2k个元素，即最新的k对对话内容
-        conversation_end = dialog_history[-(2*k):]
+        # 保存对话历史列表倒数k个元素，即最新的几对对话内容
+        conversation_end = old_dialog_history[-k:]
 
-        #构建需要总结的对话内容
-        dialog_history.pop(0) #除去列表变量第一个元素，即系统提示语句
-        dialog_history_copy = dialog_history[:-(2*k)]#去除列表中倒数2k个元素，即最新的k对对话内容
-
-        print("[DEBUG] 需要总结的对话内容为：",dialog_history_copy,'\n')
+        # 构建需要总结的对话内容
+        dialog_history_copy = old_dialog_history[:-k]#去除列表中倒数k个元素
 
 
-        #构建分步任务
+        # 构建分步任务
         ai_task = f"你需要总结的内容是###{dialog_history_copy}###"
 
-        #构建对话
+        # 构建对话
         messages = [{"role": "system", "content": prompt },
                 {"role": "user", "content":  ai_task}]
 
         print("[DEBUG] 发送需要总结的内容为：",messages,'\n')
 
 
-        response = openai.ChatCompletion.create(
+        response = openaiclient.chat.completions.create( 
             model="gpt-3.5-turbo-16k-0613",
             messages=messages ,
             temperature=0
         )
 
-
-        # 将字典转换为JSON字符串，并保留非ASCII字符
-        json_str = json.dumps(response, ensure_ascii=False)
-        # 将JSON字符串中的Unicode编码内容转换为UTF-8编码
-        utf8_str = json_str.encode('utf-8')
-        # 将字节串转换为字符串
-        str_content = utf8_str.decode('utf-8')
-        print("[DEBUG] AI总结全部内容为：",str_content,'\n')
-
-
         # 从回复中提取message部分
-        task_result =  response["choices"][0]["message"][ "content"]
-        print("[DEBUG] AI总结消息内容为：",task_result,'\n')
+        task_result =  response.choices[0].message.content 
+        print("[DEBUG] 总结AI代理回复内容为：",task_result,'\n')
 
 
         # 从任务结果示例中提取JSON部分
@@ -967,7 +1129,7 @@ class Ai_memory:
         task_result_dict = json.loads(json_str)
         # 从字典变量中提取任务执行结果
         task_result_new = task_result_dict["summary"]
-        print("[DEBUG] 总结AI提取内容为：",task_result_new,'\n')
+        print("[DEBUG] 提取到的总结内容为：",task_result_new,'\n')
 
 
         #将提取的内容格式化
@@ -980,9 +1142,45 @@ class Ai_memory:
         for i in conversation_end:
             dialog_history_new.append(i)
 
-        print("[DEBUG] 重新构建的对话历史内容为：",dialog_history_new,'\n')
+        print("[DEBUG] 已成功压缩最近的AI记忆",'\n')
 
         return dialog_history_new
+
+    # 找到列表中 role 为 "tool" 元素位置，并重新计算截取位置,因为这工具调用和工具返回要成一组，不然请求时会出错
+    def find_last_index(self, data, k):
+        #复制
+        copy_data = data.copy()
+
+        #寻找对话历史中的工具完整调用对位置
+        call_list = []
+        for idx, item in enumerate(copy_data):
+            if item.get("role") == "assistant" and "tool_calls" in item:
+                tool_calls = item["tool_calls"]
+                num_tool_calls = len(tool_calls)
+                call_list.append({"start": idx, "end": (idx + num_tool_calls)})
+
+        # 转换正向索引位置为反向索引位置
+        total_length = len(copy_data)
+        positive_call_list = [{"start": total_length - call["start"], "end": total_length - call["end"]} for call in call_list]
+
+        # 翻转一下列表里的元素
+        positive_call_list = positive_call_list[::-1]
+
+
+        # 如果输入的数字大于对话长度，则修改为最大倒数位置
+        if k >= len(copy_data):
+            k = len(copy_data)
+            return k
+
+        # 如果k值落入了工具调用对的范围内，则重新修改k值到助手开始调用工具的位置
+        for item in positive_call_list:
+            start = item['start']
+            end = item['end']
+
+            if end <= k <= start:
+                k = start
+
+        return k
 
 
 #————————————————————————————————————————主AI对话请求器————————————————————————————————————————
@@ -990,18 +1188,18 @@ class Ai_Request:
     def __init__(self):
 
         #主AI挂载的函数功能列表
-        self.default_functions_list = []
+        self.default_tools = []
         #获取主AI默认挂载函数功能列表
-        self.default_functions_list = main_function_library.get_function_by_permission("0")
+        self.default_tools = main_tools_library.get_tools_by_permission("0")
 
         #构建系统提示语句
-        self.prompt = '''当前对话的用户是你的主人，你现在必须扮演主人的AI女仆，你的任务是利用功能函数库来帮助主人解答疑惑和完成主人交代的任务。你要自主解答或调用函数来解决，且仅使用为你提供的函数。
-        如果主人要创建一个日程事件，请遵循以下步骤：
-        1. 如果主人提供的信息较少或模糊，请确保通过提问来获取尽可能详细的信息。
-        2. 在确定主人事件的细节后，请务必再次询问主人是否愿意将事件委托给下级AI生成分步式任务列表。在得到主人的肯定回答后，调用相应的函数，将事件详细描述发给下级AI。
-        3. 获得分步式任务列表后，交由主人审查，询问主人是否满意。如果主人不满意，你可以再次调用相应的函数，继续生成分步式任务列表。
-        4. 如果主人满意，并确认愿意后，询问主人设定事件的日期与时间。
-        4. 最后获取并调用日程表的添加类函数，根据日期时间，事件目的，分布式任务列表，将该事件添加到日程表中。
+        self.prompt = '''你现在必须扮演主人的AI女仆，名字叫纳西妲，当主人交代任务时，你要自主解答或者搜索工具库，并调用工具来解决。
+        如果主人要创建一个定时任务，比如“一个小时后xxx”，“明天帮我搜索一下xxx”等等需要定时执行的任务，请遵循以下步骤来进行解决：
+        1. 询问主人是否需要创建一个定时任务，如果主人回复确认，再进行下一步。
+        2. 如果提供的信息较少或模糊，请确保通过提问来获取尽可能详细的信息，包括具体日期时间。
+        3. 在得到足够信息后，调用生成分布式任务列表的工具。
+        4. 获得分步式任务列表后，简单总结，并交由主人审查，如果主人审查通过，再进行下一步。
+        5. 获取日程表的添加类工具调用规范，然后调用该工具，将该定时任务添加到日程表中。
         '''
 
     #输入用户消息，向AI发送请求,并取得回复
@@ -1010,46 +1208,46 @@ class Ai_Request:
 
         #获取对话历史
         conversation_history = conversationLogger.read_log()
-
         #获取系统当前日期时间
-        now = datetime.datetime.now()
+
+        # 获取当前日期和时间
+        current_datetime = datetime.datetime.now()
+        # 格式化输出日期和时间
+        formatted_datetime = current_datetime.strftime("%Y-%m-%d %H:%M:%S")
+        # 获取星期几
+        weekday = current_datetime.strftime("%A")
+
         #添加到系统提示语句前面
-        self.new_prompt = "【现实当前时间】："+now.strftime('%Y-%m-%d %H:%M:%S')+'\n'+self.prompt
+        self.new_prompt = "【现实当前时间】："+ formatted_datetime +' '+ weekday +'\n'+self.prompt
 
         #复制对话历史到新变量中，避免原变量被修改
-        new_conversation_history = conversation_history.copy()
+        messages = conversation_history.copy()
         #添加系统提示语句到对话历史最前面
-        new_conversation_history.insert(0,{"role": "system", "content": self.new_prompt}) #在列表最前面插入元素
+        messages.insert(0,{"role": "system", "content": self.new_prompt}) #在列表最前面插入元素
 
-        print('[DEBUG] 主AI请求发送的内容是：',new_conversation_history,'\n')
+        print('[DEBUG] 主AI请求发送的内容是：',messages,'\n')
 
         #向AI发送请求
-        response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo-0613",
-            messages=new_conversation_history,
-            functions=self.default_functions_list,  #关于调用函数说明内容可以放在这里，也可以放在上面的content中，AI都会识别并使用
-            function_call="auto"
+        response = openaiclient.chat.completions.create( 
+            model="gpt-3.5-turbo-1106",
+            messages=messages,
+            tools=self.default_tools,  #关于调用函数说明内容可以放在这里，也可以放在上面的content中，AI都会识别并使用
+            tool_choice="auto",  # auto is default, but we'll be explicit
             )
 
         # 从回复中提取token部分,并输出
         try:
-            prompt_tokens_used = int(response["usage"]["prompt_tokens"]) #本次请求花费的tokens
+            prompt_tokens_used = int(response.usage.prompt_tokens) #本次请求花费的tokens
             print("[DEBUG] 主AI请求花费的tokens数为：",prompt_tokens_used,"个",'\n')
         except Exception as e:
             prompt_tokens_used = 0
         try:
-            completion_tokens_used = int(response["usage"]["completion_tokens"]) #本次回复花费的tokens
+            completion_tokens_used = int(response.usage.completion_tokens) #本次回复花费的tokens
             print("[DEBUG] 主AI回复花费的tokens数为：",completion_tokens_used,"个",'\n')
         except Exception as e:
             completion_tokens_used = 0
 
-        # 将字典转换为JSON字符串，并保留非ASCII字符
-        json_str = json.dumps(response, ensure_ascii=False)
-        # 将JSON字符串中的Unicode编码内容转换为UTF-8编码
-        utf8_str = json_str.encode('utf-8')
-        # 将字节串转换为字符串
-        str_content = utf8_str.decode('utf-8')
-
+        str_content = response.choices[0].message.content
         print('[DEBUG] 主AI回复内容：',str_content,'\n')
 
         return response
@@ -1064,95 +1262,106 @@ class Ai_Parser:
     def parse_response(self,response):
 
         #提取AI回复内容中message部分
-        message = response["choices"][0]["message"]
+        message = response.choices[0].message
+        #提取ai调用的所有工具内容
+        tool_calls = message.tool_calls
 
-        while message.get("function_call"):
-            #尝试调用函数
-            try:
-                #设置函数调用状态码,以便检查函数调用是否正常运行
-                status_code = 0
+        #如果AI申请调用工具时
+        while tool_calls:
+            # 记录AI的申请调用工具对话
+            ai_memory.log_message(role = "assistant" ,tool_calls=tool_calls)
 
-                #获取函数调用名称
-                function_name = message["function_call"]["name"]
-                #获取函数调用参数
-                function_arguments = message["function_call"]["arguments"]
-                #获取函数调用附加回复
-                function_content = message['content']
+            # 并行调用所有工具
+            for tool_call in tool_calls:
+                try:
+                    #设置工具调用状态码，用于检查出错位置
+                    status_code = 0
 
-                #设置函数调用状态码为1，表示函数调用仍正常运行
-                status_code = 1
-                print("[DEBUG] 主AI正在申请调用函数~  调用函数附加说明：",function_content,'\n')
-                print("[DEBUG] 调用的函数名字为：",function_name,'输入参数为：',function_arguments,'\n')
+                    #获取工具调用名称 
+                    tool_name = tool_call.function.name
+                    #获取工具调用id
+                    tool_id = tool_call.id
+                    #获取工具调用参数
+                    tool_arguments = tool_call.function.arguments
+                    #获取工具调用附加回复
+                    tool_content = message.content
 
-                #记录一下AI的函数申请调用回复
-                ai_memory.log_message("function_call",function_name,function_arguments,function_content)
+                    print("[DEBUG] 主AI正在申请调用函数~  调用函数附加说明：",tool_content,'\n')
+                    print("[DEBUG] 调用的函数名字为：",tool_name,'输入参数为：',tool_arguments,'\n')
+
+                    #针对AI幻觉调用“python”的问题，进行回复
+                    if tool_name == "python":
+                        tool_return = "[ERROR] 调用函数时出错,不存在名字为python的函数，请检查函数名字以及输入参数是否正确，再进行调用"
+                    #设置工具调用状态码，表示工具调用仍正常运行
+                    status_code = 1
+
+                    #将函数输入参数转换为字典格式
+                    tool_arguments = json.loads(tool_arguments)
+                    #设置工具调用状态码，表示工具调用仍正常运行
+                    status_code = 2
+
+                    #调用搜索相关函数的工具
+                    if tool_name == "search_related_tools":
+                        tool_return = main_tools_library.search_related_tools(tool_description=tool_arguments.get("tool_description"))
+
+                    #调用创建任务列表的工具
+                    elif tool_name == "create_a_task_list":
+                        tool_return = main_tools_library.create_a_task_list(task_objectives=tool_arguments.get("task_objectives"),)
+                    
+                    #调用获取日程表的功能类说明
+                    elif tool_name == "query_tool_class":
+                        tool_return = main_tools_library.query_tool_class(tool_class=tool_arguments.get("tool_class"),)
+
+                    #调用日程表的具体的工具
+                    elif "scheduled" in tool_name:# 可以改为xxx in 所有的日程表工具名
+                        tool_return = my_calendar.call_calendar_tool(tool_name=tool_name,tool_arguments=tool_arguments)
+
+                    #调用工具库里的函数
+                    else:
+                        tool_return = extended_tools_library.call_tool(tool_name,tool_arguments)
+
+                    #设置工具调用状态码，表示工具调用仍正常运行
+                    status_code = 3
+
+                except Exception as e:
+                    if status_code == 0:
+                        print("[ERROR] 主AI调用函数时出错，错误代码为：",status_code,"错误信息为：",e,'\n')
+                        tool_return = "[ERROR] 不存在名字为python的工具，请检查工具名字以及输入参数是否正确，再进行调用"
+                    elif status_code == 1:
+                        print("[ERROR] 主AI调用函数时出错，错误代码为：",status_code,"错误信息为：",e,'\n')
+                        tool_return = "[ERROR] 无法成功将输入参数转换为json格式，错误信息为：" + str(e)
+                    elif status_code == 2:
+                        print("[ERROR] 主AI调用函数时出错，错误代码为：",status_code,"错误信息为：",e,'\n')
+                        tool_return = "[ERROR] 调用工具时出错,无法成功运行该函数，错误信息为：" + str(e)
 
 
-                #将函数输入参数转换为字典格式
-                function_arguments = json.loads(function_arguments)
-                #设置函数调用状态码为2，表示函数调用仍正常运行
-                status_code = 2
 
+                #当正常调用函数后
+                if status_code == 3:
+                    print("[DEBUG] 主AI成功调用的函数：",tool_name,'调用结果为：',tool_return,'\n')
 
-                #调用测试用函数
-                if function_name == "test_function":
-                    function_response = main_function_library.test_function()
-
-                #调用搜索相关函数的功能函数
-                elif function_name == "search_related_functions":
-                    function_response = main_function_library.search_related_functions(function_description=function_arguments.get("function_description"))
-
-                #调用创建任务列表的功能函数
-                elif function_name == "create_a_task_list":
-                    function_response = main_function_library.create_a_task_list(task_objectives=function_arguments.get("task_objectives"),)
-                
-                #调用获取日程表的功能类说明
-                elif function_name == "query_function_class":
-                    function_response = main_function_library.query_function_class(function_class=function_arguments.get("function_class"),)
-
-                #调用日程表的具体的功能函数
-                elif "scheduled" in function_name:
-                    function_response = my_calendar.call_calendar_function(function_name=function_name,function_arguments=function_arguments)
-
-                #调用功能函数库里的函数
-                else:
-                    function_response = extended_function_library.call_function(function_name,function_arguments)
-
-                #设置函数调用状态码为3，表示函数调用仍正常运行
-                status_code = 3
-
-            except Exception as e:
-                if status_code == 0:
-                    print("[ERROR] 主AI调用函数时出错，错误代码为：",status_code,"错误信息为：",e,'\n')
-                    function_response = "[ERROR] 调用函数时出错,无法成功提取调用函数名字"
-                elif status_code == 1:
-                    print("[ERROR] 主AI调用函数时出错，错误代码为：",status_code,"错误信息为：",e,'\n')
-                    function_response = "[ERROR] 调用函数时出错,无法成功将函数输入参数转换为字典格式"
-                elif status_code == 2:
-                    print("[ERROR] 主AI调用函数时出错，错误代码为：",status_code,"错误信息为：",e,'\n')
-                    function_response = "[ERROR] 调用函数时出错,无法运行该函数"
-
-
-
-            #当正常调用函数后
-            if status_code == 3:
-                print("[DEBUG] 主AI已调用的函数：",function_name,'调用结果为：',function_response,'\n')
-
-            #记录函数调用结果
-            ai_memory.log_message("function_return",function_name,None,function_response)
+                #记录工具调用结果
+                tool_result ={"name": tool_name,
+                              "tool_call_id": tool_id, 
+                              "content": tool_return}
+                ai_memory.log_message(role = "tool" , tool_result = tool_result)
 
             #再次发送对话请求
             Ai_response = ai_request.make_request(ai_memory)
 
             #再次提取AI回复内容中message部分
-            message = Ai_response["choices"][0]["message"]
+            message = Ai_response.choices[0].message
+            #再次提取ai调用的所有工具内容
+            tool_calls = message.tool_calls
 
 
-        #获取AI回复内容
-        content = message['content']
+        # 如果AI正常回复时
+        content = message.content
+        # 记录 AI 纯文本回复
+        ai_memory.log_message(role ="assistant",content = content)
+        # 返回文本内容
         return content
         
-
 
 #————————————————————————————————————————主AI对话接口————————————————————————————————————————
 class ChatApp:
@@ -1172,28 +1381,25 @@ class ChatApp:
             user_input = request.json.get('user_input')
 
             #输出用户输入
-            print("【用户】：",user_input,"\n")
+            print("【用户消息】：",user_input,"\n")
 
             # 记录用户输入
-            ai_memory.log_message("user",None,None,user_input)
+            ai_memory.log_message(role = "user",content=user_input)
 
             # 发送对话请求
             ai_response = ai_request.make_request(ai_memory)
 
-            # 调用 AI 解析器来解析回复，并自动执行函数调用
+            # 调用 AI 解析器来解析回复，并自动执行工具调用
             content = ai_parser.parse_response(ai_response)
 
-            # 记录 AI 纯文本回复
-            ai_memory.log_message("assistant", None, None, content)
-
             # 生成 AI 回复的语音
-            audio_path = TTS_vits.voice_vits(text=content)
+            audio_path = TTS_vits.voice_bert_vits2(text=content)
 
             # 生成语音的口型数据文件
             mouth_data_path = ATM_vits.convertAudioToMouthData(audio_path)
 
             #输出AI纯文本回复内容
-            print("【助手】：",content,"\n")
+            print("【助手消息】：",content,"\n")
 
             # 返回响应
             return jsonify({
@@ -1226,8 +1432,8 @@ class ChatApp:
                 return 'GET请求不支持'
         
     def run(self):
-        # 启动服务器，完整地址为 http://localhost:5000/chat'
-        self.app.run(host='0.0.0.0', port=5000, debug=True)
+        # 启动服务器，完整地址为 http://localhost:7777/chat'
+        self.app.run(host='0.0.0.0', port=7777, debug=False)
 
 
 #————————————————————————————————————————系统配置接口————————————————————————————————————————     
@@ -1240,27 +1446,29 @@ class ConfigApp:
 if __name__ == '__main__':
         
     # 读取 YAML 配置文件
-    config_path = os.path.join(script_dir, "data", "System_Configuration.yaml")
+    config_path = os.path.join(script_dir, "config", "System_Configuration.yaml")
     with open(config_path, 'r', encoding='utf-8') as file:
         config = yaml.safe_load(file)
         # 访问具体配置项
-        Api_key = config['openai']['api_key']
+        OpenAI_api_key = config['openai']['api_key']
+        OpenAI_base_url = 'https://api.openai.com/v1' #api默认请求地址
 
 
-    #注册api
-    openai.api_key = Api_key
+    #创建全局openai客户端
+    openaiclient = OpenAI(api_key=OpenAI_api_key,
+            base_url= OpenAI_base_url)
 
 
     #创建主AI记忆库
-    file_path = os.path.join(script_dir, "data")
+    file_path = os.path.join(script_dir, "cache")
     ai_memory = Ai_memory(file_path)
 
 
-    #创建拓展功能函数库
-    extended_function_library = function_library.Function_library()
+    #创建拓展工具库
+    extended_tools_library = tool_library.Tool_library()
 
-    #创建主AI功能函数库
-    main_function_library = Main_AI_function_library()
+    #创建主AI工具库
+    main_tools_library = Main_AI_tool_library()
 
     #创建AI请求器
     ai_request = Ai_Request()
@@ -1274,7 +1482,7 @@ if __name__ == '__main__':
     #创建向量存储库,并使用openai的embedding函数
     chroma_client = chromadb.Client()
     openai_ef = embedding_functions.OpenAIEmbeddingFunction(
-                    api_key=Api_key,
+                    api_key=OpenAI_api_key,
                     model_name="text-embedding-ada-002"
                 )
     #创建向量存储库
@@ -1283,14 +1491,14 @@ if __name__ == '__main__':
                     embedding_function=openai_ef
                 )
 
-    #根据函数权限，获取拓展功能函数库的函数描述与函数id
-    function_id_list,function_description_list = extended_function_library.get_all_function("1")
-    #将拓展功能函数库的函数描述向量化并存储
+    #根据函数权限，获取拓展工具库的函数描述与函数id
+    tools_id_list,tools_description_list = extended_tools_library.get_all_tools("1")
+    #将拓展工具库的函数描述向量化并存储
     collection.add(
-    documents=function_description_list,
-    ids=function_id_list #不支持数字id
+    documents=tools_description_list,
+    ids=tools_id_list #不支持数字id
     )
-    print("[INFO] 功能函数库的函数描述向量化完成！","\n")
+    print("[INFO] 工具库的文本描述向量化完成！","\n")
 
 
     #创建日程表
@@ -1303,7 +1511,7 @@ if __name__ == '__main__':
     with open(config_path, 'r', encoding='utf-8') as file:
         # 加载YAML数据
         data = yaml.safe_load(file)
-    calendar_switch = data['calendario']['switch']
+        calendar_switch = data['calendario']['switch']
 
     if calendar_switch == 'on':
         thread = threading.Thread(target=calendar_executor.run)
@@ -1321,7 +1529,7 @@ if __name__ == '__main__':
 
 
     #欢迎用户
-    print("【系统】：欢迎使用AI助手！","\n")
+    print("【系统】：已成功启动，欢迎使用AI助手！！！！！！！！！！！！！！！！！！！","\n")
 
 
 

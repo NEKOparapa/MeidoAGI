@@ -39,12 +39,13 @@
         const app = new PIXI.Application({
             view: document.getElementById("canvas"),
             autoStart: true,
-            //resizeTo: window,     //自动调整大小
+            //resizeTo: window,     //自动随父体调整大小
             transparent: true, //透明背景
         });
 
         //创建模型,必须用await等待模型加载完毕后再执行，否则会报错。
-        model = await PIXI.live2d.Live2DModel.from("live2d-model/MXAhri/mxahri.model3.json");
+        //model = await PIXI.live2d.Live2DModel.from("live2d-model/MXAhri/mxahri.model3.json");
+        model = await PIXI.live2d.Live2DModel.from("live2d-model/纳西妲/纳西妲.model3.json");
 
         //把模型添加到PIXI舞台上
         app.stage.addChild(model);
@@ -62,21 +63,16 @@
         model.x = (innerWidth - model.width) / 2;  // model.x 设置为屏幕宽度的一半减去模型宽度的一半，以将模型置于屏幕的水平中心
         model.y = innerHeight - model.height - model.height * 0.1 ;    //将 model.y 设置为屏幕高度减去模型高度，以将模型置于屏幕底部。
 
+        
 
         //开口测试
         //model.internalModel.coreModel.setParameterValueById('ParamMouthOpenY', 0.9999);
-        playAudioWithMouthControl('test/test.wav', 'test/loudness.json');
+        //playAudioWithMouthControl('test/test.wav', 'test/loudness.json');
 
 
         })();
 
     </script>
-
-
-
-
-
-
 
 
 
@@ -127,7 +123,7 @@
         }
     </style>
 
-    <!-- 拖动标签 -->
+    <!-- 设置拖动标签 -->
     <div id="drag-bar"></div>
     <style>
         /* 设置CSS，这将会让拖动标签固定在页面顶部 */
@@ -212,7 +208,7 @@
 
             const options = {
                 hostname: '127.0.0.1',
-                port: 5000,
+                port: 7777,
                 path: '/chat',
                 method: 'POST',
                 headers: {
@@ -238,7 +234,7 @@
                 var mouth_data_path = JSON.parse(data).assistant_mouth_data_path;
                 var response_text = JSON.parse(data).assistant_response_text;
 
-                // Send the data to the main process
+                // 发送消息内容到主进程
                 ipcRenderer.send('DEBUG', { audio_path, mouth_data_path, response_text });
 
                 // 播放音频并控制口型
@@ -271,15 +267,57 @@
 
 
 
+    <script>
+        // 创建一个http服务器，用于接收来自通知的消息，不知道为什么要放在这里，放在下面就不行
+        const server = http.createServer((req, res) => {
+        if (req.method === 'POST' && req.url === '/notification') {
+            let data = '';
+            req.on('data', (chunk) => {
+            data += chunk;
+            });
 
+            req.on('end', () => {
+            console.log(JSON.parse(data));
+            var audio_path = JSON.parse(data).assistant_audio_path;
+            var mouth_data_path = JSON.parse(data).assistant_mouth_data_path;
+            var response_text = JSON.parse(data).assistant_response_text;
 
+            // 发送消息内容到主进程
+            ipcRenderer.send('DEBUG', { audio_path, mouth_data_path, response_text });
 
+            // 播放音频并控制口型
+            playAudioWithMouthControl(audio_path, mouth_data_path);
+
+            res.statusCode = 200;
+            res.setHeader('Content-Type', 'text/plain');
+            res.end('Data received');
+            });
+        } else {
+            res.statusCode = 404;
+            res.end();
+        }
+        });
+
+        const port = 4000;
+        server.listen(port, () => {
+        console.log(`Server listening on port ${port}`);
+        });
+
+    </script>
 
 
 
     <script>
+        // 创建一个全局变量来存储当前正在播放的音频元素
+        let currentAudioElement = null;
+
         // 播放音频并控制口型函数
-        async function playAudioWithMouthControl( audioUrl, mouthDataUrl) {
+        async function playAudioWithMouthControl(audioUrl, mouthDataUrl) {
+            // 停止当前正在播放的音频
+            if (currentAudioElement) {
+                currentAudioElement.pause();
+                currentAudioElement.currentTime = 0;
+            }
 
             // 添加时间戳来避免缓存，下次调用还是一样的url，但是浏览器会读取文件而不是缓存
             audioUrl += '?' + new Date().getTime();
@@ -292,6 +330,9 @@
             audioSource.connect(audioContext.destination);
             audioElement.play();
 
+            // 将当前播放的音频元素存储到全局变量中
+            currentAudioElement = audioElement;
+
             // 获取口型数据
             let response = await fetch(mouthDataUrl);
             let mouthData = await response.json();
@@ -302,7 +343,7 @@
             // 创建一个新的update函数
             model.internalModel.motionManager.update = () => {
                 // 首先调用原来的update函数
-                originalUpdate.call(model.internalModel.motionManager, model.internalModel.coreModel, Date.now()/1000);
+                originalUpdate.call(model.internalModel.motionManager, model.internalModel.coreModel, Date.now() / 1000);
 
                 // 检查当前时间是否超过了口型数据的长度
                 if (Math.floor(audioElement.currentTime * 10) < mouthData.length) {
@@ -315,7 +356,7 @@
                     // 如果口型数据使用完，则恢复原来的update函数
                     model.internalModel.motionManager.update = originalUpdate;
                     // 设置模型的口部参数为0,加个保险
-                    model.internalModel.coreModel.setParameterValueById('ParamMouthOpenY',0);
+                    model.internalModel.coreModel.setParameterValueById('ParamMouthOpenY', 0);
                     // 清理 AudioContext 和口型数据
                     audioSource.disconnect();
                     audioContext.close();
@@ -327,14 +368,19 @@
             audioElement.addEventListener('ended', () => {
                 model.internalModel.motionManager.update = originalUpdate;
                 // 设置模型的口部参数为0,加个保险
-                model.internalModel.coreModel.setParameterValueById('ParamMouthOpenY',0);
+                model.internalModel.coreModel.setParameterValueById('ParamMouthOpenY', 0);
                 // 清理 AudioContext 和口型数据
                 audioSource.disconnect();
                 audioContext.close();
                 mouthData = null; // 清理口型数据
+                // 将当前播放的音频元素设为null
+                currentAudioElement = null;
             });
         }
     </script>
+
+
+
 
 
 

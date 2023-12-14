@@ -17,21 +17,24 @@ def write_text_to_file(folder_path, text_content):
 
 #配套函数调用说明
 function_write_text_to_file  = {
-        "name": "write_text_to_file",
-        "description": "将文本内容写为txt文件保存",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "folder_path": {
-                    "type": "string",
-                    "description": "存储的文件夹路径,例如：D:/MeidoAGI/folder",
-                },
-                "text_content": {
-                    "type": "string",
-                    "description": "文本内容",
+        "type": "function",
+        "function": {
+                    "name": "write_text_to_file",
+                    "description": "将文本内容写为txt文件保存",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "folder_path": {
+                                "type": "string",
+                                "description": "存储的文件夹路径,例如：D:/MeidoAGI/folder",
+                            },
+                            "text_content": {
+                                "type": "string",
+                                "description": "文本内容",
+                            }
+                        },
+                        "required": ["folder_path","text_content"]
+                    },
                 }
-            },
-            "required": ["folder_path","text_content"]
-        },
-    }
+}
 

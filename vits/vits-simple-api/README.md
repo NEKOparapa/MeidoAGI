@@ -5,7 +5,7 @@
     <br/>
     <p>
         <img src="https://img.shields.io/github/license/Artrajz/vits-simple-api">
-    	<img src="https://img.shields.io/badge/python-3.9%7C3.10-green">
+    	<img src="https://img.shields.io/badge/python-3.10-green">
         <a href="https://hub.docker.com/r/artrajz/vits-simple-api">
             <img src="https://img.shields.io/docker/pulls/artrajz/vits-simple-api"></a>
     </p>
@@ -16,43 +16,20 @@
 
 
 
+
 # Feature
 
-- [x] VITS text-to-speech
-- [x] VITS voice conversion
+- [x] VITS text-to-speech, voice conversion
 - [x] HuBert-soft VITS
-- [x] W2V2 VITS / emotional-vits dimensional emotion model
+- [x] [vits_chinese](https://github.com/PlayVoice/vits_chinese)
+- [x] [Bert-VITS2](https://github.com/Stardust-minus/Bert-VITS2)
+- [x] W2V2 VITS / [emotional-vits](https://github.com/innnky/emotional-vits) dimensional emotion model
 - [x] Support for loading multiple models
 - [x] Automatic language recognition and processing,set the scope of language type recognition according to model's cleaner,support for custom language type range
 - [x] Customize default parameters
 - [x] Long text batch processing
 - [x] GPU accelerated inference
 - [x] SSML (Speech Synthesis Markup Language) work in progress...
-
-<details><summary>Update Logs</summary><pre><code>
-<h2>2023.6.5</h2>
-<p>Replace the library used for audio encoding, add support for the FLAC format, and enhance support for reading simple mathematical formulas in Chinese.</p>
-<h2>2023.5.24</h2>
-<p>Added api dimensional_emotion,load mutiple npy from folder.Docker add linux/arm64 and linux/arm64/v8 platforms</p>
-<h2>2023.5.15</h2>
-<p>Added english_cleaner. To use it, you need to install espeak separately.</p>
-<h2>2023.5.12</h2>
-<p>Added support for SSML, but still needs improvement. Refactored some functions and changed "speaker_id" to "id" in hubert_vits.</p>
-<h2>2023.5.2</h2>
-<p>Added support for the w2v2-vits/emotional-vits model, updated the speakers mapping table, and added support for the languages corresponding to the model.</p>
-<h2>2023.4.23</h2>
-<p>Add API Key authentication, disabled by default, needs to be enabled in config.py.</p>
-<h2>2023.4.17</h2>
-<p>Added the feature that the cleaner for a single language needs to be annotated to clean, and added GPU acceleration for inference, but the GPU inference environment needs to be manually installed.</p>
-<h2>2023.4.12</h2>
-<p>Renamed the project from MoeGoe-Simple-API to vits-simple-api, added support for batch processing of long texts, and added a segment threshold "max" for long texts.</p>
-<h2>2023.4.7</h2>
-<p>Added a configuration file to customize default parameters. This update requires manually updating config.py. See config.py for specific usage.</p>
-<h2>2023.4.6</h2>
-<p>Added the "auto" option for automatically recognizing the language of the text. Modified the default value of the "lang" parameter to "auto". Automatic recognition still has some defects, please choose manually.</p>
-<p>Unified the POST request type as multipart/form-data.</p>
-</code></pre></details>
-
 
 
 ## demo
@@ -70,7 +47,7 @@ https://user-images.githubusercontent.com/73542220/237995061-c1f25b4e-dd86-438a-
 
 # Deploy
 
-## Docker
+## Docker(Recommended for Linux)
 
 ### Docker image pull script
 
@@ -78,7 +55,7 @@ https://user-images.githubusercontent.com/73542220/237995061-c1f25b4e-dd86-438a-
 bash -c "$(wget -O- https://raw.githubusercontent.com/Artrajz/vits-simple-api/main/vits-simple-api-installer-latest.sh)"
 ```
 
-- The platforms currently supported by Docker images are `linux/amd64` and `linux/arm64`.
+- The platforms currently supported by Docker images are `linux/amd64` and `linux/arm64`.(arm64 only has a CPU version)
 - After a successful pull, the vits model needs to be imported before use. Please follow the steps below to import the model.
 
 ### Download  VITS model
@@ -164,17 +141,15 @@ Run the docker image pull script again
 
 ###  Download python dependencies 
 
-A python virtual environment is recommended，use python >= 3.9
+A python virtual environment is recommended
 
 `pip install -r requirements.txt`
 
 Fasttext may not be installed on windows, you can install it with the following command,or download wheels [here](https://www.lfd.uci.edu/~gohlke/pythonlibs/#fasttext)
 
 ```
-#python3.10 win_amd64
+# python3.10 win_amd64
 pip install https://github.com/Artrajz/archived/raw/main/fasttext/fasttext-0.9.2-cp310-cp310-win_amd64.whl
-#python3.9 win_amd64
-pip install https://github.com/Artrajz/archived/raw/main/fasttext/fasttext-0.9.2-cp39-cp39-win_amd64.whl
 ```
 
 ### Download  VITS model 
@@ -252,22 +227,22 @@ nvidia-smi
 ```
 Taking CUDA 11.7 as an example, download it from the [official website](https://developer.nvidia.com/cuda-11-7-0-download-archive?target_os=Windows&amp;target_arch=x86_64&amp;target_version=10&amp;target_type=exe_local)
 ### Install GPU version of PyTorch
+
+1.13.1+cu117 is recommended, other versions may have memory instability issues.
+
 ```
-pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu117
+pip install torch==1.13.1+cu117 --extra-index-url https://download.pytorch.org/whl/cu117
 ```
-You can find the corresponding command for the version you need on the [official website](https://pytorch.org/get-started/locally/)
 ## Linux
 The installation process is similar, but I don't have the environment to test it.
 
-# Openjtalk Installation Issue
+# Dependency Installation Issues
 
-If you are using an arm64 architecture platform, you may encounter some issues during installation due to the lack of arm64-compatible whl files on the official PyPI website. In such cases, you can use the whl file I have built to install Openjtalk.
+Since pypi.org does not have the `pyopenjtalk` whl file, it usually needs to be installed from the source code. This process might be troublesome for some people. Therefore, you can also use the whl I built for installation.
 
 ```
-pip install openjtalk==0.3.0.dev2 --index-url https://pypi.artrajz.cn/simple
+pip install pyopenjtalk -i https://pypi.artrajz.cn/simple
 ```
-
-Alternatively, you can manually build a whl file by following the instructions in this [tutorial](https://artrajz.cn/index.php/archives/167/).
 
 # API
 
@@ -299,190 +274,7 @@ Alternatively, you can manually build a whl file by following the instructions i
 
 ## POST
 
-- python
-
-```python
-import re
-import requests
-import os
-import random
-import string
-from requests_toolbelt.multipart.encoder import MultipartEncoder
-
-abs_path = os.path.dirname(__file__)
-base = "http://127.0.0.1:23456"
-
-
-# 映射表
-def voice_speakers():
-    url = f"{base}/voice/speakers"
-
-    res = requests.post(url=url)
-    json = res.json()
-    for i in json:
-        print(i)
-        for j in json[i]:
-            print(j)
-    return json
-
-
-# 语音合成 voice vits
-def voice_vits(text, id=0, format="wav", lang="auto", length=1, noise=0.667, noisew=0.8, max=50):
-    fields = {
-        "text": text,
-        "id": str(id),
-        "format": format,
-        "lang": lang,
-        "length": str(length),
-        "noise": str(noise),
-        "noisew": str(noisew),
-        "max": str(max)
-    }
-    boundary = '----VoiceConversionFormBoundary' + ''.join(random.sample(string.ascii_letters + string.digits, 16))
-
-    m = MultipartEncoder(fields=fields, boundary=boundary)
-    headers = {"Content-Type": m.content_type}
-    url = f"{base}/voice"
-
-    res = requests.post(url=url, data=m, headers=headers)
-    fname = re.findall("filename=(.+)", res.headers["Content-Disposition"])[0]
-    path = f"{abs_path}/{fname}"
-
-    with open(path, "wb") as f:
-        f.write(res.content)
-    print(path)
-    return path
-
-
-# 语音转换 hubert-vits
-def voice_hubert_vits(upload_path, id, format="wav", length=1, noise=0.667, noisew=0.8):
-    upload_name = os.path.basename(upload_path)
-    upload_type = f'audio/{upload_name.split(".")[1]}'  # wav,ogg
-
-    with open(upload_path, 'rb') as upload_file:
-        fields = {
-            "upload": (upload_name, upload_file, upload_type),
-            "id": str(id),
-            "format": format,
-            "length": str(length),
-            "noise": str(noise),
-            "noisew": str(noisew),
-        }
-        boundary = '----VoiceConversionFormBoundary' + ''.join(random.sample(string.ascii_letters + string.digits, 16))
-
-        m = MultipartEncoder(fields=fields, boundary=boundary)
-        headers = {"Content-Type": m.content_type}
-        url = f"{base}/voice/hubert-vits"
-
-        res = requests.post(url=url, data=m, headers=headers)
-    fname = re.findall("filename=(.+)", res.headers["Content-Disposition"])[0]
-    path = f"{abs_path}/{fname}"
-
-    with open(path, "wb") as f:
-        f.write(res.content)
-    print(path)
-    return path
-
-
-# 维度情感模型 w2v2-vits
-def voice_w2v2_vits(text, id=0, format="wav", lang="auto", length=1, noise=0.667, noisew=0.8, max=50, emotion=0):
-    fields = {
-        "text": text,
-        "id": str(id),
-        "format": format,
-        "lang": lang,
-        "length": str(length),
-        "noise": str(noise),
-        "noisew": str(noisew),
-        "max": str(max),
-        "emotion": str(emotion)
-    }
-    boundary = '----VoiceConversionFormBoundary' + ''.join(random.sample(string.ascii_letters + string.digits, 16))
-
-    m = MultipartEncoder(fields=fields, boundary=boundary)
-    headers = {"Content-Type": m.content_type}
-    url = f"{base}/voice/w2v2-vits"
-
-    res = requests.post(url=url, data=m, headers=headers)
-    fname = re.findall("filename=(.+)", res.headers["Content-Disposition"])[0]
-    path = f"{abs_path}/{fname}"
-
-    with open(path, "wb") as f:
-        f.write(res.content)
-    print(path)
-    return path
-
-
-# 语音转换 同VITS模型内角色之间的音色转换
-def voice_conversion(upload_path, original_id, target_id):
-    upload_name = os.path.basename(upload_path)
-    upload_type = f'audio/{upload_name.split(".")[1]}'  # wav,ogg
-
-    with open(upload_path, 'rb') as upload_file:
-        fields = {
-            "upload": (upload_name, upload_file, upload_type),
-            "original_id": str(original_id),
-            "target_id": str(target_id),
-        }
-        boundary = '----VoiceConversionFormBoundary' + ''.join(random.sample(string.ascii_letters + string.digits, 16))
-        m = MultipartEncoder(fields=fields, boundary=boundary)
-
-        headers = {"Content-Type": m.content_type}
-        url = f"{base}/voice/conversion"
-
-        res = requests.post(url=url, data=m, headers=headers)
-
-    fname = re.findall("filename=(.+)", res.headers["Content-Disposition"])[0]
-    path = f"{abs_path}/{fname}"
-
-    with open(path, "wb") as f:
-        f.write(res.content)
-    print(path)
-    return path
-
-
-def voice_ssml(ssml):
-    fields = {
-        "ssml": ssml,
-    }
-    boundary = '----VoiceConversionFormBoundary' + ''.join(random.sample(string.ascii_letters + string.digits, 16))
-
-    m = MultipartEncoder(fields=fields, boundary=boundary)
-    headers = {"Content-Type": m.content_type}
-    url = f"{base}/voice/ssml"
-
-    res = requests.post(url=url, data=m, headers=headers)
-    fname = re.findall("filename=(.+)", res.headers["Content-Disposition"])[0]
-    path = f"{abs_path}/{fname}"
-
-    with open(path, "wb") as f:
-        f.write(res.content)
-    print(path)
-    return path
-
-def voice_dimensional_emotion(upload_path):
-    upload_name = os.path.basename(upload_path)
-    upload_type = f'audio/{upload_name.split(".")[1]}'  # wav,ogg
-
-    with open(upload_path, 'rb') as upload_file:
-        fields = {
-            "upload": (upload_name, upload_file, upload_type),
-        }
-        boundary = '----VoiceConversionFormBoundary' + ''.join(random.sample(string.ascii_letters + string.digits, 16))
-
-        m = MultipartEncoder(fields=fields, boundary=boundary)
-        headers = {"Content-Type": m.content_type}
-        url = f"{base}/voice/dimension-emotion"
-
-        res = requests.post(url=url, data=m, headers=headers)
-    fname = re.findall("filename=(.+)", res.headers["Content-Disposition"])[0]
-    path = f"{abs_path}/{fname}"
-
-    with open(path, "wb") as f:
-        f.write(res.content)
-    print(path)
-    return path
-```
+- See `api_test.py`
 
 ## API KEY
 
@@ -493,17 +285,17 @@ After enabling it, you need to add the `api_key` parameter in GET requests and a
 
 ## VITS
 
-| Name                   | Parameter | Is must | Default | Type  | Instruction                                                  |
-| ---------------------- | --------- | ------- | ------- | ----- | ------------------------------------------------------------ |
-| Synthesized text       | text      | true    |         | str   |                                                              |
-| Role ID                | id        | false   | 0       | int   |                                                              |
-| Audio format           | format    | false   | wav     | str   | Support for wav,ogg,silk,mp3,flac                            |
-| Text language          | lang      | false   | auto    | str   | The language of the text to be synthesized. Available options include auto, zh, ja, and mix. When lang=mix, the text should be wrapped in [ZH] or [JA].The default mode is auto, which automatically detects the language of the text |
-| Audio length           | length    | false   | 1.0     | float | Adjusts the length of the synthesized speech, which is equivalent to adjusting the speed of the speech. The larger the value, the slower the speed. |
-| Noise                  | noise     | false   | 0.667   | float |                                                              |
-| Noise Weight           | noisew    | false   | 0.8     | float |                                                              |
-| Segmentation threshold | max       | false   | 50      | int   | Divide the text into paragraphs based on punctuation marks, and combine them into one paragraph when the length exceeds max. If max<=0, the text will not be divided into paragraphs. |
-| Streaming response     | streaming | false   | false   | bool  | Streamed synthesized speech with faster initial response.    |
+| Name                   | Parameter | Is must | Default          | Type  | Instruction                                                  |
+| ---------------------- | --------- | ------- | ---------------- | ----- | ------------------------------------------------------------ |
+| Synthesized text       | text      | true    |                  | str   | Text needed for voice synthesis.                             |
+| Speaker ID             | id        | false   | From `config.py` | int   | The speaker ID.                                              |
+| Audio format           | format    | false   | From `config.py` | str   | Support for wav,ogg,silk,mp3,flac                            |
+| Text language          | lang      | false   | From `config.py` | str   | The language of the text to be synthesized. Available options include auto, zh, ja, and mix. When lang=mix, the text should be wrapped in [ZH] or [JA].The default mode is auto, which automatically detects the language of the text |
+| Audio length           | length    | false   | From `config.py` | float | Adjusts the length of the synthesized speech, which is equivalent to adjusting the speed of the speech. The larger the value, the slower the speed. |
+| Noise                  | noise     | false   | From `config.py` | float | Sample noise, controlling the randomness of the synthesis.   |
+| SDP noise              | noisew    | false   | From `config.py` | float | Stochastic Duration Predictor noise, controlling the length of phoneme pronunciation. |
+| Segmentation threshold | max       | false   | v                | int   | Divide the text into paragraphs based on punctuation marks, and combine them into one paragraph when the length exceeds max. If max<=0, the text will not be divided into paragraphs. |
+| Streaming response     | streaming | false   | false            | bool  | Streamed synthesized speech with faster initial response.    |
 
 ## VITS voice conversion
 
@@ -515,34 +307,48 @@ After enabling it, you need to add the `api_key` parameter in GET requests and a
 
 ## HuBert-VITS
 
-| Name           | Parameter | Is must | Default | Type  | Instruction                                                  |
-| -------------- | --------- | ------- | ------- | ----- | ------------------------------------------------------------ |
-| Uploaded Audio | upload    | true    |         | file  | he audio file to be uploaded. It should be in wav or ogg format. |
-| Target Role ID | id        | true    |         | int   |                                                              |
-| Audio format   | format    | true    |         | str   | wav,ogg,silk                                                 |
-| Audio length   | length    | true    |         | float | Adjusts the length of the synthesized speech, which is equivalent to adjusting the speed of the speech. The larger the value, the slower the speed. |
-| Noise          | noise     | true    |         | float |                                                              |
-| Noise Weight   | noisew    | true    |         | float |                                                              |
+| Name              | Parameter | Is must | Default | Type  | Instruction                                                  |
+| ----------------- | --------- | ------- | ------- | ----- | ------------------------------------------------------------ |
+| Uploaded Audio    | upload    | true    |         | file  | The audio file to be uploaded. It should be in wav or ogg format. |
+| Target speaker ID | id        | true    |         | int   | The target  speaker ID.                                      |
+| Audio format      | format    | true    |         | str   | wav,ogg,silk                                                 |
+| Audio length      | length    | true    |         | float | Adjusts the length of the synthesized speech, which is equivalent to adjusting the speed of the speech. The larger the value, the slower the speed. |
+| Noise             | noise     | true    |         | float | Sample noise, controlling the randomness of the synthesis.   |
+| sdp noise         | noisew    | true    |         | float | Stochastic Duration Predictor noise, controlling the length of phoneme pronunciation. |
 
 ## W2V2-VITS
 
-| Name                   | Parameter | Is must | Default | Type  | Instruction                                                  |
-| ---------------------- | --------- | ------- | ------- | ----- | ------------------------------------------------------------ |
-| Synthesized text       | text      | true    |         | str   |                                                              |
-| Role ID                | id        | false   | 0       | int   |                                                              |
-| Audio format           | format    | false   | wav     | str   | Support for wav,ogg,silk,mp3,flac                            |
-| Text language          | lang      | false   | auto    | str   | The language of the text to be synthesized. Available options include auto, zh, ja, and mix. When lang=mix, the text should be wrapped in [ZH] or [JA].The default mode is auto, which automatically detects the language of the text |
-| Audio length           | length    | false   | 1.0     | float | Adjusts the length of the synthesized speech, which is equivalent to adjusting the speed of the speech. The larger the value, the slower the speed. |
-| Noise                  | noise     | false   | 0.667   | float |                                                              |
-| Noise Weight           | noisew    | false   | 0.8     | float |                                                              |
-| Segmentation threshold | max       | false   | 50      | int   | Divide the text into paragraphs based on punctuation marks, and combine them into one paragraph when the length exceeds max. If max<=0, the text will not be divided into paragraphs. |
-| Dimensional emotion    | emotion   | false   | 0       | int   | The range depends on the emotion reference file in npy format, such as the  range of the [innnky](https://huggingface.co/spaces/innnky/nene-emotion/tree/main)'s model all_emotions.npy, which is 0-5457. |
+| Name                   | Parameter | Is must | Default          | Type  | Instruction                                                  |
+| ---------------------- | --------- | ------- | ---------------- | ----- | ------------------------------------------------------------ |
+| Synthesized text       | text      | true    |                  | str   | Text needed for voice synthesis.                             |
+| Speaker ID             | id        | false   | From `config.py` | int   | The speaker ID.                                              |
+| Audio format           | format    | false   | From `config.py` | str   | Support for wav,ogg,silk,mp3,flac                            |
+| Text language          | lang      | false   | From `config.py` | str   | The language of the text to be synthesized. Available options include auto, zh, ja, and mix. When lang=mix, the text should be wrapped in [ZH] or [JA].The default mode is auto, which automatically detects the language of the text |
+| Audio length           | length    | false   | From `config.py` | float | Adjusts the length of the synthesized speech, which is equivalent to adjusting the speed of the speech. The larger the value, the slower the speed. |
+| Noise                  | noise     | false   | From `config.py` | float | Sample noise, controlling the randomness of the synthesis.   |
+| SDP noise              | noisew    | false   | From `config.py` | float | Stochastic Duration Predictor noise, controlling the length of phoneme pronunciation. |
+| Segmentation threshold | max       | false   | From `config.py` | int   | Divide the text into paragraphs based on punctuation marks, and combine them into one paragraph when the length exceeds max. If max<=0, the text will not be divided into paragraphs. |
+| Dimensional emotion    | emotion   | false   | 0                | int   | The range depends on the emotion reference file in npy format, such as the  range of the [innnky](https://huggingface.co/spaces/innnky/nene-emotion/tree/main)'s model all_emotions.npy, which is 0-5457. |
 
 ## Dimensional emotion
 
 | Name           | Parameter | Is must | Default | Type | Instruction                                                  |
 | -------------- | --------- | ------- | ------- | ---- | ------------------------------------------------------------ |
 | Uploaded Audio | upload    | true    |         | file | Return the npy file that stores the dimensional emotion vectors. |
+
+## Bert-VITS2
+
+| Name                   | Parameter | Is must | Default          | Type  | Instruction                                                  |
+| ---------------------- | --------- | ------- | ---------------- | ----- | ------------------------------------------------------------ |
+| Synthesized text       | text      | true    |                  | str   | Text needed for voice synthesis.                             |
+| Speaker ID             | id        | false   | From `config.py` | int   | The speaker ID.                                              |
+| Audio format           | format    | false   | From `config.py` | str   | Support for wav,ogg,silk,mp3,flac                            |
+| Text language          | lang      | false   | From `config.py` | str   | "Auto" is a mode for automatic language detection and is also the default mode. However, it currently only supports detecting the language of an entire text passage and cannot distinguish languages on a per-sentence basis. The other available language options are "zh" and "ja". |
+| Audio length           | length    | false   | From `config.py` | float | Adjusts the length of the synthesized speech, which is equivalent to adjusting the speed of the speech. The larger the value, the slower the speed. |
+| Noise                  | noise     | false   | From `config.py` | float | Sample noise, controlling the randomness of the synthesis.   |
+| SDP noise              | noisew    | false   | From `config.py` | float | Stochastic Duration Predictor noise, controlling the length of phoneme pronunciation. |
+| Segmentation threshold | max       | false   | From `config.py` | int   | Divide the text into paragraphs based on punctuation marks, and combine them into one paragraph when the length exceeds max. If max<=0, the text will not be divided into paragraphs. |
+| SDP/DP mix ratio       | sdp_ratio | false   | From `config.py` | int   | The theoretical proportion of SDP during synthesis, the higher the ratio, the larger the variance in synthesized voice tone. |
 
 ## SSML (Speech Synthesis Markup Language)
 
@@ -626,4 +432,5 @@ Learning and communication,now there is only Chinese [QQ group](https://qm.qq.co
 - emotional-vits:https://github.com/innnky/emotional-vits
 - vits-uma-genshin-honkai:https://huggingface.co/spaces/zomehwh/vits-uma-genshin-honkai
 - vits_chinese:https://github.com/PlayVoice/vits_chinese
+- Bert_VITS2:https://github.com/fishaudio/Bert-VITS2
 

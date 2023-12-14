@@ -4,118 +4,321 @@
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>vits-simple-api</title>
-
+    <link rel="stylesheet" href="/static/css/style.css">
     <link rel="stylesheet" href="/static/css/bootstrap.min.css"/>
 </head>
 <body>
-<main style="margin: 0 auto; width: 1024px">
-    <h1>
-        <a href="https://github.com/Artrajz/vits-simple-api" target="_blank"
-           style="text-decoration: none; color: black"> vits-simple-api </a>
-    </h1>
+<main class="main-container">
+    <div class="container flex flex-wrap mx-auto">
+        <div class="text-center d-flex align-items-center w-100" style="height: 100px;" id="component-1">
+            <h1 class="w-100">
+                <a href="https://github.com/Artrajz/vits-simple-api" target="_blank"
+                   style="text-decoration: none; color: black"> vits-simple-api </a>
+            </h1>
+        </div>
 
-    <div>
-        <label>文档：</label>
-        <a href="https://github.com/Artrajz/vits-simple-api" target="_blank"
-           style="text-decoration: none; color: black"> https://github.com/Artrajz/vits-simple-api </a>
-    </div>
-    <div>
-        <label>返回speakers(json)：</label>
-        <a id="speakersLink" href="https://artrajz-vits-simple-api.hf.space/voice/speakers" target="_blank"
-           style="text-decoration: none; color: black">
-            https://artrajz-vits-simple-api.hf.space/voice/speakers
-        </a>
-    </div>
-    <div>
-        <label>简单调用api：</label>
-        <a id="vitsLink" href="https://artrajz-vits-simple-api.hf.space/voice/vits?text=你好,こんにちは&id=164"
-           style="text-decoration: none; color: black">
-            https://artrajz-vits-simple-api.hf.space/voice/vits?text=你好,こんにちは&id=164
-        </a>
-    </div>
 
-    <!-- <div style="display: flex; justify-content: center; align-items: center"> -->
-    <div>
-        <form>
-            <div class="form-group">
-                <label>text</label>
-                <textarea class="form-control" id="inputText" rows="3" oninput="updateLink()">你好,こんにちは</textarea>
+        <div class="tabs w-100 border-b-2" id="component-2">
+            <button class="tab-button px-4 pb-2 pt-2 active " onclick="showContent(0)">VITS</button>
+            <button class="tab-button px-4 pb-2 pt-2" onclick="showContent(1)">W2V2-VITS</button>
+            <button class="tab-button px-4 pb-2 pt-2" onclick="showContent(2)">Bert-VITS2</button>
+        </div>
+
+        <div class="content w-100 border-lr-2 border-b-2" id="component-3">
+            <div class="content-pane active w-100 flex-wrap">
+                <form class="w-100">
+                    <div class="form-group">
+                        <label>text</label>
+                        <textarea class="form-control" id="input_text1" rows="3"
+                                  oninput="updateLink()">你好,こんにちは</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>id</label>
+                        <select class="form-control" id="input_id1" oninput="updateLink()">
+                            {% for speaker in speakers["VITS"] %}
+                                <option value="{{ speaker["id"] }}">{{ speaker["id"] }} | {{ speaker["name"] }}
+                                    | {{ speaker["lang"] }}</option>
+                            {% endfor %}
+                            {% if vits_speakers_count <=0 %}
+                                <option value="" disabled selected hidden>未加载模型</option>
+                            {% endif %}
+                        </select>
+                    </div>
+                </form>
+                <form class="w-100">
+                    <div class="row">
+                        <div class="col-md-4 form-group">
+                            <label data-toggle="tooltip" data-placement="top"
+                                   title="默认为wav">format</label>
+                            <select class="form-control" id="input_format1" oninput="updateLink()">
+                                <option></option>
+                                <option>wav</option>
+                                <option>mp3</option>
+                                <option>ogg</option>
+                                <option>silk</option>
+                                <option>flac</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 form-group">
+                            <label data-toggle="tooltip" data-placement="top"
+                                   title="自动识别语言auto：可识别的语言根据不同speaker而不同，方言无法自动识别。方言模型需要手动指定语言，比如粤语Cantonese要指定参数lang=gd">lang</label>
+                            <input type="text" class="form-control" id="input_lang1" oninput="updateLink()" value=""
+                                   placeholder="auto"/>
+                        </div>
+                        <div class="col-md-4 form-group">
+                            <label data-toggle="tooltip" data-placement="top"
+                                   title="调节语音长度，相当于调节语速，该数值越大语速越慢。">length</label>
+                            <input type="number" class="form-control" id="input_length1" oninput="updateLink()" value=""
+                                   placeholder="1" min="0" step="0.001"/>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4 form-group">
+                            <label data-toggle="tooltip" data-placement="top"
+                                   title="样本噪声，控制合成的随机性。">noise</label>
+                            <input type="number" class="form-control" id="input_noise1" oninput="updateLink()" value=""
+                                   placeholder="0.33" min="0" step="0.001"/>
+                        </div>
+                        <div class="col-md-4 form-group">
+                            <label data-toggle="tooltip" data-placement="top"
+                                   title="随机时长预测器噪声，控制音素发音长度。">noisew</label>
+                            <input type="number" class="form-control" id="input_noisew1" oninput="updateLink()" value=""
+                                   placeholder="0.4" min="0" step="0.001"/>
+                        </div>
+                        <div class="col-md-4 form-group">
+                            <label data-toggle="tooltip" data-placement="top"
+                                   title="按标点符号分段，加起来大于max时为一段文本。max<=0表示不分段。">max</label>
+                            <input type="number" class="form-control" id="input_max1" oninput="updateLink()" value=""
+                                   placeholder="50" step="1"/>
+                        </div>
+                    </div>
+                </form>
+
+
+                <div class="flex flex-wrap  w-100"
+                     style="justify-content: center; align-items: center; height: 80px; margin-top: 20px; margin-bottom: 20px; border: 1px solid rgba(0,0,0,.125); border-radius: 0.25rem;">
+                    <button type="button" class="btn btn-outline-secondary" onclick="setAudioSource()"
+                            style="margin-right: 10px">
+                        播放器生成
+                    </button>
+                    <audio id="audioPlayer1" controls>
+                        <source src="" type="audio/mp3"/>
+                        Your browser does not support the audio element.
+                    </audio>
+                    <div class="form-group form-check">
+                        <input type="checkbox" id="streaming1" onchange="updateLink()">
+                        <label class="form-check-label" data-toggle="tooltip" data-placement="top"
+                               title="按照max分段推理文本，推理好一段即输出，无需等待所有文本都推理完毕">流式响应</label>
+                    </div>
+                </div>
             </div>
-            <div class="form-group">
-                <label>id</label>
-                <select class="form-control" id="inputId" oninput="updateLink()">
-                    {% for speaker in speakers["VITS"] %}
-                        <option value="{{ speaker["id"] }}">{{ speaker["id"] }} | {{ speaker["name"] }}
-                            | {{ speaker["lang"] }}</option>
-                    {% endfor %}
-                </select>
+            <div class="content-pane w-100 flex-wrap">
+                <form class="w-100">
+                    <div class="form-group">
+                        <label>text</label>
+                        <textarea class="form-control" id="input_text2" rows="3"
+                                  oninput="updateLink()">你好,こんにちは</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>id</label>
+                        <select class="form-control" id="input_id2" oninput="updateLink()">
+                            {% for speaker in speakers["W2V2-VITS"] %}
+                                <option value="{{ speaker["id"] }}">{{ speaker["id"] }} | {{ speaker["name"] }}
+                                    | {{ speaker["lang"] }}</option>
+                            {% endfor %}
+                            {% if w2v2_speakers_count <=0 %}
+                                <option value="" disabled selected hidden>未加载模型</option>
+                            {% endif %}
+                        </select>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label data-toggle="tooltip" data-placement="top"
+                               title="情感嵌入，{% if w2v2_emotion_count > 0 %}
+                                    可输入范围是0-{{ w2v2_emotion_count-1 }}
+                                {% else %}
+                                    未加载emotion
+                                {% endif %}">emotion</label>
+                        <input type="number" class="form-control" min="0" max="{{ w2v2_emotion_count-1 }}" step="1"
+                               id="emotion" value="0" oninput="updateLink()">
+                    </div>
+                </form>
+
+
+                <form class="w-100">
+                    <div class="row">
+                        <div class="col-md-4 form-group">
+                            <label data-toggle="tooltip" data-placement="top"
+                                   title="默认为wav">format</label>
+                            <select class="form-control" id="input_format2" oninput="updateLink()">
+                                <option></option>
+                                <option>wav</option>
+                                <option>mp3</option>
+                                <option>ogg</option>
+                                <option>silk</option>
+                                <option>flac</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 form-group">
+                            <label data-toggle="tooltip" data-placement="top"
+                                   title="自动识别语言auto：可识别的语言根据不同speaker而不同，方言无法自动识别。方言模型需要手动指定语言，比如粤语Cantonese要指定参数lang=gd">lang</label>
+                            <input type="text" class="form-control" id="input_lang2" oninput="updateLink()" value=""
+                                   placeholder="auto"/>
+                        </div>
+                        <div class="col-md-4 form-group">
+                            <label data-toggle="tooltip" data-placement="top"
+                                   title="调节语音长度，相当于调节语速，该数值越大语速越慢。">length</label>
+                            <input type="number" class="form-control" id="input_length2" oninput="updateLink()" value=""
+                                   placeholder="1" min="0" step="0.001"/>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4 form-group">
+                            <label data-toggle="tooltip" data-placement="top"
+                                   title="样本噪声，控制合成的随机性。">noise</label>
+                            <input type="number" class="form-control" id="input_noise2" oninput="updateLink()" value=""
+                                   placeholder="0.33" min="0" step="0.001"/>
+                        </div>
+                        <div class="col-md-4 form-group">
+                            <label data-toggle="tooltip" data-placement="top"
+                                   title="随机时长预测器噪声，控制音素发音长度。">noisew</label>
+                            <input type="number" class="form-control" id="input_noisew2" oninput="updateLink()" value=""
+                                   placeholder="0.4" min="0" step="0.001"/>
+                        </div>
+                        <div class="col-md-4 form-group">
+                            <label data-toggle="tooltip" data-placement="top"
+                                   title="按标点符号分段，加起来大于max时为一段文本。max<=0表示不分段。">max</label>
+                            <input type="number" class="form-control" id="input_max2" oninput="updateLink()" value=""
+                                   placeholder="50" step="1"/>
+                        </div>
+                    </div>
+                </form>
+
+                <div class="flex flex-wrap  w-100"
+                     style="justify-content: center; align-items: center; height: 80px; margin-top: 20px; margin-bottom: 20px; border: 1px solid rgba(0,0,0,.125); border-radius: 0.25rem;">
+                    <button type="button" class="btn btn-outline-secondary" onclick="setAudioSource()"
+                            style="margin-right: 10px">
+                        播放器生成
+                    </button>
+                    <audio id="audioPlayer2" controls>
+                        <source src="" type="audio/mp3"/>
+                        Your browser does not support the audio element.
+                    </audio>
+                </div>
             </div>
-        </form>
-    </div>
-    <p>
-        <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#collapseExample"
-                aria-expanded="false" aria-controls="collapseExample">
-            Advanced
-        </button>
-        {% if speakers_count == 0 %}
-            <div style="color: red;">未加载任何模型</div>
-        {% endif %}
-    </p>
-    <div class="collapse" id="collapseExample">
-        <div class="card card-body">
-            <form>
-                <div class="form-group">
-                    <label>format</label>
-                    <select class="form-control" id="inputFormat" oninput="updateLink()">
-                        <option></option>
-                        <option>wav</option>
-                        <option>mp3</option>
-                        <option>ogg</option>
-                        <option>silk</option>
-                    </select>
+            <div class="content-pane w-100 flex-wrap">
+                <form class="w-100">
+                    <div class="form-group">
+                        <label>text</label>
+                        <textarea class="form-control" id="input_text3" rows="3"
+                                  oninput="updateLink()">你好</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>id</label>
+                        <select class="form-control" id="input_id3" oninput="updateLink()">
+                            {% for speaker in speakers["BERT-VITS2"] %}
+                                <option value="{{ speaker["id"] }}">{{ speaker["id"] }} | {{ speaker["name"] }}
+                                    | {{ speaker["lang"] }}</option>
+                            {% endfor %}
+                            {% if bert_vits2_speakers_count <=0 %}
+                                <option value="" disabled selected hidden>未加载模型</option>
+                            {% endif %}
+                        </select>
+                    </div>
+                </form>
+                <form class="w-100">
+                    <div class="row">
+                        <div class="col-md-4 form-group">
+                            <label data-toggle="tooltip" data-placement="top"
+                                   title="默认为wav">format</label>
+                            <select class="form-control" id="input_format3" oninput="updateLink()">
+                                <option></option>
+                                <option>wav</option>
+                                <option>mp3</option>
+                                <option>ogg</option>
+                                <option>silk</option>
+                                <option>flac</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 form-group">
+                            <label data-toggle="tooltip" data-placement="top"
+                                   title="自动识别语言auto：可识别的语言根据不同speaker而不同，方言无法自动识别。方言模型需要手动指定语言，比如粤语Cantonese要指定参数lang=gd">lang</label>
+                            <input type="text" class="form-control" id="input_lang3" oninput="updateLink()" value=""
+                                   placeholder="auto"/>
+                        </div>
+                        <div class="col-md-4 form-group">
+                            <label data-toggle="tooltip" data-placement="top"
+                                   title="调节语音长度，相当于调节语速，该数值越大语速越慢。">length</label>
+                            <input type="number" class="form-control" id="input_length3" oninput="updateLink()" value=""
+                                   placeholder="1" min="0" step="0.001"/>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4 form-group">
+                            <label data-toggle="tooltip" data-placement="top"
+                                   title="样本噪声，控制合成的随机性。">noise</label>
+                            <input type="number" class="form-control" id="input_noise3" oninput="updateLink()" value=""
+                                   placeholder="0.5" min="0" step="0.001"/>
+                        </div>
+                        <div class="col-md-4 form-group">
+                            <label data-toggle="tooltip" data-placement="top"
+                                   title="随机时长预测器噪声，控制音素发音长度。">noisew</label>
+                            <input type="number" class="form-control" id="input_noisew3" oninput="updateLink()" value=""
+                                   placeholder="0.6" min="0" step="0.001"/>
+                        </div>
+                        <div class="col-md-4 form-group">
+                            <label data-toggle="tooltip" data-placement="top"
+                                   title="按标点符号分段，加起来大于max时为一段文本。max<=0表示不分段。">max</label>
+                            <input type="number" class="form-control" id="input_max3" oninput="updateLink()" value=""
+                                   placeholder="50" step="1"/>
+                        </div>
+
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4 form-group">
+                            <label data-toggle="tooltip" data-placement="top"
+                                   title="SDP/DP混合比：SDP在合成时的占比，理论上此比率越高，合成的语音语调方差越大。">sdp_radio</label>
+                            <input type="number" class="form-control" id="input_sdp_ratio" oninput="updateLink()"
+                                   value=""
+                                   placeholder="0.2" step="0.01" min="0" max="1"/>
+                        </div>
+                    </div>
+                </form>
+
+
+                <div class="flex flex-wrap  w-100"
+                     style="justify-content: center; align-items: center; height: 80px; margin-top: 20px; margin-bottom: 20px; border: 1px solid rgba(0,0,0,.125); border-radius: 0.25rem;">
+                    <button type="button" class="btn btn-outline-secondary" onclick="setAudioSource()"
+                            style="margin-right: 10px">
+                        播放器生成
+                    </button>
+                    <audio id="audioPlayer3" controls>
+                        <source src="" type="audio/mp3"/>
+                        Your browser does not support the audio element.
+                    </audio>
                 </div>
-                <div class="form-group">
-                    <label>lang</label>
-                    <input type="text" class="form-control" id="inputLang" oninput="updateLink()" value=""
-                           placeholder="auto"/>
-                </div>
-                <div class="form-group">
-                    <label>length</label>
-                    <input type="text" class="form-control" id="inputLength" oninput="updateLink()" value=""
-                           placeholder="1"/>
-                </div>
-                <div class="form-group">
-                    <label>noise</label>
-                    <input type="text" class="form-control" id="inputNoise" oninput="updateLink()" value=""
-                           placeholder="0.33"/>
-                </div>
-                <div class="form-group">
-                    <label>noisew</label>
-                    <input type="text" class="form-control" id="inputNoisew" oninput="updateLink()" value=""
-                           placeholder="0.4"/>
-                </div>
-                <div class="form-group">
-                    <label>max</label>
-                    <input type="text" class="form-control" id="inputMax" oninput="updateLink()" value=""
-                           placeholder="50"/>
-                </div>
-            </form>
+            </div>
+        </div>
+
+        <div class="mt-2">
+            {% if speakers_count == 0 %}
+                <div style="color: red;">未加载任何模型</div>
+            {% endif %}
+            <div>
+                <label>返回speakers(json)：</label>
+                <a id="speakers_link" href="https://artrajz-vits-simple-api.hf.space/voice/speakers" target="_blank"
+                   style="text-decoration: none; color: black">
+                    https://artrajz-vits-simple-api.hf.space/voice/speakers
+                </a>
+            </div>
+            <div>
+                <label>API调用：</label>
+                <a id="vits_link" href="https://artrajz-vits-simple-api.hf.space/voice/vits?text=你好,こんにちは&id=164"
+                   style="text-decoration: none; color: black">
+                    https://artrajz-vits-simple-api.hf.space/voice/vits?text=你好,こんにちは&id=164
+                </a>
+            </div>
         </div>
     </div>
-
-    <div style="display: flex; justify-content: center; align-items: center; height: 80px; margin-top: 20px; margin-bottom: 20px; border: 1px solid rgba(0,0,0,.125); border-radius: 0.25rem;">
-        <button type="button" class="btn btn-outline-secondary" id="getAudio" style="margin-right: 10px">播放器生成</button>
-        <audio id="audioPlayer" controls>
-            <source src="" type="audio/mp3"/>
-            Your browser does not support the audio element.
-        </audio>
-        <div class="form-group form-check">
-            <input type="checkbox" id="streaming" onchange="updateLink()">
-            <label class="form-check-label">流式响应</label>
-        </div>
-    </div>
-    <div>自动识别语言：可识别的语言根据不同speaker而不同，方言无法自动识别</div>
-    <div>方言模型需要手动指定语言，比如粤语Cantonese要指定参数lang=gd</div>
     <br/>
 
 </main>
@@ -124,6 +327,10 @@
 <script src="/static/js/bootstrap.bundle.min.js"></script>
 
 <script>
+    $(function () {
+        $('[data-toggle="tooltip"]').tooltip()
+    })
+
     function getProtocol() {
         return 'https:' == location.protocol ? "https://" : "http://";
     }
@@ -134,38 +341,59 @@
     }
 
     var baseUrl = getProtocol() + getUrl();
+    var model_type = 1;
+    var vits_status = false;
+    var w2v2_status = false;
+    var bert_vits2_status = false;
+    {% if vits_speakers_count > 0 %}
+        vits_status = true;
+    {% endif %}
+    {% if w2v2_speakers_count > 0 %}
+        w2v2_status = true;
+    {% endif %}
+    {% if bert_vits2_speakers_count > 0 %}
+        bert_vits2_status = true;
+    {% endif %}
 
     setBaseUrl();
 
     function setBaseUrl() {
-        var text = document.getElementById("inputText").value;
-        var id = document.getElementById("inputId").value;
+        var text = document.getElementById("input_text" + model_type).value;
+        var id = document.getElementById("input_id" + model_type).value;
 
-        var vitsLink = document.getElementById("vitsLink");
-        var speakersLink = document.getElementById("speakersLink");
+        var vits_link = document.getElementById("vits_link");
+        var speakers_link = document.getElementById("speakers_link");
 
-        var vitsUrl = baseUrl + "/voice/vits?text=" + text + "&id=" + id;
-        var speakersUrl = baseUrl + "/voice/speakers";
+        var vits_url = baseUrl + "/voice/vits?text=" + text + "&id=" + id;
+        var speakers_url = baseUrl + "/voice/speakers";
 
-        vitsLink.href = vitsUrl;
-        vitsLink.textContent = vitsUrl;
+        vits_link.href = vits_url;
+        vits_link.textContent = vits_url;
 
-        speakersLink.href = speakersUrl;
-        speakersLink.textContent = speakersUrl;
+        speakers_link.href = speakers_url;
+        speakers_link.textContent = speakers_url;
     }
 
     function getLink() {
-        var text = document.getElementById("inputText").value;
-        var id = document.getElementById("inputId").value;
-        var format = document.getElementById("inputFormat").value;
-        var lang = document.getElementById("inputLang").value;
-        var length = document.getElementById("inputLength").value;
-        var noise = document.getElementById("inputNoise").value;
-        var noisew = document.getElementById("inputNoisew").value;
-        var max = document.getElementById("inputMax").value;
-        var streaming = document.getElementById('streaming');
+        var text = document.getElementById("input_text" + model_type).value;
+        var id = document.getElementById("input_id" + model_type).value;
+        var format = document.getElementById("input_format" + model_type).value;
+        var lang = document.getElementById("input_lang" + model_type).value;
+        var length = document.getElementById("input_length" + model_type).value;
+        var noise = document.getElementById("input_noise" + model_type).value;
+        var noisew = document.getElementById("input_noisew" + model_type).value;
+        var max = document.getElementById("input_max" + model_type).value;
 
-        var url = baseUrl + "/voice/vits?text=" + text + "&id=" + id;
+        if (model_type == 1) {
+            var url = baseUrl + "/voice/vits?text=" + text + "&id=" + id;
+            var streaming = document.getElementById('streaming' + model_type);
+        } else if (model_type == 2) {
+            var emotion = document.getElementById('emotion').value;
+            var url = baseUrl + "/voice/w2v2-vits?text=" + text + "&id=" + id + "&emotion=" + emotion;
+        } else if (model_type == 3) {
+            var sdp_ratio = document.getElementById("input_sdp_ratio").value;
+            var url = baseUrl + "/voice/bert-vits2?text=" + text + "&id=" + id;
+        }
         if (format != "") {
             url += "&format=" + format;
         }
@@ -184,29 +412,77 @@
         if (max != "") {
             url += "&max=" + max;
         }
-        if (streaming.checked) {
+        if (model_type == 1 && streaming.checked) {
             url += '&streaming=true';
         }
+        if (model_type == 3 && sdp_ratio != "") {
+            url += "&sdp_ratio=" + sdp_ratio;
+        }
+
         return url;
     }
 
     function updateLink() {
         var url = getLink();
-        var link = document.getElementById("vitsLink");
+        var link = document.getElementById("vits_link");
         link.href = url;
         link.textContent = url;
     }
 
     function setAudioSource() {
+        if (model_type == 1 && !vits_status) {
+            alert("未加载VITS模型");
+            return;
+        }
+        if (model_type == 2 && !w2v2_status) {
+            alert("未加载W2V2-VITS模型");
+            return;
+        }
+        if (model_type == 3 && !bert_vits2_status) {
+            alert("未加载Bert-VITS2模型");
+            return;
+        }
         var url = getLink();
-        var audioPlayer = document.getElementById("audioPlayer");
+
+        // Add a timestamp parameter to prevent browser caching
+        var timestamp = new Date().getTime();
+        url += '&t=' + timestamp;
+
+        var audioPlayer = document.getElementById("audioPlayer" + model_type);
         audioPlayer.src = url;
         audioPlayer.play();
     }
 
-    var button = document.getElementById("getAudio");
-    button.addEventListener("click", function () {
-        setAudioSource();
+    function showContent(index) {
+        const panes = document.querySelectorAll(".content-pane");
+        const buttons = document.querySelectorAll(".tab-button");
+        model_type = index + 1;
+
+        for (let i = 0; i < panes.length; i++) {
+            if (i === index) {
+                panes[i].classList.add("active");
+                buttons[i].classList.add("active");
+
+            } else {
+                panes[i].classList.remove("active");
+                buttons[i].classList.remove("active");
+            }
+        }
+        updateLink();
+    }
+
+    document.querySelectorAll('.slider-group').forEach(function (group) {
+        group.addEventListener("input", function (event) {
+            if (event.target.matches('.slider')) {
+                let value = event.target.value;
+                group.querySelector('.slider-input').value = value;
+                group.querySelector('.slider-value').textContent = value;
+            } else if (event.target.matches('.slider-input')) {
+                let value = event.target.value;
+                group.querySelector('.slider').value = value;
+                group.querySelector('.slider-value').textContent = value;
+            }
+        });
     });
 </script>
 </body>
