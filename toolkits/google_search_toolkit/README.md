@@ -1,37 +1,42 @@
 
-<h1><p align='center' >获取动漫更新信息工具</p></h1>
+<h1><p align='center' >谷歌搜索工具</p></h1>
 
 
 
 #  工具介绍
 ***
-   抓取 https://yuc.wiki/ 网站上的动漫更新信息，来获取今日的动漫更新列表
+   使用谷歌来进行搜索
 
 
 
 * ### 工具配置
 ***
-   无
+1.KEY 从 谷歌云 API 控制台 来的，需要有外币卡先注册谷歌云账号。但似乎付费的话就不用这个 KEY 了，仅用 CX 即可，这个待查。
+2.CX 从 谷歌可编程搜索 中来
+3.一天只有 100 次的免费搜索限额，只能查询前 100 条。如需增加则 5 刀 1000 次，但一天上限 10000。 次，对于我来说已经足够用了
+
+4.具体获取教程请参考 https://www.jianshu.com/p/be6a2783758f
+
   
 
 # 工具调用规范
 ***
    ```
    #配套函数调用说明
-   function_anime_schedule_scraper  = {
+   function_google_search  = {
            "type": "function",
            "function": {
-                       "name": "anime_schedule_scraper",
-                       "description": "获取当前季度的当天的动漫更新信息",
+                       "name": "google_search",
+                       "description": "输入关键字、短语或问题等，谷歌将根据这些关键词提供相关的搜索结果",
                        "parameters": {
                            "type": "object",
                            "properties": {
-                               "switch": {
+                               "search_words": {
                                    "type": "string",
-                                   "description": "调用该功能，则输入on",
+                                   "description": "需要搜索的关键字、短语或问题等",
                                }
                            },
-                           "required": ["switch"]
+                           "required": ["search_words"]
                        },
                    }
    }
