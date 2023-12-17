@@ -48,6 +48,11 @@
  * **`谷歌搜索`**:需要配置谷歌key以及CX码 [配置说明](https://github.com/NEKOparapa/MeidoAGI/blob/main/toolkits/google_search_toolkit/README.md)
  * **`启动原神`**:配置原神客户端的文件路径[配置说明](https://github.com/NEKOparapa/MeidoAGI/blob/main/toolkits/launch_genshin_tookit/README.md)
 
+
+#  一些说明
+***
+ * 项目仍为demo，会存在许多bug
+
 # 项目运行🕹️ 
 ***
 * ### 女仆启动！
