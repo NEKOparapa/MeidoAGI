@@ -21,7 +21,7 @@
 # 工具调用规范
 ***
    ```
-   #配套函数调用说明
+   #配套工具调用说明
    function_google_search  = {
            "type": "function",
            "function": {
@@ -36,6 +36,45 @@
                                }
                            },
                            "required": ["search_words"]
+                       },
+                   }
+   }
+   ```
+
+
+<h1><p align='center' >直接打开网站工具</p></h1>
+
+
+
+#  工具介绍
+***
+   使用默认浏览器直接打开指定的网站
+
+
+
+* ### 工具配置
+***
+无
+
+
+# 工具调用规范
+***
+   ```
+   #配套工具调用说明
+   function_open_website  = {
+           "type": "function",
+           "function": {
+                       "name": "open_website",
+                       "description": "输入网站，将自动调用系统默认浏览器打开该网站",
+                       "parameters": {
+                           "type": "object",
+                           "properties": {
+                               "website_url": {
+                                   "type": "string",
+                                   "description": "网站",
+                               }
+                           },
+                           "required": ["website_url"]
                        },
                    }
    }
