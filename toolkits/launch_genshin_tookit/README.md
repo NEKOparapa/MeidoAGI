@@ -1,39 +1,39 @@
 
-<h1><p align='center' >获取动漫更新信息工具</p></h1>
+<h1><p align='center' >启动原神客户端工具</p></h1>
 
 
 
 #  工具介绍
 ***
-   抓取 https://yuc.wiki/ 网站上的动漫更新信息，来获取今日的动漫更新列表
+   启动原神.exe
 
 
 
 * ### 工具配置
 ***
-   无
+   配置文件路径，如D:\Software\Genshin Impact\launcher.exe
   
 
 # 工具调用规范
 ***
    ```
    #配套函数调用说明
-   function_anime_schedule_scraper  = {
+   function_launch_genshin_impact  = {
            "type": "function",
            "function": {
-                       "name": "anime_schedule_scraper",
-                       "description": "获取当前季度的当天的动漫更新信息",
+                       "name": "launch_genshin_impact",
+                       "description": "启动运行原神游戏客户端",
                        "parameters": {
                            "type": "object",
                            "properties": {
                                "switch": {
                                    "type": "string",
-                                   "description": "调用该功能，则输入on",
-                               }
+                                   "description": "输入on，则立即启动原神游戏客户端",
+                               },
                            },
                            "required": ["switch"]
                        },
-                   }
+                       }
    }
    ```
 
