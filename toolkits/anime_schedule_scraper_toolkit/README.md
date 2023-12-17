@@ -1,10 +1,9 @@
 
-<h1><p align='center' >MeidoAGI</p></h1>
-
-<p align='center' >一款可灵活拓展功能，可自定义语音和界面模型的桌宠AI代理</p>
+<h1><p align='center' >谷歌搜索工具</p></h1>
 
 
-#  环境支持🏕️
+
+#  工具功能🏕️
 ***
    
  * **`魔法工具`**:我们**强烈建议**您选择优质稳定的代理工具,不然api接口会频繁报错无法连接,显示错误代码443或者一直没有回复
@@ -12,7 +11,7 @@
  * **`Node.js环境`**:[下载地址](https://nodejs.org/zh-cn) 下载安装左边的稳定版即可
  * **`Chat-GPT账号`**:建议您新建一个API_Key,并且最好在使用期间不要和其他程序一起使用,不然容易达到请求次数限制
 
-# 首次使用📝
+# 工具配置📝
 ***
 * ### 下载python依赖
    在根目录下打开CMD窗口，并输入下面安装全部依赖库命令:
@@ -42,33 +41,12 @@
 * ### 工具配置
    在根目录下打开data/Extended_Configuration文件夹:
    。。。。。。。。
-
-# 项目运行🕹️ 
-***
-* ### 女仆启动！
-   打开系统代理，并在根目录下依次打开`启动语音模块`，`启动交互界面`，`启动MeidoAGI`
-
   
 
-# 工具编写规范🧰 
+# 工具调用规范🧰 
 ***
-* ### 第一步：编写完整的可调用Python函数和函数调用说明！
-   在编写过程中如果函数名如果是 `def example_functions() ` ,则对应的函数调用说明字典名字则应该是`funtion_` + `example_functions`,最终是`funtion_example_functions`.
-   下面是一个工具脚本完整编写示例
+
    ```
-   import json
-   
-   
-   #获取给定位置的当前天气--------------------------------------------
-   def get_current_weather(location, unit):
-       """Get the current weather in a given location"""
-       weather_info = {
-           "location": location,
-           "temperature": "31",
-           "unit": unit,
-           "forecast": "晴天",
-       }
-       return json.dumps(weather_info)
    
    #对应的函数调用说明，包括函数名字，描述，参数，参数类型，参数范围，参数描述，必需给出的参数
    function_get_current_weather = {
@@ -89,11 +67,5 @@
                                },
                    }
    ```
-* ### 第二步：放置脚本文件
-   在根目录的toolkits文件夹中，创建专属文件夹，并放进脚本。还希望同时放入一份README.md，用来简单说明一下脚本的功能，如果有配置文件，则写明一下配置的教程。
 
-
-
-* ### 放置相关配置文件（可选）
-   如果你的项目需要用户自行配置类似平台key，账号许可等内容，请把配置文件放在data文件夹里的Extended_Configuration文件夹里
 
