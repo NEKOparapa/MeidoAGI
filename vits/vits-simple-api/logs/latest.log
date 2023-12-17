@@ -16,17 +16,11 @@ INFO:werkzeug [31m[1mWARNING: This is a development server. Do not use it in a
  * Running on http://192.168.0.175:23456
 INFO:werkzeug [33mPress CTRL+C to quit[0m
 INFO:vits-simple-api [BERT-VITS2] id:0 format:wav lang:auto length:1.0 noise:0.667 noisew:0.8 sdp_ratio:0.2
-INFO:vits-simple-api [BERT-VITS2] len:11 text：有什么可以帮助您的吗？
+INFO:vits-simple-api [BERT-VITS2] len:34 text：主人，您好！有什么可以为您效劳的吗？是否需要我为您创建一个定时任务？
 INFO:langid.langid initializing identifier
 DEBUG:jieba Building prefix dict from the default dictionary ...
 DEBUG:jieba Loading model from cache C:\Users\wurua\AppData\Local\Temp\jieba.cache
-DEBUG:jieba Loading model cost 0.467 seconds.
+DEBUG:jieba Loading model cost 0.418 seconds.
 DEBUG:jieba Prefix dict has been built successfully.
-INFO:vits-simple-api [BERT-VITS2] finish in 6.61s
-INFO:werkzeug 127.0.0.1 - - [14/Dec/2023 17:41:38] "POST /voice/bert-vits2 HTTP/1.1" 200 -
-INFO:vits-simple-api [BERT-VITS2] id:0 format:wav lang:auto length:1.0 noise:0.667 noisew:0.8 sdp_ratio:0.2
-INFO:vits-simple-api [BERT-VITS2] len:35 text：谢谢！我也很喜欢和您交流。如果您有任何问题或者需要帮助，请随时告诉我。
-INFO:vits-simple-api [BERT-VITS2] finish in 0.35s
-INFO:werkzeug 127.0.0.1 - - [14/Dec/2023 17:41:52] "POST /voice/bert-vits2 HTTP/1.1" 200 -
-INFO:apscheduler.executors.default Running job "clean_task (trigger: interval[1:00:00], next run at: 2023-12-14 19:40:38 CST)" (scheduled at 2023-12-14 18:40:38.070979+08:00)
-INFO:apscheduler.executors.default Job "clean_task (trigger: interval[1:00:00], next run at: 2023-12-14 19:40:38 CST)" executed successfully
+INFO:vits-simple-api [BERT-VITS2] finish in 6.52s
+INFO:werkzeug 127.0.0.1 - - [17/Dec/2023 21:32:31] "POST /voice/bert-vits2 HTTP/1.1" 200 -
