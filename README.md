@@ -45,8 +45,8 @@
 
 * ### 工具配置
    在根目录下打开data/Extended_Configuration文件夹:
- * **`谷歌搜索`**:需要配置谷歌key以及CX码
- * **`启动原神`**:配置原神客户端的文件路径
+ * **`谷歌搜索`**:需要配置谷歌key以及CX码 [配置说明](https://github.com/NEKOparapa/MeidoAGI/blob/main/toolkits/google_search_toolkit/README.md)
+ * **`启动原神`**:配置原神客户端的文件路径[配置说明](https://github.com/NEKOparapa/MeidoAGI/blob/main/toolkits/launch_genshin_tookit/README.md)
 
 # 项目运行🕹️ 
 ***
