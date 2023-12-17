@@ -49,7 +49,7 @@
  * **`启动原神`**:配置原神客户端的文件路径[配置说明](https://github.com/NEKOparapa/MeidoAGI/blob/main/toolkits/launch_genshin_tookit/README.md)
 
 
-#  一些说明
+#  一些说明🐛
 ***
  * 项目仍为demo，会存在许多bug
 
@@ -58,7 +58,7 @@
 * ### 女仆启动！
    打开系统代理，并在根目录下依次打开`启动语音模块`，`启动交互界面`，`启动MeidoAGI`
 
-# 现有的AI工具🕹️ 
+# 现有的AI工具🤖 
 ***
 * **`谷歌搜索`**:使用谷歌进行搜索
 * **`打开网站`**:自动调用默认浏览器打开网站
