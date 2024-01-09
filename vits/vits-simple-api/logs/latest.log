@@ -16,11 +16,176 @@ INFO:werkzeug [31m[1mWARNING: This is a development server. Do not use it in a
  * Running on http://192.168.0.175:23456
 INFO:werkzeug [33mPress CTRL+C to quit[0m
 INFO:vits-simple-api [BERT-VITS2] id:0 format:wav lang:auto length:1.0 noise:0.667 noisew:0.8 sdp_ratio:0.2
-INFO:vits-simple-api [BERT-VITS2] len:34 text：主人，您好！有什么可以为您效劳的吗？是否需要我为您创建一个定时任务？
+INFO:vits-simple-api [BERT-VITS2] len:19 text：您好，主人。有什么我可以为您效劳的吗？
 INFO:langid.langid initializing identifier
 DEBUG:jieba Building prefix dict from the default dictionary ...
-DEBUG:jieba Loading model from cache C:\Users\wurua\AppData\Local\Temp\jieba.cache
-DEBUG:jieba Loading model cost 0.418 seconds.
+DEBUG:jieba Dumping model to file cache C:\Users\wurua\AppData\Local\Temp\jieba.cache
+DEBUG:jieba Loading model cost 0.441 seconds.
 DEBUG:jieba Prefix dict has been built successfully.
-INFO:vits-simple-api [BERT-VITS2] finish in 6.52s
-INFO:werkzeug 127.0.0.1 - - [17/Dec/2023 21:32:31] "POST /voice/bert-vits2 HTTP/1.1" 200 -
+INFO:vits-simple-api [BERT-VITS2] finish in 5.85s
+INFO:werkzeug 127.0.0.1 - - [09/Jan/2024 17:32:52] "POST /voice/bert-vits2 HTTP/1.1" 200 -
+INFO:vits-simple-api [BERT-VITS2] id:0 format:wav lang:auto length:1.0 noise:0.667 noisew:0.8 sdp_ratio:0.2
+INFO:vits-simple-api [BERT-VITS2] len:60 text：我可以帮您执行各种任务，包括但不限于查找信息、制定日程、创建定时任务、提供建议等。是否有什么特定的任务需要我帮忙完成呢？
+INFO:vits-simple-api [BERT-VITS2] finish in 0.40s
+INFO:werkzeug 127.0.0.1 - - [09/Jan/2024 17:33:12] "POST /voice/bert-vits2 HTTP/1.1" 200 -
+INFO:vits-simple-api [BERT-VITS2] id:0 format:wav lang:auto length:1.0 noise:0.667 noisew:0.8 sdp_ratio:0.2
+INFO:vits-simple-api [BERT-VITS2] len:77 text：我找到了几个相关的工具，其中一个是 "anime_schedule_scraper" ，可以帮助您获取当前季度的动漫更新信息。您需要我调用这个工具为您吗？
+INFO:vits-simple-api [BERT-VITS2] finish in 0.43s
+INFO:werkzeug 127.0.0.1 - - [09/Jan/2024 17:34:46] "POST /voice/bert-vits2 HTTP/1.1" 200 -
+INFO:vits-simple-api [BERT-VITS2] id:0 format:wav lang:auto length:1.0 noise:0.667 noisew:0.8 sdp_ratio:0.2
+INFO:vits-simple-api [BERT-VITS2] len:79 text：定时任务已经安排好了，我将会在日程表中设定一个任务，将在 2024-01-09 17:40:00 查询当前季度的动漫更新情况。有什么其他任务我可以帮您处理吗？
+INFO:vits-simple-api [BERT-VITS2] finish in 0.58s
+INFO:werkzeug 127.0.0.1 - - [09/Jan/2024 17:35:15] "POST /voice/bert-vits2 HTTP/1.1" 200 -
+INFO:vits-simple-api [BERT-VITS2] id:0 format:wav lang:auto length:1.0 noise:0.667 noisew:0.8 sdp_ratio:0.2
+INFO:vits-simple-api [BERT-VITS2] len:75 text：主人，您的代办任务：查询当前季度的动漫更新情况，任务已经完成，任务执行结果是：{'星期二': ['通灵王Flowers', '恶役千金Lv99']}。
+INFO:vits-simple-api [BERT-VITS2] finish in 0.32s
+INFO:werkzeug 127.0.0.1 - - [09/Jan/2024 17:40:52] "POST /voice/bert-vits2 HTTP/1.1" 200 -
+INFO:apscheduler.executors.default Running job "clean_task (trigger: interval[1:00:00], next run at: 2024-01-09 19:32:41 CST)" (scheduled at 2024-01-09 18:32:41.923973+08:00)
+INFO:apscheduler.executors.default Job "clean_task (trigger: interval[1:00:00], next run at: 2024-01-09 19:32:41 CST)" executed successfully
+INFO:apscheduler.executors.default Running job "clean_task (trigger: interval[1:00:00], next run at: 2024-01-09 20:32:41 CST)" (scheduled at 2024-01-09 19:32:41.923973+08:00)
+INFO:apscheduler.executors.default Job "clean_task (trigger: interval[1:00:00], next run at: 2024-01-09 20:32:41 CST)" executed successfully
+INFO:vits-simple-api [BERT-VITS2] id:0 format:wav lang:auto length:1.0 noise:0.667 noisew:0.8 sdp_ratio:0.2
+INFO:vits-simple-api [BERT-VITS2] len:19 text：你好，主人。有什么我可以为您效劳的吗？
+INFO:vits-simple-api [BERT-VITS2] finish in 0.31s
+INFO:werkzeug 127.0.0.1 - - [09/Jan/2024 19:34:48] "POST /voice/bert-vits2 HTTP/1.1" 200 -
+INFO:vits-simple-api [BERT-VITS2] id:0 format:wav lang:auto length:1.0 noise:0.667 noisew:0.8 sdp_ratio:0.2
+INFO:vits-simple-api [BERT-VITS2] len:67 text：我可以帮助您搜索信息、制定日程安排、提供天气预报、翻译语言、解答问题等等。如果您有任何特定的需求，请随时告诉我，我会尽力为您提供帮助。
+INFO:vits-simple-api [BERT-VITS2] finish in 0.44s
+INFO:werkzeug 127.0.0.1 - - [09/Jan/2024 19:35:04] "POST /voice/bert-vits2 HTTP/1.1" 200 -
+INFO:vits-simple-api [BERT-VITS2] id:0 format:wav lang:auto length:1.0 noise:0.667 noisew:0.8 sdp_ratio:0.2
+INFO:vits-simple-api [BERT-VITS2] len:79 text：今天的动画更新包括《通灵王Flowers》和《恶魔千金Lv99》。您是否希望我为您创建一个定时任务来提醒您动画更新时间？如果是的话，请告诉我您期望的提醒时间。
+INFO:vits-simple-api [BERT-VITS2] finish in 0.53s
+INFO:werkzeug 127.0.0.1 - - [09/Jan/2024 19:35:44] "POST /voice/bert-vits2 HTTP/1.1" 200 -
+INFO:vits-simple-api [BERT-VITS2] id:0 format:wav lang:auto length:1.0 noise:0.667 noisew:0.8 sdp_ratio:0.2
+INFO:vits-simple-api [BERT-VITS2] len:32 text：原神游戏客户端已成功启动，请享受游戏时间。有其他需要我帮忙的吗？
+INFO:vits-simple-api [BERT-VITS2] finish in 0.20s
+INFO:werkzeug 127.0.0.1 - - [09/Jan/2024 19:36:21] "POST /voice/bert-vits2 HTTP/1.1" 200 -
+INFO:vits-simple-api [BERT-VITS2] id:0 format:wav lang:auto length:1.0 noise:0.667 noisew:0.8 sdp_ratio:0.2
+INFO:vits-simple-api [BERT-VITS2] len:44 text：密码已成功添加到备忘录中。您可以随时检查备忘录以获取您的密码信息。有其他需要我帮忙的吗？
+INFO:vits-simple-api [BERT-VITS2] finish in 0.32s
+INFO:werkzeug 127.0.0.1 - - [09/Jan/2024 19:36:57] "POST /voice/bert-vits2 HTTP/1.1" 200 -
+INFO:vits-simple-api [BERT-VITS2] id:0 format:wav lang:auto length:1.0 noise:0.667 noisew:0.8 sdp_ratio:0.2
+INFO:vits-simple-api [BERT-VITS2] len:31 text：请问您希望创建一个定时提醒来做什么事情，以及需要在何时提醒您？
+INFO:vits-simple-api [BERT-VITS2] finish in 0.33s
+INFO:werkzeug 127.0.0.1 - - [09/Jan/2024 19:42:29] "POST /voice/bert-vits2 HTTP/1.1" 200 -
+INFO:vits-simple-api [BERT-VITS2] id:0 format:wav lang:auto length:1.0 noise:0.667 noisew:0.8 sdp_ratio:0.2
+INFO:vits-simple-api [BERT-VITS2] len:82 text：很抱歉，似乎出现了一些问题，我无法成功为您创建定时提醒。您可以在手机或电脑上设置一个五分钟后的闹钟来提醒您准备出门。非常抱歉给您添麻烦了，有其他事情我可以帮忙的吗？
+INFO:vits-simple-api [BERT-VITS2] finish in 0.58s
+INFO:werkzeug 127.0.0.1 - - [09/Jan/2024 19:43:09] "POST /voice/bert-vits2 HTTP/1.1" 200 -
+INFO:vits-simple-api [BERT-VITS2] id:0 format:wav lang:auto length:1.0 noise:0.667 noisew:0.8 sdp_ratio:0.2
+INFO:vits-simple-api [BERT-VITS2] len:18 text：您好，主人。有什么可以为您效劳的吗？
+INFO:vits-simple-api [BERT-VITS2] finish in 0.28s
+INFO:werkzeug 127.0.0.1 - - [09/Jan/2024 19:54:24] "POST /voice/bert-vits2 HTTP/1.1" 200 -
+INFO:vits-simple-api [BERT-VITS2] id:0 format:wav lang:auto length:1.0 noise:0.667 noisew:0.8 sdp_ratio:0.2
+INFO:vits-simple-api [BERT-VITS2] len:51 text：抱歉，我无法直接帮助您打开游戏。不过，我可以帮您解决其他问题或提供信息。有什么其他事情我可以帮助您吗？
+INFO:vits-simple-api [BERT-VITS2] finish in 0.39s
+INFO:werkzeug 127.0.0.1 - - [09/Jan/2024 19:54:54] "POST /voice/bert-vits2 HTTP/1.1" 200 -
+INFO:vits-simple-api [BERT-VITS2] id:0 format:wav lang:auto length:1.0 noise:0.667 noisew:0.8 sdp_ratio:0.2
+INFO:vits-simple-api [BERT-VITS2] len:28 text：原神游戏客户端已成功启动。有什么其他需要我来帮助您的吗？
+INFO:vits-simple-api [BERT-VITS2] finish in 0.16s
+INFO:werkzeug 127.0.0.1 - - [09/Jan/2024 19:55:16] "POST /voice/bert-vits2 HTTP/1.1" 200 -
+INFO:vits-simple-api [BERT-VITS2] id:0 format:wav lang:auto length:1.0 noise:0.667 noisew:0.8 sdp_ratio:0.2
+INFO:vits-simple-api [BERT-VITS2] len:37 text：确认一下，您需要我为您创建一个定时任务，让您在五分钟后出门时发出提醒是吗？
+INFO:vits-simple-api [BERT-VITS2] finish in 0.31s
+INFO:werkzeug 127.0.0.1 - - [09/Jan/2024 19:55:45] "POST /voice/bert-vits2 HTTP/1.1" 200 -
+INFO:vits-simple-api [BERT-VITS2] id:0 format:wav lang:auto length:1.0 noise:0.667 noisew:0.8 sdp_ratio:0.2
+INFO:vits-simple-api [BERT-VITS2] len:63 text：我可以帮您处理日程安排、提醒事项、查询信息、翻译、计算、查看天气、播放音乐、提供新闻资讯等等。如果您有任何需要，请随时告诉我。
+INFO:vits-simple-api [BERT-VITS2] finish in 0.48s
+INFO:werkzeug 127.0.0.1 - - [09/Jan/2024 20:09:25] "POST /voice/bert-vits2 HTTP/1.1" 200 -
+INFO:vits-simple-api [BERT-VITS2] id:0 format:wav lang:auto length:1.0 noise:0.667 noisew:0.8 sdp_ratio:0.2
+INFO:vits-simple-api [BERT-VITS2] len:75 text：抱歉，我目前无法直接帮您打开原神。不过我可以帮您安排游戏时间表，或者提供关于原神的最新资讯和攻略。如果您有任何其他需求，请随时告诉我，我会尽力帮助您。
+INFO:vits-simple-api [BERT-VITS2] finish in 0.59s
+INFO:werkzeug 127.0.0.1 - - [09/Jan/2024 20:09:55] "POST /voice/bert-vits2 HTTP/1.1" 200 -
+INFO:vits-simple-api [BERT-VITS2] id:0 format:wav lang:auto length:1.0 noise:0.667 noisew:0.8 sdp_ratio:0.2
+INFO:vits-simple-api [BERT-VITS2] len:69 text：抱歉，我无法直接执行打开游戏的操作。我是一个日程助手AI，可以处理日程安排、提醒事项、查询信息等。如果您有这方面的需求，我很乐意为您服务。
+INFO:vits-simple-api [BERT-VITS2] finish in 0.50s
+INFO:werkzeug 127.0.0.1 - - [09/Jan/2024 20:10:11] "POST /voice/bert-vits2 HTTP/1.1" 200 -
+INFO:vits-simple-api [BERT-VITS2] id:0 format:wav lang:auto length:1.0 noise:0.667 noisew:0.8 sdp_ratio:0.2
+INFO:vits-simple-api [BERT-VITS2] len:173 text：搜索到以下相关工具：
+1. "google_search"：输入关键字、短语或问题等，谷歌将根据这些关键词提供相关的搜索结果。
+2. "open_website"：输入网站，将自动调用系统默认浏览器打开该网站。
+3. "launch_genshin_impact"：启动运行原神游戏客户端。
+
+请问您希望我执行哪个工具来帮助您打开原神游戏客户端？
+INFO:vits-simple-api [BERT-VITS2] finish in 0.74s
+INFO:werkzeug 127.0.0.1 - - [09/Jan/2024 20:10:36] "POST /voice/bert-vits2 HTTP/1.1" 200 -
+INFO:vits-simple-api [BERT-VITS2] id:0 format:wav lang:auto length:1.0 noise:0.667 noisew:0.8 sdp_ratio:0.2
+INFO:vits-simple-api [BERT-VITS2] len:74 text：已成功启动原神游戏客户端！同时，我还帮您创建了一个定时任务列表，并向您添加了相关定时任务。如果您有其他需求，或者想查询、删除定时任务，请随时告诉我。
+INFO:vits-simple-api [BERT-VITS2] finish in 0.42s
+INFO:werkzeug 127.0.0.1 - - [09/Jan/2024 20:11:00] "POST /voice/bert-vits2 HTTP/1.1" 200 -
+INFO:vits-simple-api [BERT-VITS2] id:0 format:wav lang:auto length:1.0 noise:0.667 noisew:0.8 sdp_ratio:0.2
+INFO:vits-simple-api [BERT-VITS2] len:46 text：为了创建一个定时提醒任务列表，请告诉我更多关于这个任务的详细信息，包括任务的具体目标和描述。
+INFO:vits-simple-api [BERT-VITS2] finish in 0.42s
+INFO:werkzeug 127.0.0.1 - - [09/Jan/2024 20:13:07] "POST /voice/bert-vits2 HTTP/1.1" 200 -
+INFO:vits-simple-api [BERT-VITS2] id:0 format:wav lang:auto length:1.0 noise:0.667 noisew:0.8 sdp_ratio:0.2
+INFO:vits-simple-api [BERT-VITS2] len:50 text：抱歉，似乎出现了一些问题，我暂时无法为您添加定时任务。请问您还有其他需求吗？我会尽力帮助您解决问题。
+INFO:vits-simple-api [BERT-VITS2] finish in 0.39s
+INFO:werkzeug 127.0.0.1 - - [09/Jan/2024 20:13:53] "POST /voice/bert-vits2 HTTP/1.1" 200 -
+INFO:vits-simple-api [BERT-VITS2] id:0 format:wav lang:auto length:1.0 noise:0.667 noisew:0.8 sdp_ratio:0.2
+INFO:vits-simple-api [BERT-VITS2] len:43 text：已经为您创建了出门提醒的定时任务列表，将在五分钟后提醒您出门。
+五分钟后提醒主人出门。
+INFO:vits-simple-api [BERT-VITS2] finish in 0.32s
+INFO:werkzeug 127.0.0.1 - - [09/Jan/2024 20:18:22] "POST /voice/bert-vits2 HTTP/1.1" 200 -
+INFO:vits-simple-api [BERT-VITS2] id:0 format:wav lang:auto length:1.0 noise:0.667 noisew:0.8 sdp_ratio:0.2
+INFO:vits-simple-api [BERT-VITS2] len:22 text：定时任务已成功添加，将在五分钟后提醒您出门。
+INFO:vits-simple-api [BERT-VITS2] finish in 0.32s
+INFO:werkzeug 127.0.0.1 - - [09/Jan/2024 20:21:24] "POST /voice/bert-vits2 HTTP/1.1" 200 -
+INFO:apscheduler.executors.default Running job "clean_task (trigger: interval[1:00:00], next run at: 2024-01-09 21:32:41 CST)" (scheduled at 2024-01-09 20:32:41.923973+08:00)
+INFO:apscheduler.executors.default Job "clean_task (trigger: interval[1:00:00], next run at: 2024-01-09 21:32:41 CST)" executed successfully
+INFO:apscheduler.executors.default Running job "clean_task (trigger: interval[1:00:00], next run at: 2024-01-09 22:32:41 CST)" (scheduled at 2024-01-09 21:32:41.923973+08:00)
+INFO:apscheduler.executors.default Job "clean_task (trigger: interval[1:00:00], next run at: 2024-01-09 22:32:41 CST)" executed successfully
+INFO:vits-simple-api [BERT-VITS2] id:0 format:wav lang:auto length:1.0 noise:0.667 noisew:0.8 sdp_ratio:0.2
+INFO:vits-simple-api [BERT-VITS2] len:18 text：你好，主人。有什么可以为您服务的吗？
+INFO:vits-simple-api [BERT-VITS2] finish in 0.42s
+INFO:werkzeug 127.0.0.1 - - [09/Jan/2024 21:38:30] "POST /voice/bert-vits2 HTTP/1.1" 200 -
+INFO:vits-simple-api [BERT-VITS2] id:0 format:wav lang:auto length:1.0 noise:0.667 noisew:0.8 sdp_ratio:0.2
+INFO:vits-simple-api [BERT-VITS2] len:274 text：我是您的AI女仆，我的职责有很多，以下是我能做的一些：
+
+1. 管理日程：我可以帮您设定提醒，管理您的日常计划，无论是会议、约会还是生日提醒等等。
+   
+2. 处理电子邮件：我可以管理您的电子邮件，包括删除垃圾邮件，将重要邮件标记为星标，甚至帮您回复邮件。
+
+3. 提供信息：无论您需要什么信息，我都可以尽快查找并提供，比如天气预报、新闻，甚至是有趣的小道消息。
+
+4. 控制智能家居：我可以控制您家中的智能设备，比如智能灯泡、烤箱，甚至是温度调节器。
+
+5. 提问回答：对于您的常规问题，我都可以为您提供答案。
+
+请告诉我您现在需要我做什么吗？
+INFO:vits-simple-api [BERT-VITS2] finish in 1.48s
+INFO:werkzeug 127.0.0.1 - - [09/Jan/2024 21:39:05] "POST /voice/bert-vits2 HTTP/1.1" 200 -
+INFO:vits-simple-api [BERT-VITS2] id:0 format:wav lang:auto length:1.0 noise:0.667 noisew:0.8 sdp_ratio:0.2
+INFO:vits-simple-api [BERT-VITS2] len:42 text：主人，我查询到了一个可以为您打开原神的工具，现在我将为您打开原神游戏。请一会儿片刻。
+INFO:vits-simple-api [BERT-VITS2] finish in 0.42s
+INFO:werkzeug 127.0.0.1 - - [09/Jan/2024 21:39:34] "POST /voice/bert-vits2 HTTP/1.1" 200 -
+INFO:vits-simple-api [BERT-VITS2] id:0 format:wav lang:auto length:1.0 noise:0.667 noisew:0.8 sdp_ratio:0.2
+INFO:vits-simple-api [BERT-VITS2] len:43 text：主人，已成功为您启动原神游戏，现在您可以尽情游玩了。如果还需要我的帮助，请随时告诉我。
+INFO:vits-simple-api [BERT-VITS2] finish in 0.37s
+INFO:werkzeug 127.0.0.1 - - [09/Jan/2024 21:40:44] "POST /voice/bert-vits2 HTTP/1.1" 200 -
+INFO:vits-simple-api [BERT-VITS2] id:0 format:wav lang:auto length:1.0 noise:0.667 noisew:0.8 sdp_ratio:0.2
+INFO:vits-simple-api [BERT-VITS2] len:285 text：以下是符合要求的任务列表JSON数组：
+
+```json
+[
+{
+    "task_id": 1,
+    "task_description": "提醒出门",
+    "function_used": "timed_voice_notification",
+    "function_parameters": {
+        "target_datetime": "2024-01-09 21:46:00",
+        "text": "请记得出门"
+    }
+}
+]
+```
+请确认以上内容是否符合您的需求，如果确认无误，我将为您添加这个定时任务。
+INFO:vits-simple-api [BERT-VITS2] finish in 0.81s
+INFO:werkzeug 127.0.0.1 - - [09/Jan/2024 21:41:47] "POST /voice/bert-vits2 HTTP/1.1" 200 -
+INFO:vits-simple-api [BERT-VITS2] id:0 format:wav lang:auto length:1.0 noise:0.667 noisew:0.8 sdp_ratio:0.2
+INFO:vits-simple-api [BERT-VITS2] len:44 text：定时任务已成功添加到日程表中，我将在5分钟后提醒您出门。如果还有其他需求，请随时告诉我。
+INFO:vits-simple-api [BERT-VITS2] finish in 0.35s
+INFO:werkzeug 127.0.0.1 - - [09/Jan/2024 21:42:15] "POST /voice/bert-vits2 HTTP/1.1" 200 -
+INFO:vits-simple-api [BERT-VITS2] id:0 format:wav lang:auto length:1.0 noise:0.667 noisew:0.8 sdp_ratio:0.2
+INFO:vits-simple-api [BERT-VITS2] len:70 text：主人，您的代办任务：提醒出门，任务已经完成，任务执行结果是：定时语音通知已设置，将在2024-01-09 21:46:00发送，请记得出门。
+INFO:vits-simple-api [BERT-VITS2] finish in 0.62s
+INFO:werkzeug 127.0.0.1 - - [09/Jan/2024 21:46:38] "POST /voice/bert-vits2 HTTP/1.1" 200 -

@@ -139,10 +139,8 @@ class Calendar :
                                 "description": "定时任务目标",
                             },
                             "task_list": {
-                                "type": "list",
-                                "description": """分步式任务列表,输入列表数据，数据结构如：
-                                                [{"task_id": 1,"task_description": "获取苹果的单价","function_used": True,"function_name": "get_the_price_of_the_item",
-                                                "function_parameters": {"item": "苹果","unit": "人民币"}}]"""},
+                                "type": "string",
+                                "description": "分步式任务列表,输入由“创建定时任务列表工具”创建的任务列表"},
                             "task_datetime": {
                                 "type": "string",
                                 "description": "执行的日期时间，如2023-07-19 14:30:45",

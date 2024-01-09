@@ -196,7 +196,7 @@
             // 获取输入框内容，并发送消息到主进程
             input_content  = document.getElementById('input-field').value
             //打印到主进程
-            ipcRenderer.send('DEBUG', input_content);
+            ipcRenderer.send('USER', input_content);
             // 清空输入框内容
             document.getElementById('input-field').value = ''
 
@@ -234,7 +234,7 @@
                 var response_text = JSON.parse(data).assistant_response_text;
 
                 // 发送消息内容到主进程
-                ipcRenderer.send('DEBUG', { audio_path, mouth_data_path, response_text });
+                ipcRenderer.send('AI', response_text);
 
                 // 播放音频并控制口型
                 playAudioWithMouthControl(audio_path, mouth_data_path);

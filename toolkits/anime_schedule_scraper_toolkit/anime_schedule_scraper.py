@@ -18,7 +18,7 @@ def anime_schedule_scraper(switch):
     link_items = soup.find_all('li', class_='links-of-blogroll-item')
 
     # 获取第四个元素，因为网站把它排在第5项
-    fourth_link_item = link_items[4]
+    fourth_link_item = link_items[3]
 
     # 提取当季列表的后半链接
     if fourth_link_item:

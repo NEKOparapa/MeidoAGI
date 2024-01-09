@@ -1,4 +1,4 @@
-  # coding:utf-8
+# coding:utf-8
 import datetime
 import re
 import yaml
@@ -13,7 +13,6 @@ import tiktoken #需要安装库pip install tiktoken
 import chromadb #需要安装库pip install chromadb 
 from chromadb.utils import embedding_functions
 import http.client
-
 from flask import Flask, request, jsonify  #需要安装库pip install flask
 
 #导入其他脚本
@@ -34,7 +33,7 @@ class Calendar_executor:
     #循环检查日程表，并自动执行日程表中的任务
     def run (self): 
         while 1 :
-            print("[DEBUG] 日程表执行器正在检查日程表~",'\n')
+            print("[DEBUG] 日程表执行器正在检查今日的定时任务~",'\n')
             #获取当前时间
             now_time = datetime.datetime.now()
             #输入当天的年月日，获取日程表当天的全部事件
@@ -70,16 +69,16 @@ class Calendar_executor:
                             #检查是否无法正常执行任务
                             if retry_count > max_retries:
                                 # 更改任务状态，并退出该任务
-                                my_calendar.update_task_status(task['task_datetime'],"无法执行")
+                                my_calendar.update_task_status(task['task_datetime'],"无法正常执行任务")
                                 break
 
                             #审查任务
-                            while 1:
-                                try:
-                                    self.review_unit_task_AI_agent(task['task_datetime'])
-                                    break
-                                except Exception as e:
-                                    print("[DEBUG] 日程表执行器审查单元任务出现错误，正在重试, 错误信息：",e,'\n')
+                            #while 1:
+                            #    try:
+                            #        self.review_unit_task_AI_agent(task['task_datetime'])
+                            #        break
+                            #    except Exception as e:
+                            #        print("[DEBUG] 日程表执行器审查单元任务出现错误，正在重试, 错误信息：",e,'\n')
 
 
                             #重新获取事件状态
@@ -100,7 +99,7 @@ class Calendar_executor:
 
             #每隔10s检查一次日程表
             #print("[DEBUG] 日程表执行器正在休息中，等待下次检查",'\n')
-            time.sleep(10)
+            time.sleep(15)
 
 
     #执行单元任务的AI代理
@@ -310,6 +309,12 @@ class Calendar_executor:
 
         print("[DEBUG] 次级AI单元任务执行结果为：",task_result,'\n')
         print("[DEBUG] 该单元任务执行结束！！！！！！！！！！！！！！！！！！",'\n')
+
+
+        #如果任务进度等于任务分步列表长度，说明全部任务已经完成
+        if task_id == task["task_distribution"]:
+            print("[DEBUG] 该任务列表已经全部完成~",'\n')
+            my_calendar.update_task_status(task['task_datetime'],"已完成")
 
 
     #审查单元任务的AI代理（审查单元任务的输入输出是否正确，正确就录入任务数据库，错误就返回信息到任务数据库）
@@ -573,7 +578,7 @@ class Calendar_executor:
 
 
         # 生成 AI 回复的语音
-        audio_path = TTS_vits.voice_vits(text=content)
+        audio_path = TTS_vits.voice_bert_vits2(text=content)
 
         # 生成语音的口型数据文件
         mouth_data_path = ATM_vits.convertAudioToMouthData(audio_path)
@@ -609,7 +614,7 @@ class Calendar_executor:
 
 
 #————————————————————————————————————————主AI默认工具库————————————————————————————————————————
-class Main_AI_tool_library(): 
+class Main_AI_tool_library: 
     #初始化工具库
     def __init__(self):
         #工具库
@@ -625,10 +630,9 @@ class Main_AI_tool_library():
         # }
         
         #添加工具
-        self.add_tools("1", self.function_create_a_task_list, "0")
-        self.add_tools("2", self.function_search_related_tools,"0")
-        self.add_tools("3", self.function_query_tool_class, "0")
-
+        self.add_tools("1", self.function_search_related_tools,"0")
+        self.add_tools("2", self.function_get_schedule_related_tools, "0")
+        #self.add_tools("3", self.function_create_a_task_list, "0")
 
     #搜索拓展工具库中的工具函数------------------------------------------------
     def  search_related_tools(self, tool_description):
@@ -647,7 +651,9 @@ class Main_AI_tool_library():
         tools_specifications_list = extended_tools_library.get_tool_by_id_list(tools_id_list)
         print("[DEBUG] 所有工具相应的调用规范：" ,tools_specifications_list,'\n')
 
-        return tools_specifications_list
+        results_return = "搜索到的相关工具为:::" + str(tools_specifications_list)
+
+        return results_return
         
     #搜索拓展工具库中的工具调用规范
     function_search_related_tools =   {
@@ -669,17 +675,22 @@ class Main_AI_tool_library():
     }
 
     #查询日程表的工具函数------------------------------------------------
-    def  query_tool_class(self, tool_class):
+    def  get_schedule_related_tools(self, tool_class):
         #创建存储函数说明的列表
         tool_specifications_list = []
 
-        if tool_class == "添加类":
+
+        if tool_class == "创建定时任务的分步式任务列表":
+            #将添加类的工具说明添加到函数列表中
+            tool_specifications_list.append(self.function_create_a_task_list)
+
+        if tool_class == "添加定时任务":
             #将添加类的工具说明添加到函数列表中
             tool_specifications_list.append(my_calendar.function_add_scheduled_task)
-        elif tool_class == "删除类":
+        elif tool_class == "删除定时任务":
             #将删除类的工具说明添加到函数列表中
             tool_specifications_list.append(my_calendar.function_delete_scheduled_task)
-        elif tool_class == "查询类":
+        elif tool_class == "查询定时任务":
             #将查询类的工具说明添加到函数列表中
             tool_specifications_list.append(my_calendar.function_query_scheduled_task_by_datetime)
             tool_specifications_list.append(my_calendar.function_query_scheduled_task_by_date)
@@ -688,18 +699,18 @@ class Main_AI_tool_library():
         return tool_specifications_list
         
     #查询日程表的工具调用规范
-    function_query_tool_class =   {
+    function_get_schedule_related_tools =   {
         "type": "function",
         "function": {
-                    "name": "query_tool_class",
-                    "description": "有把定时任务进行添加到日程表，从日程表删除定时任务，在日程表中查询定时任务的三大类工具，输入需要调用的工具类，返回该类下的工具调用规范说明",
+                    "name": "get_schedule_related_tools",
+                    "description": "获取“创建定时任务的分步式任务列表”，“添加新的定时任务”，“删除定时任务”和“查询定时任务”的工具调用规范，以供后续操作",
                     "parameters": {
                         "type": "object",
                         "properties": {
                             "tool_class": {
                                 "type": "string",
-                                "description": "需要调用的日程表工具类",
-                                "enum": ["添加类","删除类","查询类"], 
+                                "description": "需要使用的日程表工具类",
+                                "enum": ["创建定时任务的分步式任务列表","添加定时任务","删除定时任务","查询定时任务"], 
                             }
                         },
                         "required": ["tool_class"]
@@ -766,8 +777,18 @@ class Main_AI_tool_library():
         f"任务列表示例：###{task_list_example}###"
         )
 
+        # 获取当前日期和时间
+        current_datetime = datetime.datetime.now()
+        # 格式化输出日期和时间
+        formatted_datetime = current_datetime.strftime("%Y-%m-%d %H:%M:%S")
+        # 获取星期几
+        weekday = current_datetime.strftime("%A")
+
+        #添加到系统提示语句前面
+        new_prompt = "【现实当前时间】："+ formatted_datetime +' '+ weekday +'\n'+prompt
+
         #构建messages
-        messages = [{"role": "system", "content": prompt },
+        messages = [{"role": "system", "content": new_prompt },
                 {"role": "user", "content":  task_objectives}]
 
 
@@ -1194,12 +1215,12 @@ class Ai_Request:
 
         #构建系统提示语句
         self.prompt = '''你现在必须扮演主人的AI女仆，名字叫纳西妲，当主人交代任务时，你要自主解答或者搜索工具库，并调用工具来解决。
-        如果主人要创建一个定时任务，比如“一个小时后xxx”，“明天帮我搜索一下xxx”等等需要定时执行的任务，请遵循以下步骤来进行解决：
-        1. 询问主人是否需要创建一个定时任务，如果主人回复确认，再进行下一步。
-        2. 如果提供的信息较少或模糊，请确保通过提问来获取尽可能详细的信息，包括具体日期时间。
-        3. 在得到足够信息后，调用生成分布式任务列表的工具。
-        4. 获得分步式任务列表后，简单总结，并交由主人审查，如果主人审查通过，再进行下一步。
-        5. 获取日程表的添加类工具调用规范，然后调用该工具，将该定时任务添加到日程表中。
+        如果主人希望创建一个定时任务，并触发命令词“定时任务”时，请遵循以下步骤来进行解决：
+        step_1. 询问主人是否需要创建一个定时任务，如果主人回复确认，再进行下一步。
+        step_2. 如果提供的信息较少或模糊，请确保通过提问来获取尽可能详细的信息，包括具体日期时间。
+        step_3. 获取“创建定时任务的分步式任务列表”工具调用规范，并调用该工具，输入任务目标，获得“分布式任务列表”。
+        step_4. 简单总结该列表，并交由主人审查，如果主人审查通过，再进行下一步。
+        step_5. 获取“添加定时任务”工具调用规范，并调用该工具，输入“分布式任务列表”，便可将定时任务添加到日程表中。
         '''
 
     #输入用户消息，向AI发送请求,并取得回复
@@ -1208,7 +1229,6 @@ class Ai_Request:
 
         #获取对话历史
         conversation_history = conversationLogger.read_log()
-        #获取系统当前日期时间
 
         # 获取当前日期和时间
         current_datetime = datetime.datetime.now()
@@ -1229,7 +1249,7 @@ class Ai_Request:
 
         #向AI发送请求
         response = openaiclient.chat.completions.create( 
-            model="gpt-3.5-turbo-1106",
+            model= read_config.read_M_Ai_model(script_dir),
             messages=messages,
             tools=self.default_tools,  #关于调用函数说明内容可以放在这里，也可以放在上面的content中，AI都会识别并使用
             tool_choice="auto",  # auto is default, but we'll be explicit
@@ -1238,7 +1258,7 @@ class Ai_Request:
         # 从回复中提取token部分,并输出
         try:
             prompt_tokens_used = int(response.usage.prompt_tokens) #本次请求花费的tokens
-            print("[DEBUG] 主AI请求花费的tokens数为：",prompt_tokens_used,"个",'\n')
+            print("[DEBUG] 主AI请求花费的tokens数为：",prompt_tokens_used,"个")
         except Exception as e:
             prompt_tokens_used = 0
         try:
@@ -1286,12 +1306,12 @@ class Ai_Parser:
                     #获取工具调用附加回复
                     tool_content = message.content
 
-                    print("[DEBUG] 主AI正在申请调用函数~  调用函数附加说明：",tool_content,'\n')
-                    print("[DEBUG] 调用的函数名字为：",tool_name,'输入参数为：',tool_arguments,'\n')
+                    print("[DEBUG] 主AI正在申请调用工具~  调用工具附加说明：",tool_content,'\n')
+                    print("[DEBUG] 调用的工具名字为：",tool_name,'输入参数为：',tool_arguments,'\n')
 
                     #针对AI幻觉调用“python”的问题，进行回复
                     if tool_name == "python":
-                        tool_return = "[ERROR] 调用函数时出错,不存在名字为python的函数，请检查函数名字以及输入参数是否正确，再进行调用"
+                        tool_return = "[ERROR] 调用工具时出错,不存在名字为python的工具，请检查工具名字以及输入参数是否正确，再进行调用"
                     #设置工具调用状态码，表示工具调用仍正常运行
                     status_code = 1
 
@@ -1309,8 +1329,8 @@ class Ai_Parser:
                         tool_return = main_tools_library.create_a_task_list(task_objectives=tool_arguments.get("task_objectives"),)
                     
                     #调用获取日程表的功能类说明
-                    elif tool_name == "query_tool_class":
-                        tool_return = main_tools_library.query_tool_class(tool_class=tool_arguments.get("tool_class"),)
+                    elif tool_name == "get_schedule_related_tools":
+                        tool_return = main_tools_library.get_schedule_related_tools(tool_class=tool_arguments.get("tool_class"),)
 
                     #调用日程表的具体的工具
                     elif "scheduled" in tool_name:# 可以改为xxx in 所有的日程表工具名
@@ -1361,6 +1381,29 @@ class Ai_Parser:
         ai_memory.log_message(role ="assistant",content = content)
         # 返回文本内容
         return content
+    
+    #检查AI调用的工具名字是否符号openai工具调用名字要求，因为AI会幻觉调用“multi_tool_use.parallel”
+    def check_string_with_regex(self, input_string):
+        """
+        检查输入的字符串是否符合指定的正则表达式模式。
+
+        参数：
+        - pattern: 正则表达式模式
+        - input_string: 要检查的字符串
+
+        返回值：
+        如果字符串符合模式，则返回 True；否则返回 False。
+        """
+        pattern = r'^[a-zA-Z0-9_-]{1,64}$'
+
+        # 使用 re.match() 函数检查字符串是否与模式匹配
+        match = re.match(pattern, input_string)
+
+        # 如果 match 不为 None，则表示匹配成功
+        if match:
+            return True
+        else:
+            return False
         
 
 #————————————————————————————————————————主AI对话接口————————————————————————————————————————
@@ -1441,28 +1484,60 @@ class ConfigApp:
     def __init__(self):
         pass
 
+    # 获取主ai的key
+    def read_M_AI_apiKey(self,script_dir):
+        # 读取 YAML 配置文件
+        config_path = os.path.join(script_dir, "config", "System_Configuration.yaml")
+        with open(config_path, 'r', encoding='utf-8') as file:
+            config = yaml.safe_load(file)
+            # 访问具体配置项
+            OpenAI_api_key = config['openai']['api_key']
+        return OpenAI_api_key
+
+    # 获取主AI的模型
+    def read_M_Ai_model(self,script_dir):
+        # 读取 YAML 配置文件
+        config_path = os.path.join(script_dir, "config", "System_Configuration.yaml")
+        with open(config_path, 'r', encoding='utf-8') as file:
+            config = yaml.safe_load(file)
+            # 访问具体配置项
+            OpenAI_master_ai_model = config['openai']['master_ai_model'] 
+        return OpenAI_master_ai_model      
+
+
+    # 获取openai的请求地址
+    def read_request_address(self,script_dir):
+        # 读取 YAML 配置文件
+        config_path = os.path.join(script_dir, "config", "System_Configuration.yaml")
+        with open(config_path, 'r', encoding='utf-8') as file:
+            config = yaml.safe_load(file)
+            # 访问具体配置项
+            OpenAI_base_url = config['openai']['base_url'] #api默认请求地址
+        return OpenAI_base_url 
+    
+    # 读取日程表执行器开关
+    def read_schedule_toggle(self,script_dir):
+        # 读取 YAML 配置文件
+        config_path = os.path.join(script_dir, "config", "System_Configuration.yaml")
+        with open(config_path, 'r', encoding='utf-8') as file:
+            config = yaml.safe_load(file)
+            # 访问具体配置项
+            calendar_switch = config['calendario']['switch'] 
+        return calendar_switch       
+
 
 #————————————————————————————————————————主程序————————————————————————————————————————
 if __name__ == '__main__':
+    #创建系统配置器
+    read_config = ConfigApp()
         
-    # 读取 YAML 配置文件
-    config_path = os.path.join(script_dir, "config", "System_Configuration.yaml")
-    with open(config_path, 'r', encoding='utf-8') as file:
-        config = yaml.safe_load(file)
-        # 访问具体配置项
-        OpenAI_api_key = config['openai']['api_key']
-        OpenAI_base_url = 'https://api.openai.com/v1' #api默认请求地址
-
-
     #创建全局openai客户端
-    openaiclient = OpenAI(api_key=OpenAI_api_key,
-            base_url= OpenAI_base_url)
-
+    openaiclient = OpenAI(api_key=read_config.read_M_AI_apiKey(script_dir),
+            base_url= read_config.read_request_address(script_dir))
 
     #创建主AI记忆库
     file_path = os.path.join(script_dir, "cache")
     ai_memory = Ai_memory(file_path)
-
 
     #创建拓展工具库
     extended_tools_library = tool_library.Tool_library()
@@ -1482,7 +1557,7 @@ if __name__ == '__main__':
     #创建向量存储库,并使用openai的embedding函数
     chroma_client = chromadb.Client()
     openai_ef = embedding_functions.OpenAIEmbeddingFunction(
-                    api_key=OpenAI_api_key,
+                    api_key=read_config.read_M_AI_apiKey(script_dir),
                     model_name="text-embedding-ada-002"
                 )
     #创建向量存储库
@@ -1508,11 +1583,7 @@ if __name__ == '__main__':
     calendar_executor = Calendar_executor()
 
     #后台运行日程表执行器
-    with open(config_path, 'r', encoding='utf-8') as file:
-        # 加载YAML数据
-        data = yaml.safe_load(file)
-        calendar_switch = data['calendario']['switch']
-
+    calendar_switch = read_config.read_schedule_toggle(script_dir)
     if calendar_switch == 'on':
         thread = threading.Thread(target=calendar_executor.run)
         thread.start()
@@ -1522,14 +1593,14 @@ if __name__ == '__main__':
     else:
         print("[INFO] 无法正确读取日程表配置信息！","\n")
 
+    #欢迎用户
+    print("[INFO]：已成功启动，欢迎使用AI助手！！！！！！！！！！！！！！！！！！！","\n")
 
     #开启后端接口
     chat_app = ChatApp()
     chat_app.run()
 
 
-    #欢迎用户
-    print("【系统】：已成功启动，欢迎使用AI助手！！！！！！！！！！！！！！！！！！！","\n")
 
 
 

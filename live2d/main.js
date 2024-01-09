@@ -21,7 +21,7 @@ function createWindow () {
     }
   })
 
-  win.loadFile('index.html')    // 你的HTML文件名
+  win.loadFile('index.html')    // 展示的网页文件
 
 }
 
@@ -29,13 +29,21 @@ function createWindow () {
 app.whenReady().then(createWindow)
 
 
-//日志输出
-ipcMain.on('DEBUG', (event, data) => {
-    console.log('【DEBUG】:', data);
+
+//用户信息输出
+ipcMain.on('USER', (event, data) => {
+    console.log('【用户信息】:', data);
 });
 
+//助手消息输出
+ipcMain.on('AI', (event, data) => {
+  console.log('【AI信息】:', data,"\n");
+});
 
-
+//错误消息输出
+ipcMain.on('DEBUG', (event, data) => {
+  console.log('【DEBUG】:', data,"\n");
+});
 
 
 

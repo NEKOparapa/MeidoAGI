@@ -1,6 +1,8 @@
 # openai配置
 openai:
-  api_key: 
+  api_key: xxxxxxxxxxxxx
+  master_ai_model : gpt-3.5-turbo-1106
+  base_url: https://api.openai.com/v1
 
 
 # 日程表配置

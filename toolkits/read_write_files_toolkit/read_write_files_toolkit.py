@@ -12,7 +12,11 @@ def write_text_to_file(folder_path, text_content):
     with open(file_path, 'w', encoding='utf-8') as file:
         file.write(text_content)
 
-    print(f'文件已成功写入：{file_path}')
+    print(f'[DEBUG] 文件已成功写入：{file_path}')
+
+    rt = "文本内容已经成功写为txt文件，并保存在：" + str(folder_path)
+
+    return rt
 
 
 #配套函数调用说明
