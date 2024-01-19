@@ -1,45 +1,40 @@
-import os
-
 import torch
-from transformers import AutoTokenizer, AutoModelForMaskedLM
 
-import config
-from logger import logger
-from utils.download import download_and_verify
-from config import DEVICE as device
+from utils.config_manager import global_config
+from bert_vits2.text.japanese import text2sep_kata
 
-URLS = [
-    "https://huggingface.co/cl-tohoku/bert-base-japanese-v3/resolve/main/pytorch_model.bin",
-]
-TARGET_PATH = os.path.join(config.ABS_PATH, "bert_vits2/bert/bert-base-japanese-v3/pytorch_model.bin")
-EXPECTED_MD5 = None
-
-if not os.path.exists(TARGET_PATH):
-    success, message = download_and_verify(URLS, TARGET_PATH, EXPECTED_MD5)
-
-try:
-    logger.info("Loading bert-base-japanese-v3...")
-    tokenizer = AutoTokenizer.from_pretrained(config.ABS_PATH + "/bert_vits2/bert/bert-base-japanese-v3")
-    model = AutoModelForMaskedLM.from_pretrained(config.ABS_PATH + "/bert_vits2/bert/bert-base-japanese-v3").to(
-        device)
-    logger.info("Loading finished.")
-except Exception as e:
-    logger.error(e)
-    logger.error(f"Please download pytorch_model.bin from cl-tohoku/bert-base-japanese-v3.")
+LOCAL_PATH = "./bert/deberta-v2-large-japanese-char-wwm"
 
 
-def get_bert_feature(text, word2ph, device=config.DEVICE):
+def get_bert_feature(text, word2ph, tokenizer, model, device=global_config.DEVICE, style_text=None, style_weight=0.7, **kwargs):
+    text = "".join(text2sep_kata(text)[0])
+    if style_text:
+        style_text = "".join(text2sep_kata(style_text)[0])
     with torch.no_grad():
         inputs = tokenizer(text, return_tensors="pt")
         for i in inputs:
             inputs[i] = inputs[i].to(device)
         res = model(**inputs, output_hidden_states=True)
         res = torch.cat(res["hidden_states"][-3:-2], -1)[0].cpu()
-    assert inputs["input_ids"].shape[-1] == len(word2ph)
+        if style_text:
+            style_inputs = tokenizer(style_text, return_tensors="pt")
+            for i in style_inputs:
+                style_inputs[i] = style_inputs[i].to(device)
+            style_res = model(**style_inputs, output_hidden_states=True)
+            style_res = torch.cat(style_res["hidden_states"][-3:-2], -1)[0].cpu()
+            style_res_mean = style_res.mean(0)
+
+    assert len(word2ph) == len(text) + 2
     word2phone = word2ph
     phone_level_feature = []
     for i in range(len(word2phone)):
-        repeat_feature = res[i].repeat(word2phone[i], 1)
+        if style_text:
+            repeat_feature = (
+                    res[i].repeat(word2phone[i], 1) * (1 - style_weight)
+                    + style_res_mean.repeat(word2phone[i], 1) * style_weight
+            )
+        else:
+            repeat_feature = res[i].repeat(word2phone[i], 1)
         phone_level_feature.append(repeat_feature)
 
     phone_level_feature = torch.cat(phone_level_feature, dim=0)

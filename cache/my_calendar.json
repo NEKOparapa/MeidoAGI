@@ -1,0 +1,67 @@
+{
+    "2024-01-16 20:36:16": {
+        "task_datetime": "2024-01-16 20:36:16",
+        "task_objectives": "启动原神游戏客户端",
+        "task_list": [
+            {
+                "task_id": 1,
+                "task_description": "在五分钟后进行语音通知，启动原神游戏客户端",
+                "function_used": true,
+                "function_name": "timed_voice_notification",
+                "function_parameters": {
+                    "target_datetime": "5 minutes later",
+                    "text": "启动原神游戏客户端"
+                },
+                "function_response": "输入的日期时间格式错误",
+                "task_result": "抱歉，我输入的日期时间格式错误。我将重新发送正确格式的日期时间。"
+            },
+            {
+                "task_id": 2,
+                "task_description": "启动原神游戏客户端",
+                "function_used": true,
+                "function_name": "launch_genshin_impact",
+                "function_parameters": {
+                    "switch": "on"
+                },
+                "function_response": "成功启动原神游戏客户端！",
+                "task_result": "成功启动原神游戏客户端！"
+            }
+        ],
+        "task_distribution": 2,
+        "task_progress": 2,
+        "task_status": "已完成",
+        "notification_status": "已通知"
+    },
+    "2024-01-16 20:33:18": {
+        "task_datetime": "2024-01-16 20:33:18",
+        "task_objectives": "出门提醒",
+        "task_list": [
+            {
+                "task_id": 1,
+                "task_description": "获取当前时间",
+                "function_used": true,
+                "function_name": "get_current_time",
+                "function_parameters": {}
+            },
+            {
+                "task_id": 2,
+                "task_description": "计算出发时间",
+                "function_used": false
+            },
+            {
+                "task_id": 3,
+                "task_description": "设置语音提醒",
+                "function_used": true,
+                "function_name": "timed_voice_notification",
+                "function_parameters": {
+                    "target_datetime": "2024-01-16 20:33:18",
+                    "text": "出门提醒"
+                }
+            }
+        ],
+        "task_distribution": 3,
+        "task_progress": 0,
+        "task_status": "无法正常执行任务",
+        "notification_status": "未通知"
+    }
+}

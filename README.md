@@ -4,18 +4,18 @@
 <p align='center' >一款可灵活拓展功能，可自定义语音和界面模型的助手型桌宠AI</p>
 
 
-#  环境支持🏕️
+#  环境支持
 ***
    
  * **`魔法工具`**:使用本项目，需要全程开启代理，否则无法连接上AI或调用各种工具
  * **`Python环境`**:[下载地址](https://www.python.org/downloads/) 下载安装3.10及以上的版本，并在安装时如果有“add to path”选项，请勾选上。
  * **`Node.js环境`**:[下载地址](https://nodejs.org/) 下载安装左边的稳定版即可
- * **`Chat-GPT账号`**:建议您新建一个API_Key,并且最好在使用期间不要和其他程序一起使用,不然容易达到请求次数限制
+ * **`Chat-GPT账号`**:创建一个来自openai账号的apikey
 
-# 首次使用📝
+# 首次使用
 ***
 * ### 安装pip依赖
-   在根目录下打开CMD窗口，并输入下面安装全部依赖库命令:
+   在根目录下打开CMD窗口，并输入下面安装全部依赖库命令（一定要开全局代理，不然很难安装上）:
    ```
    pip install -r requirements.txt
    ```
@@ -35,7 +35,9 @@
    ```
    # openai配置
    openai:
-     api_key:
+     api_key:    #填入你的apikey
+     master_ai_model : gpt-3.5-turbo-1106  #与之对话使用的主要AI模型
+     base_url: https://api.openai.com/v1
    
    # 日程表配置
    calendario:
@@ -49,11 +51,11 @@
  * **`启动原神`**:配置原神客户端的文件路径[配置说明](https://github.com/NEKOparapa/MeidoAGI/blob/main/toolkits/launch_genshin_tookit/README.md)
 
 
-#  一些说明🐛
+#  一些说明
 ***
  * 项目仍为demo，会存在许多bug
 
-# 项目运行🤖
+# 项目运行
 ***
 * ### 女仆启动！
    打开系统代理，并在根目录下依次打开`启动语音模块`，`启动交互界面`，`启动MeidoAGI`

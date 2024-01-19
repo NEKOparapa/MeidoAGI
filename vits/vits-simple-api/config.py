@@ -41,7 +41,16 @@ LANGUAGE_AUTOMATIC_DETECT = []
 API_KEY_ENABLED = False
 
 # API_KEY is required for authentication
-API_KEY = "api-key"
+API_KEY = ""
+
+# WTForms CSRF 保护
+SECRET_KEY = ""
+
+# Control whether to enable the admin backend functionality
+IS_ADMIN_ENABLED = True  # Set to True to enable the admin backend, set to False to disable it
+
+# Define the route for the admin backend
+ADMIN_ROUTE = '/admin'  # You can change this to your desired route
 
 # logging_level:DEBUG/INFO/WARNING/ERROR/CRITICAL
 LOGGING_LEVEL = "DEBUG"
@@ -59,18 +68,14 @@ MODEL_LIST = [
     # VITS
     # [ABS_PATH + "/Model/Nene_Nanami_Rong_Tang/1374_epochs.pth", ABS_PATH + "/Model/Nene_Nanami_Rong_Tang/config.json"],
     # [ABS_PATH + "/Model/Zero_no_tsukaima/1158_epochs.pth", ABS_PATH + "/Model/Zero_no_tsukaima/config.json"],
-    [ABS_PATH + "/Model/g/G_953000.pth", ABS_PATH + "/Model/g/config.json"],
+    # [ABS_PATH + "/Model/g/G_953000.pth", ABS_PATH + "/Model/g/config.json"],
     # [ABS_PATH + "/Model/vits_chinese/vits_bert_model.pth", ABS_PATH + "/Model/vits_chinese/bert_vits.json"],
     # HuBert-VITS (Need to configure HUBERT_SOFT_MODEL)
     # [ABS_PATH + "/Model/louise/360_epochs.pth", ABS_PATH + "/Model/louise/config.json"],
     # W2V2-VITS (Need to configure DIMENSIONAL_EMOTION_NPY)
     # [ABS_PATH + "/Model/w2v2-vits/1026_epochs.pth", ABS_PATH + "/Model/w2v2-vits/config.json"],
     # Bert-VITS2
-    #[ABS_PATH + "/Model/bert_vits2/zl/G_4900.pth", ABS_PATH + "/Model/bert_vits2/zl/config.json"],
-    [ABS_PATH + "/Model/bert_vits2/naxida/G_5100.pth", ABS_PATH + "/Model/bert_vits2/naxida/config.json"],
-    #[ABS_PATH + "/Model/bert_vits2/paim/G_1900.pth", ABS_PATH + "/Model/bert_vits2/npaim/config.json"],
-    #[ABS_PATH + "/Model/bert_vits2/sllh-z/G_4400.pth", ABS_PATH + "/Model/bert_vits2/sllh-z/config.json"],
-    #[ABS_PATH + "/Model/bert_vits2/genshin/G_78000.pth", ABS_PATH + "/Model/bert_vits2/genshin/config.json"],
+    # [ABS_PATH + "/Model/bert_vits2/G_9000.pth", ABS_PATH + "/Model/bert_vits2/config.json"],
 ]
 
 # hubert-vits: hubert soft model
@@ -85,7 +90,20 @@ DIMENSIONAL_EMOTION_NPY = ABS_PATH + "/Model/npy"
 # w2v2-vits: Need to have both `model.onnx` and `model.yaml` files in the same path.
 # DIMENSIONAL_EMOTION_MODEL = ABS_PATH + "/Model/model.yaml"
 
+
+CHINESE_ROBERTA_WWM_EXT_LARGE = ABS_PATH + "bert_vits2/bert/chinese-roberta-wwm-ext-large"
+BERT_BASE_JAPANESE_V3 = ABS_PATH + "bert_vits2/bert/bert-base-japanese-v3"
+BERT_LARGE_JAPANESE_V2 = ABS_PATH + "bert_vits2/bert/bert-large-japanese-v2"
+DEBERTA_V2_LARGE_JAPANESE = ABS_PATH + "bert_vits2/bert/deberta-v2-large-japanese"
+DEBERTA_V3_LARGE = ABS_PATH + "bert_vits2/bert/deberta-v3-large"
+DEBERTA_V2_LARGE_JAPANESE_CHAR_WWM = ABS_PATH + "bert_vits2/bert/deberta-v2-large-japanese-char-wwm"
+WAV2VEC2_LARGE_ROBUST_12_FT_EMOTION_MSP_DIM = ABS_PATH + "bert_vits2/emotional/wav2vec2-large-robust-12-ft-emotion-msp-dim"
+VITS_CHINESE_BERT = ABS_PATH + "vits/bert"
+
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+# VITS
+DYNAMIC_LOADING = False
 
 """
 Default parameter
@@ -95,7 +113,7 @@ ID = 0
 
 FORMAT = "wav"
 
-LANG = "AUTO"
+LANG = "auto"
 
 LENGTH = 1
 
@@ -103,9 +121,13 @@ NOISE = 0.33
 
 NOISEW = 0.4
 
-# 长文本分段阈值，max<=0表示不分段.
-# Batch processing threshold. Text will not be processed in batches if max<=0
-MAX = 50
+# 长文本分段阈值，segment_size<=0表示不分段.
+# Batch processing threshold. Text will not be processed in batches if segment_size<=0
+SEGMENT_SIZE = 50
 
 # Bert_VITS2
 SDP_RATIO = 0.2
+LENGTH_ZH = 0
+LENGTH_JA = 0
+LENGTH_EN = 0
+STYLE_WEIGHT = 0.7

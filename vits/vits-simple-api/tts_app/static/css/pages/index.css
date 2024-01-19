@@ -1,0 +1,110 @@
+.main-container {
+    position: relative;
+    width: 100%;
+    min-height: 300px;
+    font-size: 1rem;
+    font-weight: 400;
+}
+
+.container {
+    width: 1140px;
+    position: relative;
+}
+
+/*tabs*/
+.tabs {
+    display: flex;
+    left: 0;
+}
+
+.tab-button {
+    display: inline-block;
+    background-color: transparent;
+    padding: 5px 10px;
+    cursor: pointer;
+    margin-bottom: -2px;
+    border-top: 2px solid transparent;
+    border-left: 2px solid transparent;
+    border-right: 2px solid transparent;
+    border-bottom: 0;
+    border-top-left-radius: 0.5rem;
+    border-top-right-radius: 0.5rem;
+    color: gray;
+}
+
+.tab-button.active {
+    background-color: white;
+    border-top: 2px solid #dee2e6;
+    border-left: 2px solid #dee2e6;
+    border-right: 2px solid #dee2e6;
+    color: black;
+}
+
+/*content*/
+
+.content {
+    min-height: 550px;
+}
+
+.content-pane {
+    display: none;
+    padding: 20px;
+}
+
+.content-pane.active {
+    display: flex;
+    -ms-flex-wrap: wrap;
+    flex-wrap: wrap;
+}
+
+*, :before, :after {
+    box-sizing: border-box;
+    border-width: 0;
+    border-style: solid;
+    border-color: #e5e7eb;
+}
+
+label {
+    margin-bottom: 0.5rem;
+}
+
+.play-button button {
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+.player {
+    justify-content: center;
+    align-items: center;
+    height: 80px;
+    margin-top: 20px;
+    margin-bottom: 20px;
+    border: 1px solid rgba(0, 0, 0, .125);
+    border-radius: 0.25rem;
+    /*background-color: rgba(238, 238, 238, 0.2);*/
+}
+
+.player audio {
+    width: 600px;
+}
+
+.play-button {
+    display: flex;
+
+}
+
+
+.play-button .form-check input, .play-button .form-check label {
+    display: inline-block;
+    vertical-align: middle
+}
+
+.play-button .form-check label {
+    margin-top: 8px;
+}
+
+.reference_audio {
+    
+}
+
+

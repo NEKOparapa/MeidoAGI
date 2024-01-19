@@ -33,7 +33,7 @@ class Calendar_executor:
     #循环检查日程表，并自动执行日程表中的任务
     def run (self): 
         while 1 :
-            print("[DEBUG] 日程表执行器正在检查今日的定时任务~",'\n')
+            #print("[DEBUG] 日程表执行器正在检查今日的定时任务~",'\n')
             #获取当前时间
             now_time = datetime.datetime.now()
             #输入当天的年月日，获取日程表当天的全部事件
@@ -292,13 +292,17 @@ class Calendar_executor:
             #解析回复,如果AI进行工具调用将自动执行相关工具
             function_response,task_result = self.parse_response(response,messages,tools_list)
 
+        try:
+            # 从任务结果示例中提取JSON部分
+            json_str = re.search(r'```json(.*?)```', task_result, re.S).group(1)
+            # 将JSON字符串转换为字典变量
+            task_result_dict = json.loads(json_str)
+            # 从字典变量中提取任务执行结果
+            task_result_new = task_result_dict["task_result"]
 
-        # 从任务结果示例中提取JSON部分
-        json_str = re.search(r'```json(.*?)```', task_result, re.S).group(1)
-        # 将JSON字符串转换为字典变量
-        task_result_dict = json.loads(json_str)
-        # 从字典变量中提取任务执行结果
-        task_result_new = task_result_dict["task_result"]
+        except:
+            print("[DEBUG] 无法正常提取任务结果，将直接采用回复内容",'\n')
+            task_result_new = task_result
 
         #更新任务进度 
         my_calendar.update_task_progress(task_datetime = task['task_datetime'],
@@ -631,7 +635,7 @@ class Main_AI_tool_library:
         
         #添加工具
         self.add_tools("1", self.function_search_related_tools,"0")
-        self.add_tools("2", self.function_get_schedule_related_tools, "0")
+        self.add_tools("2", self.function_get_schedule_tool_call_specification, "0")
         #self.add_tools("3", self.function_create_a_task_list, "0")
 
     #搜索拓展工具库中的工具函数------------------------------------------------
@@ -675,7 +679,7 @@ class Main_AI_tool_library:
     }
 
     #查询日程表的工具函数------------------------------------------------
-    def  get_schedule_related_tools(self, tool_class):
+    def  get_schedule_tool_call_specification(self, tool_class):
         #创建存储函数说明的列表
         tool_specifications_list = []
 
@@ -699,17 +703,17 @@ class Main_AI_tool_library:
         return tool_specifications_list
         
     #查询日程表的工具调用规范
-    function_get_schedule_related_tools =   {
+    function_get_schedule_tool_call_specification =   {
         "type": "function",
         "function": {
-                    "name": "get_schedule_related_tools",
-                    "description": "获取“创建定时任务的分步式任务列表”，“添加新的定时任务”，“删除定时任务”和“查询定时任务”的工具调用规范，以供后续操作",
+                    "name": "get_schedule_tool_call_specification",
+                    "description": "获取“创建定时任务的分步式任务列表”，“添加新的定时任务”，“删除定时任务”和“查询定时任务”的工具调用规范",
                     "parameters": {
                         "type": "object",
                         "properties": {
                             "tool_class": {
                                 "type": "string",
-                                "description": "需要使用的日程表工具类",
+                                "description": "需要获取的日程表工具调用规范",
                                 "enum": ["创建定时任务的分步式任务列表","添加定时任务","删除定时任务","查询定时任务"], 
                             }
                         },
@@ -794,7 +798,7 @@ class Main_AI_tool_library:
 
         #向模型发送用户查询以及它可以访问的函数
         response = openaiclient.chat.completions.create( 
-            model="gpt-3.5-turbo-0613",
+            model="gpt-3.5-turbo-16k",
             messages=messages ,
         )
 
@@ -1134,7 +1138,7 @@ class Ai_memory:
 
 
         response = openaiclient.chat.completions.create( 
-            model="gpt-3.5-turbo-16k-0613",
+            model="gpt-3.5-turbo-16k",
             messages=messages ,
             temperature=0
         )
@@ -1329,8 +1333,8 @@ class Ai_Parser:
                         tool_return = main_tools_library.create_a_task_list(task_objectives=tool_arguments.get("task_objectives"),)
                     
                     #调用获取日程表的功能类说明
-                    elif tool_name == "get_schedule_related_tools":
-                        tool_return = main_tools_library.get_schedule_related_tools(tool_class=tool_arguments.get("tool_class"),)
+                    elif tool_name == "get_schedule_tool_call_specification":
+                        tool_return = main_tools_library.get_schedule_tool_call_specification(tool_class=tool_arguments.get("tool_class"),)
 
                     #调用日程表的具体的工具
                     elif "scheduled" in tool_name:# 可以改为xxx in 所有的日程表工具名
@@ -1463,7 +1467,7 @@ class ChatApp:
                 audio_file= open(audio_path, "rb")
 
                 #发送请求，返回的是字典格式的数据
-                response = openai.Audio.transcribe("whisper-1", audio_file)
+                #response = openai.Audio.transcribe("whisper-1", audio_file)
 
                 # 提取文本内容
                 text = response['text']

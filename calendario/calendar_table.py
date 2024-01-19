@@ -244,7 +244,7 @@ class Calendar :
             #print("[DEBUG] 日程表中不存在该天的定时任务")
             return "日程表中不存在该天的定时任务"
         else:
-            print("[DEBUG] 日程表中已查询到该天的定时任务")
+            #print("[DEBUG] 日程表中已查询到该天的定时任务")
             return scheduled_task_list
     
     #查询定时任务的工具调用规范

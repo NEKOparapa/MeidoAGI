@@ -98,25 +98,25 @@ function_google_search  = {
 
 
 #默认浏览器打开网站函数
-def open_website(website_url):
-    webbrowser.open(website_url)
-    return "已打开指定网站" + website_url
+def open_url(url):
+    webbrowser.open(url)
+    return "已打开指定网站" + url
 
 #配套函数调用说明
-function_open_website  = {
+function_open_url  = {
         "type": "function",
         "function": {
-                    "name": "open_website",
+                    "name": "open_url",
                     "description": "输入网站，将自动调用系统默认浏览器打开该网站",
                     "parameters": {
                         "type": "object",
                         "properties": {
-                            "website_url": {
+                            "url": {
                                 "type": "string",
-                                "description": "网站",
+                                "description": "网站链接",
                             }
                         },
-                        "required": ["website_url"]
+                        "required": ["url"]
                     },
                 }
 }
